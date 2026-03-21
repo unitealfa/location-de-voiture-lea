@@ -47,6 +47,14 @@ function buildVehicleFormData(payload) {
     formData.append("photos", file);
   });
 
+  if (Array.isArray(payload.retainedPhotoUrls)) {
+    formData.append(
+      "retainedPhotoUrlsJson",
+      JSON.stringify(payload.retainedPhotoUrls)
+    );
+    formData.append("photoUrlsConfigured", "true");
+  }
+
   return formData;
 }
 

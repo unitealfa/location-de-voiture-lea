@@ -25,6 +25,17 @@ function parseVehicleId(value) {
   return Number.isInteger(vehicleId) && vehicleId > 0 ? vehicleId : null;
 }
 
+function parseRetainedPhotoUrls(value) {
+  try {
+    const parsedValue = JSON.parse(value || "[]");
+    return Array.isArray(parsedValue)
+      ? parsedValue.map((item) => String(item || "").trim()).filter(Boolean)
+      : [];
+  } catch (error) {
+    return [];
+  }
+}
+
 router.use(requireAdminApiAuth);
 
 router.get("/", async (request, response) => {
@@ -47,7 +58,9 @@ router.post("/", handleVehicleMediaUpload, async (request, response) => {
 
     const vehicle = await createAdminVehicle({
       ...(request.body || {}),
-      ...uploadedMedia
+      photoUrls: uploadedMedia.photoUrls,
+      photoUrlsConfigured: "true",
+      videoUrl: uploadedMedia.videoUrl
     });
 
     response.status(201).json({
@@ -116,12 +129,17 @@ router.put("/:id", handleVehicleMediaUpload, async (request, response) => {
     }
 
     uploadedMedia = await mapUploadedVehicleMedia(request.files);
+    const retainedPhotoUrls = parseRetainedPhotoUrls(
+      request.body?.retainedPhotoUrlsJson
+    );
 
     const vehicle = await updateAdminVehicle(
       vehicleId,
       {
         ...(request.body || {}),
-        ...uploadedMedia
+        photoUrls: [...retainedPhotoUrls, ...(uploadedMedia.photoUrls || [])],
+        photoUrlsConfigured: "true",
+        videoUrl: uploadedMedia.videoUrl
       },
       existingVehicle
     );

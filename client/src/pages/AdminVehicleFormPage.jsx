@@ -117,7 +117,7 @@ function AdminVehicleFormPage({
 
   useEffect(() => {
     if (photoFiles.length === 0) {
-      setPhotoPreviewUrls(existingPhotoUrls);
+      setPhotoPreviewUrls([]);
       return undefined;
     }
 
@@ -152,8 +152,20 @@ function AdminVehicleFormPage({
     }));
   };
 
+  const handleExistingPhotoRemove = (photoUrlToRemove) => {
+    setExistingPhotoUrls((currentPhotoUrls) =>
+      currentPhotoUrls.filter((photoUrl) => photoUrl !== photoUrlToRemove)
+    );
+  };
+
   const handlePhotoSelection = (event) => {
     setPhotoFiles(Array.from(event.target.files || []));
+  };
+
+  const handleNewPhotoRemove = (photoIndexToRemove) => {
+    setPhotoFiles((currentPhotoFiles) =>
+      currentPhotoFiles.filter((photoFile, photoIndex) => photoIndex !== photoIndexToRemove)
+    );
   };
 
   const handleVideoSelection = (event) => {
@@ -172,6 +184,7 @@ function AdminVehicleFormPage({
 
       payload.photoFiles = photoFiles;
       payload.videoFile = videoFile;
+      payload.retainedPhotoUrls = existingPhotoUrls;
 
       const response =
         mode === "edit"
@@ -432,14 +445,45 @@ function AdminVehicleFormPage({
           />
         </label>
 
-        {photoPreviewUrls.length > 0 ? (
+        {existingPhotoUrls.length > 0 || photoPreviewUrls.length > 0 ? (
           <div className="vehicle-form__gallery">
+            {existingPhotoUrls.map((photoUrl, index) => (
+              <div key={`${photoUrl}-${index}`} className="vehicle-form__gallery-item">
+                <button
+                  type="button"
+                  className="vehicle-form__remove-media"
+                  aria-label={`Supprimer l'image ${index + 1}`}
+                  onClick={() => handleExistingPhotoRemove(photoUrl)}
+                >
+                  x
+                </button>
+
+                <img
+                  src={photoUrl}
+                  alt={`${content.photoUrlsLabel} ${index + 1}`}
+                />
+              </div>
+            ))}
+
             {photoPreviewUrls.map((photoUrl, index) => (
-              <img
+              <div
                 key={`${photoUrl}-${index}`}
-                src={photoUrl}
-                alt={`${content.photoUrlsLabel} ${index + 1}`}
-              />
+                className="vehicle-form__gallery-item"
+              >
+                <button
+                  type="button"
+                  className="vehicle-form__remove-media"
+                  aria-label={`Supprimer la nouvelle image ${index + 1}`}
+                  onClick={() => handleNewPhotoRemove(index)}
+                >
+                  x
+                </button>
+
+                <img
+                  src={photoUrl}
+                  alt={`${content.photoUrlsLabel} ${existingPhotoUrls.length + index + 1}`}
+                />
+              </div>
             ))}
           </div>
         ) : null}

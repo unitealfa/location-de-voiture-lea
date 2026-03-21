@@ -907,12 +907,31 @@ button {
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
 }
 
+.vehicle-form__gallery-item {
+  position: relative;
+}
+
 .vehicle-form__gallery img {
   width: 100%;
   aspect-ratio: 4 / 3;
   object-fit: cover;
   border-radius: 18px;
   display: block;
+}
+
+.vehicle-form__remove-media {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(42, 29, 20, 0.82);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 .login-form__field textarea,

@@ -88,8 +88,11 @@ function normalizeAvailabilityStatus(value, defaultValue) {
 
 function normalizeVehiclePayload(payload, { isCreate, currentVehicle = null }) {
   const submittedPhotoUrls = normalizePhotoUrls(payload.photoUrls);
+  const shouldUseSubmittedPhotoUrls =
+    payload.photoUrlsConfigured === true ||
+    payload.photoUrlsConfigured === "true";
   const photoUrls =
-    submittedPhotoUrls.length > 0
+    shouldUseSubmittedPhotoUrls
       ? submittedPhotoUrls
       : currentVehicle?.photoUrls || [];
   const submittedVideoUrl = normalizeString(payload.videoUrl);
@@ -181,18 +184,15 @@ async function createAdminVehicle(payload) {
 }
 
 async function updateAdminVehicle(id, payload, currentVehicle) {
-  const hadNewPhotos = normalizePhotoUrls(payload.photoUrls).length > 0;
   const hadNewVideo = Boolean(normalizeString(payload.videoUrl));
   const vehicle = normalizeVehiclePayload(payload, {
     isCreate: false,
     currentVehicle
   });
   const updatedVehicle = await updateVehicle(id, vehicle);
-  const removedMedia = [];
-
-  if (hadNewPhotos && currentVehicle?.photoUrls?.length) {
-    removedMedia.push(...currentVehicle.photoUrls);
-  }
+  const removedMedia = (currentVehicle?.photoUrls || []).filter(
+    (photoUrl) => !updatedVehicle.photoUrls.includes(photoUrl)
+  );
 
   if (
     hadNewVideo &&
