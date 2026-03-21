@@ -13,8 +13,8 @@ const defaultContent = {
     clientsLabel: "Clients",
     navigationItems: [
       {
-        label: "Commencer",
-        path: "/commencer"
+        label: "ACCUEIL",
+        path: "/Accueil"
       },
       {
         label: "LOCATION DE VOITURES",
