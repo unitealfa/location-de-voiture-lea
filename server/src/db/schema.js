@@ -1,0 +1,107 @@
+const { getPool } = require("./pool");
+
+async function ensureSchema() {
+  const pool = getPool();
+
+  await pool.execute(`
+    CREATE TABLE IF NOT EXISTS admin_users (
+      id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+      username VARCHAR(191) NOT NULL,
+      email VARCHAR(191) NOT NULL,
+      role VARCHAR(100) NOT NULL DEFAULT 'admin',
+      password_hash VARCHAR(255) NOT NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_admin_users_username (username),
+      UNIQUE KEY uq_admin_users_email (email)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  `);
+
+  await pool.execute(`
+    CREATE TABLE IF NOT EXISTS admin_sessions (
+      id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+      admin_user_id BIGINT UNSIGNED NOT NULL,
+      token_hash CHAR(64) NOT NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      last_used_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_admin_sessions_token_hash (token_hash),
+      KEY idx_admin_sessions_admin_user_id (admin_user_id),
+      CONSTRAINT fk_admin_sessions_admin_user_id
+        FOREIGN KEY (admin_user_id) REFERENCES admin_users(id)
+        ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  `);
+
+  await pool.execute(`
+    CREATE TABLE IF NOT EXISTS admin_verification_requests (
+      id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+      admin_user_id BIGINT UNSIGNED NOT NULL,
+      purpose VARCHAR(100) NOT NULL,
+      delivery_email VARCHAR(191) NOT NULL,
+      code_hash CHAR(64) NOT NULL,
+      payload_json LONGTEXT NOT NULL,
+      expires_at DATETIME NOT NULL,
+      used_at DATETIME NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      PRIMARY KEY (id),
+      KEY idx_admin_verification_admin_user_id (admin_user_id),
+      KEY idx_admin_verification_purpose (purpose),
+      CONSTRAINT fk_admin_verification_admin_user_id
+        FOREIGN KEY (admin_user_id) REFERENCES admin_users(id)
+        ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  `);
+
+  await pool.execute(`
+    CREATE TABLE IF NOT EXISTS vehicles (
+      id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+      brand VARCHAR(191) NOT NULL,
+      model VARCHAR(191) NOT NULL,
+      version VARCHAR(191) NOT NULL,
+      fuel_type VARCHAR(100) NOT NULL,
+      transmission VARCHAR(100) NOT NULL,
+      seats INT UNSIGNED NOT NULL,
+      is_convertible TINYINT(1) NOT NULL DEFAULT 0,
+      horsepower INT UNSIGNED NOT NULL,
+      daily_price DECIMAL(10, 2) NOT NULL,
+      weekly_price DECIMAL(10, 2) NOT NULL,
+      monthly_price DECIMAL(10, 2) NOT NULL,
+      security_deposit DECIMAL(10, 2) NOT NULL,
+      included_km_per_day INT UNSIGNED NOT NULL,
+      extra_km_price DECIMAL(10, 2) NOT NULL,
+      pricing_description TEXT NOT NULL,
+      rental_conditions TEXT NOT NULL,
+      video_url TEXT NULL,
+      photo_urls LONGTEXT NOT NULL,
+      availability_status VARCHAR(50) NOT NULL DEFAULT 'available',
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      PRIMARY KEY (id),
+      KEY idx_vehicles_availability_status (availability_status)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  `);
+
+  const [roleColumnRows] = await pool.execute(`
+    SHOW COLUMNS FROM admin_users LIKE 'role'
+  `);
+
+  if (roleColumnRows.length === 0) {
+    await pool.execute(`
+      ALTER TABLE admin_users
+      ADD COLUMN role VARCHAR(100) NOT NULL DEFAULT 'admin' AFTER email
+    `);
+  }
+
+  await pool.execute(`
+    UPDATE admin_users
+    SET role = 'admin'
+    WHERE role IS NULL OR TRIM(role) = ''
+  `);
+}
+
+module.exports = {
+  ensureSchema
+};
