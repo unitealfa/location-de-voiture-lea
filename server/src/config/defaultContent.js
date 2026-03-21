@@ -10,6 +10,7 @@ const defaultContent = {
     closeButtonLabel: "Fermer la fenetre",
     profileLabel: "Profile",
     logoutLabel: "Se deconnecter",
+    clientsLabel: "Clients",
     navigationItems: [
       {
         label: "Commencer",
@@ -106,6 +107,56 @@ const defaultContent = {
       "Aucun vehicule n'est visible pour le moment. Revenez plus tard pour voir les prochaines disponibilites.",
     adminDescription:
       "Depuis cette page, l'admin peut creer, modifier, masquer et supprimer les vehicules.",
+    reserveFormLabel: "Reserver via le formulaire",
+    reserveWhatsappLabel: "Discutez via WhatsApp",
+    whatsappNumber: "0779107446",
+    whatsappInternationalNumber: "213779107446",
+    reservationSectionEyebrow: "Reservation",
+    reservationSectionTitle: "Envoyer une demande de reservation",
+    reservationSectionDescription:
+      "Completez ce formulaire pour envoyer votre demande. Notre equipe vous recontactera rapidement.",
+    reservationAvailabilityTitle: "Disponibilites du vehicule",
+    reservationAvailabilityDescription:
+      "Les dates et heures grisees sont deja reservees et ne peuvent pas etre selectionnees.",
+    reservationAvailabilityLoadingLabel:
+      "Chargement des disponibilites en cours...",
+    reservationPickupDateLabel: "Date de recuperation",
+    reservationPickupTimeLabel: "Heure de recuperation",
+    reservationReturnDateLabel: "Date de retour",
+    reservationReturnTimeLabel: "Heure de retour",
+    reservationSelectPickupFirstLabel:
+      "Selectionnez d'abord une date et une heure de recuperation.",
+    reservationNoAvailabilityLabel:
+      "Aucun creneau disponible sur cette periode.",
+    reservationMonthPreviousLabel: "Mois precedent",
+    reservationMonthNextLabel: "Mois suivant",
+    reservationAvailableLegendLabel: "Disponible",
+    reservationUnavailableLegendLabel: "Indisponible",
+    reservationSelectedLegendLabel: "Selectionne",
+    reservationSuccessMessage:
+      "Votre demande de reservation a bien ete envoyee.",
+    reservationErrorMessage: "La reservation n'a pas pu etre envoyee.",
+    reservationFirstNameLabel: "Prenom",
+    reservationLastNameLabel: "Nom",
+    reservationDrivingLicenseLabel: "Photo du permis de conduire",
+    reservationEmailLabel: "Email (facultatif)",
+    reservationPhoneLabel: "Numero de telephone",
+    reservationCommentLabel: "Commentaire",
+    reservationPickupLocationLabel: "A recuperer a",
+    reservationReturnLocationLabel: "Retourner a",
+    reservationPickupDatetimeLabel: "Date et heure de collecte",
+    reservationReturnDatetimeLabel: "Date et heure de retour",
+    reservationSubmitLabel: "Envoyer",
+    reservationPrivacyLabel:
+      "J'accepte la politique de confidentialite.",
+    reservationPickupLocationOptions: [
+      { value: "bureau", label: "Bureau" },
+      { value: "aeroport", label: "Aeroport" },
+      {
+        value: "commentaire",
+        label: "Preciser dans les commentaires"
+      }
+    ],
     createLabel: "+ Ajouter un vehicule",
     createTitle: "Creer un vehicule",
     editTitle: "Modifier le vehicule",
@@ -146,6 +197,7 @@ const defaultContent = {
     adminMaintenanceDoneLabel: "Retirer de maintenance",
     adminAvailabilityLabel: "Disponibilite",
     availabilityAvailableLabel: "Disponible",
+    availabilityReservedLabel: "Reserve",
     availabilityMaintenanceLabel: "Maintenance",
     pricingSectionTitle: "Tarifs",
     informationSectionTitle: "Informations",
@@ -172,6 +224,74 @@ const defaultContent = {
     photoUrlsLabel: "Photos du vehicule",
     yesLabel: "Oui",
     noLabel: "Non"
+  },
+  reservations: {
+    eyebrow: "Reservations",
+    title: "Demandes de reservation",
+    description:
+      "Retrouvez ici toutes les demandes envoyees depuis le formulaire public.",
+    emptyTitle: "Aucune reservation",
+    emptyDescription:
+      "Aucune demande n'a encore ete envoyee depuis le site.",
+    detailTitle: "Detail de la reservation",
+    detailDescription:
+      "Cette page regroupe toutes les informations utiles pour traiter la demande.",
+    durationLabel: "Duree",
+    vehicleLabel: "Vehicule",
+    customerLabel: "Client",
+    pickupLabel: "Recuperation",
+    returnLabel: "Retour",
+    phoneLabel: "Telephone",
+    emailLabel: "Email",
+    commentLabel: "Commentaire",
+    statusLabel: "Statut",
+    statusPendingLabel: "En attente",
+    statusAcceptedLabel: "Acceptee",
+    licenseLabel: "Permis de conduire",
+    createdAtLabel: "Envoyee le",
+    acceptLabel: "Accepter",
+    rejectLabel: "Refuser",
+    acceptErrorMessage: "Impossible d'accepter cette reservation.",
+    rejectErrorMessage: "Impossible de refuser cette reservation.",
+    rejectConfirmMessage:
+      "Voulez-vous refuser et supprimer cette demande de reservation ?",
+    acceptedRedirectLabel: "Voir les clients",
+    createLabel: "+ Ajouter une reservation",
+    editLabel: "Modifier la reservation",
+    deleteLabel: "Supprimer la reservation",
+    deleteConfirmMessage:
+      "Voulez-vous supprimer cette reservation ?",
+    createTitle: "Creer une reservation",
+    createDescription:
+      "Depuis cette page, l'admin peut enregistrer directement une reservation acceptee.",
+    editTitle: "Modifier la reservation",
+    editDescription:
+      "Mettez a jour le vehicule, les dates et toutes les informations client de cette reservation.",
+    saveCreateLabel: "Creer et accepter la reservation",
+    saveEditLabel: "Enregistrer la reservation",
+    formVehicleLabel: "Vehicule",
+    formVehiclePlaceholder: "Selectionner un vehicule",
+    formVehicleUnavailableSuffix: "indisponible sur cette periode",
+    formVehicleConflictMessage:
+      "Le vehicule selectionne est deja reserve sur cette periode.",
+    formDurationLiveLabel: "Duree selectionnee",
+    formDrivingLicenseReplaceLabel: "Remplacer le permis de conduire",
+    formCurrentLicenseLabel: "Permis actuel",
+    formSaveErrorMessage: "Impossible d'enregistrer cette reservation.",
+    formDeleteErrorMessage: "Impossible de supprimer cette reservation.",
+    formLoadErrorMessage: "Impossible de charger le formulaire de reservation.",
+    backLabel: "Retour aux reservations",
+    clientsTitle: "Clients",
+    clientsDescription:
+      "Retrouvez ici les reservations acceptees dans un calendrier.",
+    clientsEmptyTitle: "Aucune reservation acceptee",
+    clientsEmptyDescription:
+      "Aucune reservation acceptee n'est en cours pour le moment.",
+    clientsMonthPreviousLabel: "Mois precedent",
+    clientsMonthNextLabel: "Mois suivant",
+    calendarPickupLabel: "Depart",
+    calendarReturnLabel: "Retour",
+    detailErrorMessage: "Impossible de charger cette reservation."
   },
   footer: {
     phoneLabel: "Numero de tel",

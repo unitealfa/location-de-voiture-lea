@@ -71,6 +71,29 @@ Il doit servir de reference pour les prochaines evolutions.
 - `Conditions de location` est un texte global du site et non plus un champ du vehicule.
 - Le catalogue ne doit pas afficher de blocs inutiles qui ralentissent ou alourdissent la lecture.
 - `Description du prix` et `Conditions de location` doivent rester visibles dans la page detail d'un vehicule, mais pas dans le catalogue.
+- Depuis la fiche detail d'un vehicule, ajouter:
+  - `Reserver via le formulaire`
+  - `Discutez via WhatsApp`
+- Le bouton formulaire doit faire descendre vers un formulaire de reservation plus bas dans la page.
+- Le formulaire de reservation doit demander:
+  - nom
+  - prenom
+  - photo du permis de conduire
+  - email facultatif
+  - numero de telephone
+  - commentaire
+  - lieu de recuperation
+  - lieu de retour
+  - date et heure de recuperation
+  - date et heure de retour
+- Le formulaire doit imposer une case `politique de confidentialite` pour valider.
+- La reservation doit etre enregistree en base de donnees.
+- L'admin doit voir les demandes de reservation dans la page `Commencer`.
+- Chaque reservation admin doit afficher au moins:
+  - la photo du vehicule
+  - la duree calculee entre recuperation et retour
+- Un clic admin sur une reservation doit ouvrir une page detail avec toutes les informations et la photo du permis.
+- Le bouton WhatsApp doit ouvrir une conversation vers `0779107446`.
 - Les images vehicule doivent etre compressees automatiquement a l'upload et servir une miniature pour la liste.
 - Depuis la fiche d'un vehicule, l'admin doit pouvoir:
   - modifier

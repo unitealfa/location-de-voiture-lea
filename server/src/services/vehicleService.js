@@ -7,10 +7,13 @@ const {
   updateVehicleAvailabilityStatus
 } = require("../repositories/vehicleRepository");
 const {
+  listVehicleIdsWithFutureAcceptedReservations
+} = require("../repositories/reservationRepository");
+const {
   removeStoredVehicleMedia
 } = require("../middleware/vehicleUploadMiddleware");
 
-const AVAILABILITY_STATUSES = new Set(["available", "maintenance"]);
+const AVAILABILITY_STATUSES = new Set(["available", "maintenance", "reserved"]);
 const TRANSMISSION_OPTIONS = ["Automatique", "Manuelle"];
 const FUEL_TYPE_OPTIONS = ["Essence", "Diesel", "GPL"];
 
@@ -153,17 +156,24 @@ function normalizeVehiclePayload(payload, { isCreate, currentVehicle = null }) {
 }
 
 async function listPublicVehicles() {
+  await syncVehicleReservationAvailability();
   return listVehicles({ includeMaintenance: false });
 }
 
 async function listAdminVehicles() {
+  await syncVehicleReservationAvailability();
   return listVehicles({ includeMaintenance: true });
 }
 
 async function getPublicVehicleById(id) {
+  await syncVehicleReservationAvailability();
   const vehicle = await findVehicleById(id);
 
-  if (!vehicle || vehicle.availabilityStatus !== "available") {
+  if (
+    !vehicle ||
+    (vehicle.availabilityStatus !== "available" &&
+      vehicle.availabilityStatus !== "reserved")
+  ) {
     return null;
   }
 
@@ -171,6 +181,7 @@ async function getPublicVehicleById(id) {
 }
 
 async function getAdminVehicleById(id) {
+  await syncVehicleAvailabilityForVehicle(id);
   return findVehicleById(id);
 }
 
@@ -229,7 +240,57 @@ async function markVehicleAsMaintenance(id) {
 }
 
 async function markVehicleAsAvailable(id) {
-  return updateVehicleAvailabilityStatus(id, "available");
+  const hasAcceptedReservation = await hasFutureAcceptedReservation(id);
+  return updateVehicleAvailabilityStatus(
+    id,
+    hasAcceptedReservation ? "reserved" : "available"
+  );
+}
+
+async function hasFutureAcceptedReservation(vehicleId) {
+  const reservedVehicleIds = await listVehicleIdsWithFutureAcceptedReservations();
+  return reservedVehicleIds.includes(Number(vehicleId));
+}
+
+async function syncVehicleAvailabilityForVehicle(vehicleId) {
+  const vehicle = await findVehicleById(vehicleId);
+
+  if (!vehicle || vehicle.availabilityStatus === "maintenance") {
+    return vehicle;
+  }
+
+  const nextStatus = (await hasFutureAcceptedReservation(vehicleId))
+    ? "reserved"
+    : "available";
+
+  if (vehicle.availabilityStatus === nextStatus) {
+    return vehicle;
+  }
+
+  return updateVehicleAvailabilityStatus(vehicleId, nextStatus);
+}
+
+async function syncVehicleReservationAvailability() {
+  const vehicles = await listVehicles({ includeMaintenance: true });
+  const reservedVehicleIds = new Set(
+    await listVehicleIdsWithFutureAcceptedReservations()
+  );
+
+  await Promise.all(
+    vehicles.map(async (vehicle) => {
+      if (vehicle.availabilityStatus === "maintenance") {
+        return;
+      }
+
+      const nextStatus = reservedVehicleIds.has(vehicle.id)
+        ? "reserved"
+        : "available";
+
+      if (vehicle.availabilityStatus !== nextStatus) {
+        await updateVehicleAvailabilityStatus(vehicle.id, nextStatus);
+      }
+    })
+  );
 }
 
 module.exports = {
@@ -237,9 +298,11 @@ module.exports = {
   deleteAdminVehicle,
   getAdminVehicleById,
   getPublicVehicleById,
+  hasFutureAcceptedReservation,
   listAdminVehicles,
   markVehicleAsAvailable,
   listPublicVehicles,
   markVehicleAsMaintenance,
+  syncVehicleAvailabilityForVehicle,
   updateAdminVehicle
 };

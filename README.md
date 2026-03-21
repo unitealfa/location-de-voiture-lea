@@ -101,6 +101,10 @@ GET  /api/admin/vehicles/:id
 PUT  /api/admin/vehicles/:id
 DELETE /api/admin/vehicles/:id
 POST /api/admin/vehicles/:id/maintenance
+POST /api/admin/vehicles/:id/available
+POST /api/vehicles/:id/reservations
+GET  /api/admin/reservations
+GET  /api/admin/reservations/:id
 ```
 
 Verification email admin:
@@ -123,4 +127,7 @@ Gestion des vehicules:
 - les images uploades sont compressees automatiquement et une miniature est generee pour accelerer le catalogue
 - la boite de vitesse est limitee a Automatique ou Manuelle
 - le carburant est limite a Essence, Diesel ou GPL
+- une fiche vehicule permet maintenant la reservation via formulaire ou via WhatsApp
+- les demandes de reservation sont visibles par l'admin dans la page Commencer
+- le permis de conduire est uploadé en image et stocke localement dans /uploads/reservations
 ```

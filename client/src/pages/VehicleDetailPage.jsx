@@ -5,6 +5,7 @@ import {
   markVehicleAsAvailable,
   markVehicleAsMaintenance
 } from "../services/vehicleService";
+import VehicleReservationForm from "../components/VehicleReservationForm";
 import VehicleVideo from "../components/VehicleVideo";
 import {
   formatVehicleName,
@@ -216,6 +217,16 @@ function VehicleDetailPage({
               <span className="vehicle-card__badge">{content.maintenanceBadge}</span>
               <p>{content.maintenanceDescription}</p>
             </div>
+          ) : vehicle.availabilityStatus === "reserved" ? (
+            <div className="vehicle-detail__maintenance">
+              <span className="vehicle-card__badge">
+                {content.availabilityReservedLabel}
+              </span>
+              <p>
+                Ce vehicule a deja une reservation acceptee. Il reste visible,
+                mais les dates deja reservees ne peuvent plus etre demandees.
+              </p>
+            </div>
           ) : null}
 
           <div className="vehicle-price-grid">
@@ -232,6 +243,10 @@ function VehicleDetailPage({
               <strong>{formatVehiclePrice(vehicle.monthlyPrice)}</strong>
             </article>
           </div>
+
+          {!currentAdmin ? (
+            <VehicleReservationForm content={content} vehicle={vehicle} />
+          ) : null}
 
           {currentAdmin ? (
             <div className="vehicle-detail__actions">
@@ -303,7 +318,9 @@ function VehicleDetailPage({
               value={
                 vehicle.availabilityStatus === "maintenance"
                   ? content.availabilityMaintenanceLabel
-                  : content.availabilityAvailableLabel
+                  : vehicle.availabilityStatus === "reserved"
+                    ? content.availabilityReservedLabel
+                    : content.availabilityAvailableLabel
               }
             />
           </dl>

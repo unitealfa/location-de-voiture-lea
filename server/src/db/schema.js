@@ -84,6 +84,38 @@ async function ensureSchema() {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
   `);
 
+  await pool.execute(`
+    CREATE TABLE IF NOT EXISTS reservations (
+      id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+      vehicle_id BIGINT UNSIGNED NULL,
+      vehicle_brand VARCHAR(191) NOT NULL,
+      vehicle_model VARCHAR(191) NOT NULL,
+      vehicle_version VARCHAR(191) NOT NULL,
+      vehicle_photo_url TEXT NOT NULL,
+      first_name VARCHAR(191) NOT NULL,
+      last_name VARCHAR(191) NOT NULL,
+      driving_license_photo_url TEXT NOT NULL,
+      email VARCHAR(191) NULL,
+      phone VARCHAR(50) NOT NULL,
+      comment TEXT NOT NULL,
+      pickup_location_type VARCHAR(100) NOT NULL,
+      return_location_type VARCHAR(100) NOT NULL,
+      pickup_datetime DATETIME NOT NULL,
+      return_datetime DATETIME NOT NULL,
+      status VARCHAR(50) NOT NULL DEFAULT 'pending',
+      privacy_policy_accepted TINYINT(1) NOT NULL DEFAULT 0,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      PRIMARY KEY (id),
+      KEY idx_reservations_vehicle_id (vehicle_id),
+      KEY idx_reservations_created_at (created_at),
+      KEY idx_reservations_status (status),
+      CONSTRAINT fk_reservations_vehicle_id
+        FOREIGN KEY (vehicle_id) REFERENCES vehicles(id)
+        ON DELETE SET NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  `);
+
   const [roleColumnRows] = await pool.execute(`
     SHOW COLUMNS FROM admin_users LIKE 'role'
   `);
@@ -99,6 +131,23 @@ async function ensureSchema() {
     UPDATE admin_users
     SET role = 'admin'
     WHERE role IS NULL OR TRIM(role) = ''
+  `);
+
+  const [reservationStatusRows] = await pool.execute(`
+    SHOW COLUMNS FROM reservations LIKE 'status'
+  `);
+
+  if (reservationStatusRows.length === 0) {
+    await pool.execute(`
+      ALTER TABLE reservations
+      ADD COLUMN status VARCHAR(50) NOT NULL DEFAULT 'pending' AFTER return_datetime
+    `);
+  }
+
+  await pool.execute(`
+    UPDATE reservations
+    SET status = 'pending'
+    WHERE status IS NULL OR TRIM(status) = ''
   `);
 }
 

@@ -9,6 +9,10 @@ import PublicPage from "./pages/PublicPage";
 import LocationVehiclesPage from "./pages/LocationVehiclesPage";
 import VehicleDetailPage from "./pages/VehicleDetailPage";
 import AdminVehicleFormPage from "./pages/AdminVehicleFormPage";
+import CommencerReservationsPage from "./pages/CommencerReservationsPage";
+import ReservationDetailPage from "./pages/ReservationDetailPage";
+import ClientsCalendarPage from "./pages/ClientsCalendarPage";
+import AdminReservationFormPage from "./pages/AdminReservationFormPage";
 import { getHomePageContent } from "./services/contentService";
 import {
   getAdminSession,
@@ -23,8 +27,13 @@ function getCurrentPath() {
 function isAdminOnlyPath(path) {
   return (
     path === "/admin/profile" ||
+    path === "/clients" ||
+    path === "/clients/reservations/creer" ||
     path === "/location-de-voitures/creer" ||
-    /^\/location-de-voitures\/\d+\/modifier$/.test(path)
+    /^\/location-de-voitures\/\d+\/modifier$/.test(path) ||
+    /^\/commencer\/reservations\/\d+$/.test(path) ||
+    /^\/clients\/reservations\/\d+$/.test(path) ||
+    /^\/(commencer|clients)\/reservations\/\d+\/modifier$/.test(path)
   );
 }
 
@@ -36,6 +45,44 @@ function getVehicleDetailId(path) {
 function getVehicleEditId(path) {
   const match = path.match(/^\/location-de-voitures\/(\d+)\/modifier$/);
   return match ? Number(match[1]) : null;
+}
+
+function getReservationDetailId(path) {
+  const match = path.match(/^\/(commencer|clients)\/reservations\/(\d+)$/);
+  return match ? Number(match[2]) : null;
+}
+
+function getReservationDetailScope(path) {
+  const match = path.match(/^\/(commencer|clients)\/reservations\/\d+$/);
+  return match ? match[1] : null;
+}
+
+function getReservationEditId(path) {
+  const match = path.match(/^\/(commencer|clients)\/reservations\/(\d+)\/modifier$/);
+  return match ? Number(match[2]) : null;
+}
+
+function getReservationEditScope(path) {
+  const match = path.match(/^\/(commencer|clients)\/reservations\/\d+\/modifier$/);
+  return match ? match[1] : null;
+}
+
+function isReservationDetailPath(path) {
+  return /^\/(commencer|clients)\/reservations\/\d+$/.test(path);
+}
+
+function isReservationEditPath(path) {
+  return /^\/(commencer|clients)\/reservations\/\d+\/modifier$/.test(path);
+}
+
+function getReservationListPath(path) {
+  const scope = getReservationDetailScope(path);
+  return scope === "clients" ? "/clients" : "/commencer";
+}
+
+function getReservationDetailDestination(scopePath, reservationId) {
+  const scope = scopePath === "/clients" ? "clients" : "commencer";
+  return `/${scope || "commencer"}/reservations/${reservationId}`;
 }
 
 function App() {
@@ -143,6 +190,10 @@ function App() {
 
   const vehicleDetailId = getVehicleDetailId(currentPath);
   const vehicleEditId = getVehicleEditId(currentPath);
+  const reservationDetailId = getReservationDetailId(currentPath);
+  const reservationDetailScope = getReservationDetailScope(currentPath);
+  const reservationEditId = getReservationEditId(currentPath);
+  const reservationEditScope = getReservationEditScope(currentPath);
 
   const handleAdminLogout = async () => {
     try {
@@ -188,6 +239,7 @@ function App() {
         onLoginClick={() => navigateTo("/admin/login")}
         onLogoutClick={handleAdminLogout}
         onProfileClick={() => navigateTo("/admin/profile")}
+        onClientsClick={() => navigateTo("/clients")}
       />
       {currentPath === "/admin/login" ? (
         <AdminLogin
@@ -201,6 +253,64 @@ function App() {
           admin={currentAdmin}
           onAdminUpdated={handleAdminUpdated}
           onBackClick={() => navigateTo("/admin")}
+        />
+      ) : currentPath === "/clients/reservations/creer" && currentAdmin ? (
+        <AdminReservationFormPage
+          content={content.reservations}
+          vehicleContent={content.vehicles}
+          mode="create"
+          onBackClick={() => navigateTo("/clients")}
+          onSaved={(reservation) =>
+            navigateTo(`/clients/reservations/${reservation.id}`)
+          }
+        />
+      ) : reservationEditId && currentAdmin && isReservationEditPath(currentPath) ? (
+        <AdminReservationFormPage
+          content={content.reservations}
+          vehicleContent={content.vehicles}
+          mode="edit"
+          reservationId={reservationEditId}
+          onBackClick={() =>
+            navigateTo(`/${reservationEditScope}/reservations/${reservationEditId}`)
+          }
+          onSaved={(reservation) =>
+            navigateTo(
+              reservation.status === "accepted"
+                ? `/clients/reservations/${reservation.id}`
+                : `/commencer/reservations/${reservation.id}`
+            )
+          }
+        />
+      ) : reservationDetailId && currentAdmin && isReservationDetailPath(currentPath) ? (
+        <ReservationDetailPage
+          content={content.reservations}
+          vehicleContent={content.vehicles}
+          reservationId={reservationDetailId}
+          detailScope={reservationDetailScope}
+          onAccepted={() => navigateTo("/clients")}
+          onRejected={() => navigateTo("/commencer")}
+          onEditClick={() =>
+            navigateTo(`/${reservationDetailScope}/reservations/${reservationDetailId}/modifier`)
+          }
+          onDeleted={() =>
+            navigateTo(reservationDetailScope === "clients" ? "/clients" : "/commencer")
+          }
+          onBackClick={() => navigateTo(getReservationListPath(currentPath))}
+        />
+      ) : currentPath === "/commencer" && currentAdmin ? (
+        <CommencerReservationsPage
+          content={content.reservations}
+          onReservationClick={(reservationId) =>
+            navigateTo(getReservationDetailDestination("/commencer", reservationId))
+          }
+        />
+      ) : currentPath === "/clients" && currentAdmin ? (
+        <ClientsCalendarPage
+          content={content.reservations}
+          onCreateClick={() => navigateTo("/clients/reservations/creer")}
+          onReservationClick={(reservationId) =>
+            navigateTo(getReservationDetailDestination("/clients", reservationId))
+          }
         />
       ) : currentPath === "/commencer" ? (
         <PublicPage title={content.publicPages.commencer.title} />

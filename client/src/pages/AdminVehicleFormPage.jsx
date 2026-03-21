@@ -412,6 +412,9 @@ function AdminVehicleFormPage({
                 <option value="available">
                   {content.availabilityAvailableLabel}
                 </option>
+                <option value="reserved">
+                  {content.availabilityReservedLabel}
+                </option>
                 <option value="maintenance">
                   {content.availabilityMaintenanceLabel}
                 </option>

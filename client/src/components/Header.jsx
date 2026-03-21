@@ -12,9 +12,19 @@ function Header({
   onNavigate,
   onLoginClick,
   onLogoutClick,
-  onProfileClick
+  onProfileClick,
+  onClientsClick
 }) {
   const accountMenuRef = useRef(null);
+  const navigationItems = currentAdmin
+    ? [
+        ...header.navigationItems,
+        {
+          label: header.clientsLabel,
+          path: "/clients"
+        }
+      ]
+    : header.navigationItems;
 
   const isNavItemActive = (itemPath) =>
     currentPath === itemPath || currentPath.startsWith(`${itemPath}/`);
@@ -55,12 +65,14 @@ function Header({
       </div>
 
       <nav className="site-nav" aria-label="Navigation principale">
-        {header.navigationItems.map((item) => (
+        {navigationItems.map((item) => (
           <button
             key={item.path}
             type="button"
             className={`site-nav__link${isNavItemActive(item.path) ? " site-nav__link--active" : ""}`}
-            onClick={() => onNavigate(item.path)}
+            onClick={() =>
+              item.path === "/clients" ? onClientsClick() : onNavigate(item.path)
+            }
           >
             {item.label}
           </button>

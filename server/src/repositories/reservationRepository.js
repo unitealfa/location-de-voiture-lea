@@ -1,0 +1,356 @@
+const { getPool } = require("../db/pool");
+
+function mapReservation(row) {
+  if (!row) {
+    return null;
+  }
+
+  return {
+    id: row.id,
+    vehicleId: row.vehicle_id,
+    vehicleBrand: row.vehicle_brand,
+    vehicleModel: row.vehicle_model,
+    vehicleVersion: row.vehicle_version,
+    vehiclePhotoUrl: row.vehicle_photo_url,
+    firstName: row.first_name,
+    lastName: row.last_name,
+    drivingLicensePhotoUrl: row.driving_license_photo_url,
+    email: row.email,
+    phone: row.phone,
+    comment: row.comment,
+    pickupLocationType: row.pickup_location_type,
+    returnLocationType: row.return_location_type,
+    pickupDatetime: row.pickup_datetime,
+    returnDatetime: row.return_datetime,
+    status: row.status,
+    privacyPolicyAccepted: Boolean(row.privacy_policy_accepted),
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  };
+}
+
+async function createReservation(reservation) {
+  const pool = getPool();
+  const [result] = await pool.execute(
+    `
+      INSERT INTO reservations (
+        vehicle_id,
+        vehicle_brand,
+        vehicle_model,
+        vehicle_version,
+        vehicle_photo_url,
+        first_name,
+        last_name,
+        driving_license_photo_url,
+        email,
+        phone,
+        comment,
+        pickup_location_type,
+        return_location_type,
+        pickup_datetime,
+        return_datetime,
+        status,
+        privacy_policy_accepted
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `,
+    [
+      reservation.vehicleId,
+      reservation.vehicleBrand,
+      reservation.vehicleModel,
+      reservation.vehicleVersion,
+      reservation.vehiclePhotoUrl,
+      reservation.firstName,
+      reservation.lastName,
+      reservation.drivingLicensePhotoUrl,
+      reservation.email,
+      reservation.phone,
+      reservation.comment,
+      reservation.pickupLocationType,
+      reservation.returnLocationType,
+      reservation.pickupDatetime,
+      reservation.returnDatetime,
+      reservation.status || "pending",
+      reservation.privacyPolicyAccepted ? 1 : 0
+    ]
+  );
+
+  return findReservationById(result.insertId);
+}
+
+async function findReservationById(id) {
+  const pool = getPool();
+  const [rows] = await pool.execute(
+    `
+      SELECT
+        id,
+        vehicle_id,
+        vehicle_brand,
+        vehicle_model,
+        vehicle_version,
+        vehicle_photo_url,
+        first_name,
+        last_name,
+        driving_license_photo_url,
+        email,
+        phone,
+        comment,
+        pickup_location_type,
+        return_location_type,
+        pickup_datetime,
+        return_datetime,
+        status,
+        privacy_policy_accepted,
+        created_at,
+        updated_at
+      FROM reservations
+      WHERE id = ?
+      LIMIT 1
+    `,
+    [id]
+  );
+
+  return mapReservation(rows[0]);
+}
+
+async function listReservations({ status, futureOnly = false } = {}) {
+  const pool = getPool();
+  const whereClauses = [];
+  const parameters = [];
+
+  if (status) {
+    whereClauses.push("status = ?");
+    parameters.push(status);
+  }
+
+  if (futureOnly) {
+    whereClauses.push("return_datetime >= NOW()");
+  }
+
+  const [rows] = await pool.execute(
+    `
+      SELECT
+        id,
+        vehicle_id,
+        vehicle_brand,
+        vehicle_model,
+        vehicle_version,
+        vehicle_photo_url,
+        first_name,
+        last_name,
+        driving_license_photo_url,
+        email,
+        phone,
+        comment,
+        pickup_location_type,
+        return_location_type,
+        pickup_datetime,
+        return_datetime,
+        status,
+        privacy_policy_accepted,
+        created_at,
+        updated_at
+      FROM reservations
+      ${whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : ""}
+      ORDER BY pickup_datetime ASC, id DESC
+    `,
+    parameters
+  );
+
+  return rows.map(mapReservation);
+}
+
+async function updateReservationStatus(id, status) {
+  const pool = getPool();
+  await pool.execute(
+    `
+      UPDATE reservations
+      SET status = ?
+      WHERE id = ?
+    `,
+    [status, id]
+  );
+
+  return findReservationById(id);
+}
+
+async function updateReservation(id, reservation) {
+  const pool = getPool();
+  await pool.execute(
+    `
+      UPDATE reservations
+      SET
+        vehicle_id = ?,
+        vehicle_brand = ?,
+        vehicle_model = ?,
+        vehicle_version = ?,
+        vehicle_photo_url = ?,
+        first_name = ?,
+        last_name = ?,
+        driving_license_photo_url = ?,
+        email = ?,
+        phone = ?,
+        comment = ?,
+        pickup_location_type = ?,
+        return_location_type = ?,
+        pickup_datetime = ?,
+        return_datetime = ?,
+        status = ?,
+        privacy_policy_accepted = ?
+      WHERE id = ?
+    `,
+    [
+      reservation.vehicleId,
+      reservation.vehicleBrand,
+      reservation.vehicleModel,
+      reservation.vehicleVersion,
+      reservation.vehiclePhotoUrl,
+      reservation.firstName,
+      reservation.lastName,
+      reservation.drivingLicensePhotoUrl,
+      reservation.email,
+      reservation.phone,
+      reservation.comment,
+      reservation.pickupLocationType,
+      reservation.returnLocationType,
+      reservation.pickupDatetime,
+      reservation.returnDatetime,
+      reservation.status,
+      reservation.privacyPolicyAccepted ? 1 : 0,
+      id
+    ]
+  );
+
+  return findReservationById(id);
+}
+
+async function deleteReservation(id) {
+  const pool = getPool();
+  await pool.execute(
+    `
+      DELETE FROM reservations
+      WHERE id = ?
+    `,
+    [id]
+  );
+}
+
+async function findOverlappingAcceptedReservation(vehicleId, pickupDatetime, returnDatetime, excludedReservationId = null) {
+  const pool = getPool();
+  const parameters = [
+    vehicleId,
+    returnDatetime,
+    pickupDatetime
+  ];
+  const exclusionSql =
+    Number.isInteger(excludedReservationId) && excludedReservationId > 0
+      ? "AND id <> ?"
+      : "";
+
+  if (exclusionSql) {
+    parameters.push(excludedReservationId);
+  }
+
+  const [rows] = await pool.execute(
+    `
+      SELECT
+        id,
+        vehicle_id,
+        vehicle_brand,
+        vehicle_model,
+        vehicle_version,
+        vehicle_photo_url,
+        first_name,
+        last_name,
+        driving_license_photo_url,
+        email,
+        phone,
+        comment,
+        pickup_location_type,
+        return_location_type,
+        pickup_datetime,
+        return_datetime,
+        status,
+        privacy_policy_accepted,
+        created_at,
+        updated_at
+      FROM reservations
+      WHERE vehicle_id = ?
+        AND status = 'accepted'
+        AND pickup_datetime < ?
+        AND return_datetime > ?
+        ${exclusionSql}
+      ORDER BY pickup_datetime ASC, id ASC
+      LIMIT 1
+    `,
+    parameters
+  );
+
+  return mapReservation(rows[0]);
+}
+
+async function listVehicleIdsWithFutureAcceptedReservations() {
+  const pool = getPool();
+  const [rows] = await pool.execute(
+    `
+      SELECT DISTINCT vehicle_id
+      FROM reservations
+      WHERE vehicle_id IS NOT NULL
+        AND status = 'accepted'
+        AND return_datetime >= NOW()
+    `
+  );
+
+  return rows
+    .map((row) => Number(row.vehicle_id))
+    .filter((vehicleId) => Number.isInteger(vehicleId) && vehicleId > 0);
+}
+
+async function listAcceptedReservationsByVehicleId(vehicleId) {
+  const pool = getPool();
+  const [rows] = await pool.execute(
+    `
+      SELECT
+        id,
+        vehicle_id,
+        vehicle_brand,
+        vehicle_model,
+        vehicle_version,
+        vehicle_photo_url,
+        first_name,
+        last_name,
+        driving_license_photo_url,
+        email,
+        phone,
+        comment,
+        pickup_location_type,
+        return_location_type,
+        pickup_datetime,
+        return_datetime,
+        status,
+        privacy_policy_accepted,
+        created_at,
+        updated_at
+      FROM reservations
+      WHERE vehicle_id = ?
+        AND status = 'accepted'
+        AND return_datetime >= NOW()
+      ORDER BY pickup_datetime ASC, id ASC
+    `,
+    [vehicleId]
+  );
+
+  return rows.map(mapReservation);
+}
+
+module.exports = {
+  createReservation,
+  deleteReservation,
+  listAcceptedReservationsByVehicleId,
+  findReservationById,
+  findOverlappingAcceptedReservation,
+  listReservations,
+  listVehicleIdsWithFutureAcceptedReservations,
+  updateReservation,
+  updateReservationStatus
+};

@@ -68,7 +68,11 @@ async function listVehicles({ includeMaintenance }) {
         created_at,
         updated_at
       FROM vehicles
-      ${includeMaintenance ? "" : "WHERE availability_status = 'available'"}
+      ${
+        includeMaintenance
+          ? ""
+          : "WHERE availability_status IN ('available', 'reserved')"
+      }
       ORDER BY updated_at DESC, id DESC
     `
   );

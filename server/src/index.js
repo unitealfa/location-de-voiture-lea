@@ -11,6 +11,7 @@ const adminProtectedRoutes = require("./routes/adminProtectedRoutes");
 const adminProfileRoutes = require("./routes/adminProfileRoutes");
 const vehicleRoutes = require("./routes/vehicleRoutes");
 const adminVehicleRoutes = require("./routes/adminVehicleRoutes");
+const adminReservationRoutes = require("./routes/adminReservationRoutes");
 const {
   requireDatabaseReady
 } = require("./middleware/databaseReadyMiddleware");
@@ -43,6 +44,18 @@ let bootstrapRetryTimer = null;
 let listenRetryTimer = null;
 let isBootstrapping = false;
 let activeHttpServer = null;
+
+function matchesAdminOnlyClientPath(pathname) {
+  return (
+    pathname === "/clients" ||
+    pathname === "/clients/reservations/creer" ||
+    /^\/clients\/reservations\/\d+$/.test(pathname) ||
+    /^\/(commencer|clients)\/reservations\/\d+\/modifier$/.test(pathname) ||
+    /^\/commencer\/reservations\/\d+$/.test(pathname) ||
+    pathname === "/location-de-voitures/creer" ||
+    /^\/location-de-voitures\/\d+\/modifier$/.test(pathname)
+  );
+}
 
 async function createApp() {
   const app = express();
@@ -97,6 +110,12 @@ async function createApp() {
     hydrateAdminRequest,
     adminVehicleRoutes
   );
+  app.use(
+    "/api/admin/reservations",
+    requireDatabaseReady,
+    hydrateAdminRequest,
+    adminReservationRoutes
+  );
 
   app.use("/api", (request, response) => {
     response.status(404).json({ message: "API route not found" });
@@ -108,6 +127,20 @@ async function createApp() {
     }
 
     return requireAdminPageAuth(request, response, next);
+  });
+
+  app.use((request, response, next) => {
+    if (!matchesAdminOnlyClientPath(request.path)) {
+      return next();
+    }
+
+    return hydrateAdminRequest(request, response, (error) => {
+      if (error) {
+        return next(error);
+      }
+
+      return requireAdminPageAuth(request, response, next);
+    });
   });
 
   if (isProduction) {

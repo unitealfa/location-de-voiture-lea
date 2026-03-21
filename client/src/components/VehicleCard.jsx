@@ -23,8 +23,14 @@ function VehicleCard({ content, vehicle, onOpen, showAdminState }) {
             sizes="(max-width: 720px) 100vw, 320px"
           />
 
-          {showAdminState && vehicle.availabilityStatus === "maintenance" ? (
-            <span className="vehicle-card__badge">{content.maintenanceBadge}</span>
+          {showAdminState ? (
+            vehicle.availabilityStatus === "maintenance" ? (
+              <span className="vehicle-card__badge">{content.maintenanceBadge}</span>
+            ) : vehicle.availabilityStatus === "reserved" ? (
+              <span className="vehicle-card__badge">
+                {content.availabilityReservedLabel}
+              </span>
+            ) : null
           ) : null}
         </div>
 
