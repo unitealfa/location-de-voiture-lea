@@ -160,115 +160,114 @@ function AdminProfile({ content, admin, onAdminUpdated, onBackClick }) {
 
   return (
     <>
-      <main className="profile-page">
-        <section className="profile-page__hero">
-          <p className="admin-home-card__eyebrow">{content.eyebrow}</p>
-          <h1>{content.title}</h1>
-          <p className="admin-home-card__text">{content.description}</p>
-        </section>
+      <main className="admin-profile-page">
+        <section className="admin-profile-page__section vehica-login-register-page">
+          <div className="admin-profile-page__container vehica-login-register-wide-container">
+            <div className="vehica-panel-login-register admin-profile-page__panel">
+              <form className="vehica-login vehica-active" onSubmit={handleProfileSubmit}>
+                <div className="vehica-login__inner">
+                  <h2>{content.profileSectionTitle}</h2>
+                  <h3>{content.description}</h3>
 
-        <section className="profile-grid">
-          <form className="profile-card" onSubmit={handleProfileSubmit}>
-            <h2>{content.profileSectionTitle}</h2>
+                  {profileError ? (
+                    <div className="vehica-register-login-notice">{profileError}</div>
+                  ) : null}
 
-            <label className="login-form__field">
-              <span>{content.profileUsernameLabel}</span>
-              <input
-                type="text"
-                name="username"
-                value={profileForm.username}
-                onChange={updateProfileField}
-              />
-            </label>
+                  {profileMessage ? (
+                    <div className="vehica-register-login-notice">{profileMessage}</div>
+                  ) : null}
 
-            <label className="login-form__field">
-              <span>{content.profileEmailLabel}</span>
-              <input
-                type="email"
-                name="email"
-                value={profileForm.email}
-                onChange={updateProfileField}
-              />
-            </label>
+                  <div className="vehica-fields">
+                    <div className="vehica-field">
+                      <input
+                        type="text"
+                        name="username"
+                        value={profileForm.username}
+                        onChange={updateProfileField}
+                        placeholder={content.profileUsernameLabel}
+                      />
+                    </div>
 
-            {profileError ? (
-              <p className="login-form__message login-form__message--error">
-                {profileError}
-              </p>
-            ) : null}
+                    <div className="vehica-field">
+                      <input
+                        type="email"
+                        name="email"
+                        value={profileForm.email}
+                        onChange={updateProfileField}
+                        placeholder={content.profileEmailLabel}
+                      />
+                    </div>
+                  </div>
 
-            {profileMessage ? (
-              <p className="login-form__message login-form__message--success">
-                {profileMessage}
-              </p>
-            ) : null}
+                  <button
+                    type="submit"
+                    className="vehica-button admin-profile-page__submit"
+                    disabled={isProfileSubmitting}
+                  >
+                    {content.profileSubmitLabel}
+                  </button>
+                </div>
+              </form>
 
+              <form className="vehica-register vehica-active" onSubmit={handlePasswordSubmit}>
+                <div className="vehica-register__inner">
+                  <h2>{content.passwordSectionTitle}</h2>
+                  <h3>{content.passwordSectionDescription}</h3>
+
+                  {passwordError ? (
+                    <div className="vehica-register-login-notice">{passwordError}</div>
+                  ) : null}
+
+                  {passwordMessage ? (
+                    <div className="vehica-register-login-notice">{passwordMessage}</div>
+                  ) : null}
+
+                  <div className="vehica-fields">
+                    <div className="vehica-field">
+                      <input
+                        type="password"
+                        name="currentPassword"
+                        value={passwordForm.currentPassword}
+                        onChange={updatePasswordField}
+                        placeholder={content.currentPasswordPlaceholder}
+                        autoComplete="current-password"
+                      />
+                    </div>
+
+                    <div className="vehica-field">
+                      <input
+                        type="password"
+                        name="newPassword"
+                        value={passwordForm.newPassword}
+                        onChange={updatePasswordField}
+                        placeholder={content.newPasswordPlaceholder}
+                        autoComplete="new-password"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="vehica-button admin-profile-page__submit"
+                    disabled={isPasswordSubmitting}
+                  >
+                    {content.passwordSubmitLabel}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div className="admin-profile-page__back-row">
             <button
-              type="submit"
-              className="login-form__submit"
-              disabled={isProfileSubmitting}
+              type="button"
+              className="admin-profile-page__back-button"
+              onClick={onBackClick}
             >
-              {content.profileSubmitLabel}
+              {content.backLabel}
             </button>
-          </form>
-
-          <form className="profile-card" onSubmit={handlePasswordSubmit}>
-            <h2>{content.passwordSectionTitle}</h2>
-            <p className="profile-card__text">
-              {content.passwordSectionDescription}
-            </p>
-
-            <label className="login-form__field">
-              <span>{content.currentPasswordLabel}</span>
-              <input
-                type="password"
-                name="currentPassword"
-                value={passwordForm.currentPassword}
-                onChange={updatePasswordField}
-                placeholder={content.currentPasswordPlaceholder}
-                autoComplete="current-password"
-              />
-            </label>
-
-            <label className="login-form__field">
-              <span>{content.newPasswordLabel}</span>
-              <input
-                type="password"
-                name="newPassword"
-                value={passwordForm.newPassword}
-                onChange={updatePasswordField}
-                placeholder={content.newPasswordPlaceholder}
-                autoComplete="new-password"
-              />
-            </label>
-
-            {passwordError ? (
-              <p className="login-form__message login-form__message--error">
-                {passwordError}
-              </p>
-            ) : null}
-
-            {passwordMessage ? (
-              <p className="login-form__message login-form__message--success">
-                {passwordMessage}
-              </p>
-            ) : null}
-
-            <button
-              type="submit"
-              className="login-form__submit"
-              disabled={isPasswordSubmitting}
-            >
-              {content.passwordSubmitLabel}
-            </button>
-          </form>
+          </div>
         </section>
-
-        <div className="profile-page__back">
-          <button type="button" className="login-card__back" onClick={onBackClick}>
-            {content.backLabel}
-          </button>
-        </div>
       </main>
 
       {verificationDialog ? (

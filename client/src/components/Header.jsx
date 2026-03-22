@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 function Header({
   brand,
@@ -16,8 +16,22 @@ function Header({
   onClientsClick
 }) {
   const accountMenuRef = useRef(null);
+  const desktopMenuRef = useRef(null);
+  const menuItemRefs = useRef({});
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const [menuHoverStyle, setMenuHoverStyle] = useState({
+    opacity: 0,
+    width: "0px",
+    transform: "translateX(0px)"
+  });
+
   const navigationItems = currentAdmin
     ? [
+        {
+          label: header.dashboardLabel,
+          path: "/admin"
+        },
         ...header.navigationItems,
         {
           label: header.clientsLabel,
@@ -26,8 +40,143 @@ function Header({
       ]
     : header.navigationItems;
 
-  const isNavItemActive = (itemPath) =>
-    currentPath === itemPath || currentPath.startsWith(`${itemPath}/`);
+  const isNavItemActive = (itemPath) => {
+    if (itemPath === "/") {
+      return currentPath === "/";
+    }
+
+    return currentPath === itemPath || currentPath.startsWith(itemPath + "/");
+  };
+
+  const updateMenuHover = (path) => {
+    const itemElement = menuItemRefs.current[path];
+
+    if (!desktopMenuRef.current || !itemElement) {
+      setMenuHoverStyle({
+        opacity: 0,
+        width: "0px",
+        transform: "translateX(0px)"
+      });
+      return;
+    }
+
+    setMenuHoverStyle({
+      opacity: 1,
+      width: itemElement.offsetWidth + "px",
+      transform: "translateX(" + itemElement.offsetLeft + "px)"
+    });
+  };
+
+  const hideMenuHover = () => {
+    setMenuHoverStyle((currentValue) => ({
+      ...currentValue,
+      opacity: 0
+    }));
+  };
+
+  const handleNavigate = (path) => {
+    setIsMobileNavOpen(false);
+    onMenuClose();
+
+    if (path === "/clients") {
+      onClientsClick();
+      return;
+    }
+
+    onNavigate(path);
+  };
+
+  const handleLogin = () => {
+    setIsMobileNavOpen(false);
+    onMenuClose();
+    onLoginClick();
+  };
+
+  const handleProfile = () => {
+    setIsMobileNavOpen(false);
+    onMenuClose();
+    onProfileClick();
+  };
+
+  const handleLogout = () => {
+    setIsMobileNavOpen(false);
+    onMenuClose();
+    onLogoutClick();
+  };
+
+  const handleAccountButtonClick = (event) => {
+    event.stopPropagation();
+
+    if (currentAdmin) {
+      onMenuToggle();
+      return;
+    }
+
+    handleLogin();
+  };
+
+  useEffect(() => {
+    let frameId = 0;
+
+    const updateScrollState = () => {
+      const currentScroll = window.scrollY || window.pageYOffset || 0;
+
+      setIsScrolled((currentValue) => {
+        if (currentValue) {
+          return currentScroll > 20;
+        }
+
+        return currentScroll > 110;
+      });
+
+      frameId = 0;
+    };
+
+    const handleScroll = () => {
+      if (frameId) {
+        return;
+      }
+
+      frameId = window.requestAnimationFrame(updateScrollState);
+    };
+
+    updateScrollState();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      if (frameId) {
+        window.cancelAnimationFrame(frameId);
+      }
+
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setMenuHoverStyle((currentValue) => {
+        if (!currentValue.opacity) {
+          return currentValue;
+        }
+
+        return {
+          ...currentValue,
+          opacity: 0
+        };
+      });
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  useEffect(() => {
+    setIsMobileNavOpen(false);
+    onMenuClose();
+  }, [currentPath]);
 
   useEffect(() => {
     if (!isMenuOpen) {
@@ -35,7 +184,7 @@ function Header({
     }
 
     const handlePointerDown = (event) => {
-      if (!accountMenuRef.current?.contains(event.target)) {
+      if (!accountMenuRef.current || !accountMenuRef.current.contains(event.target)) {
         onMenuClose();
       }
     };
@@ -43,6 +192,7 @@ function Header({
     const handleEscape = (event) => {
       if (event.key === "Escape") {
         onMenuClose();
+        setIsMobileNavOpen(false);
       }
     };
 
@@ -55,82 +205,267 @@ function Header({
     };
   }, [isMenuOpen, onMenuClose]);
 
+  const headerClassName = [
+    "vehica-app",
+    "vehica-header",
+    "vehica-header--with-submit-button",
+    "vehica-header--no-dashboard-link",
+    isScrolled ? "vehica-menu-sticky-active" : ""
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
-    <header className="top-bar">
-      <div className="brand-row">
-        <div className="brand-block" aria-label={brand.name}>
-          <span className="brand-block__logo">{brand.logoText}</span>
-          <span className="brand-block__name">{brand.name}</span>
+    <header className={headerClassName}>
+      <div className="vehica-hide-mobile vehica-hide-tablet">
+        <div className="vehica-menu__desktop">
+          <div className="vehica-menu__wrapper">
+            <div className="vehica-menu__left">
+              <div className="vehica-logo">
+                <button
+                  type="button"
+                  className="rentzo-logo-button"
+                  aria-label={brand.name}
+                  onClick={() => handleNavigate("/")}
+                >
+                  <img src={brand.logoImagePath} alt={brand.name} />
+                </button>
+              </div>
+
+              <div className="vehica-logo vehica-logo--sticky">
+                <button
+                  type="button"
+                  className="rentzo-logo-button"
+                  aria-label={brand.name}
+                  onClick={() => handleNavigate("/")}
+                >
+                  <img src={brand.logoImagePath} alt={brand.name} />
+                </button>
+              </div>
+
+              <div
+                className="vehica-menu__container"
+                onMouseLeave={hideMenuHover}
+              >
+                <div
+                  className="vehica-menu-hover"
+                  style={menuHoverStyle}
+                ></div>
+
+                <div className="vehica-menu" ref={desktopMenuRef}>
+                  {navigationItems.map((item) => (
+                    <div
+                      key={item.path}
+                      ref={(node) => {
+                        if (node) {
+                          menuItemRefs.current[item.path] = node;
+                        } else {
+                          delete menuItemRefs.current[item.path];
+                        }
+                      }}
+                      className={
+                        "menu-item vehica-menu-item-depth-0" +
+                        (isNavItemActive(item.path) ? " current-menu-item" : "")
+                      }
+                      onMouseEnter={() => updateMenuHover(item.path)}
+                    >
+                      <button
+                        type="button"
+                        title={item.label}
+                        className="vehica-menu__link"
+                        onClick={() => handleNavigate(item.path)}
+                      >
+                        {item.label}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="vehica-menu__sticky-submit">
+              <div className="rentzo-account-menu" ref={accountMenuRef}>
+                <button
+                  type="button"
+                  className="vehica-button vehica-button--menu-submit"
+                  aria-expanded={currentAdmin ? isMenuOpen : false}
+                  onClick={handleAccountButtonClick}
+                >
+                  <span className="vehica-menu-item-depth-0">
+                    <span className="rentzo-account-menu__plus">+</span>
+                    <span>{header.accountLabel}</span>
+                  </span>
+                </button>
+
+                {currentAdmin && isMenuOpen ? (
+                  <div className="rentzo-account-menu__popup">
+                    <div className="rentzo-account-menu__identity">
+                      <strong>{currentAdmin.username}</strong>
+                      <span>{currentAdmin.role}</span>
+                    </div>
+
+                    <button
+                      type="button"
+                      className={
+                        "rentzo-account-menu__action" +
+                        (isProfilePage ? " rentzo-account-menu__action--active" : "")
+                      }
+                      onClick={handleProfile}
+                    >
+                      {header.profileLabel}
+                    </button>
+
+                    <button
+                      type="button"
+                      className="rentzo-account-menu__action"
+                      onClick={handleLogout}
+                    >
+                      {header.logoutLabel}
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <nav className="site-nav" aria-label="Navigation principale">
-        {navigationItems.map((item) => (
-          <button
-            key={item.path}
-            type="button"
-            className={`site-nav__link${isNavItemActive(item.path) ? " site-nav__link--active" : ""}`}
-            onClick={() =>
-              item.path === "/clients" ? onClientsClick() : onNavigate(item.path)
-            }
-          >
-            {item.label}
-          </button>
-        ))}
-      </nav>
+      <div className="vehica-hide-desktop">
+        <div className="vehica-mobile-menu__wrapper vehica-mobile-menu__wrapper--mobile-simple-menu vehica-hide-desktop">
+          <div className="vehica-mobile-menu__hamburger">
+            <button
+              type="button"
+              className="rentzo-menu-button"
+              aria-label="Ouvrir le menu"
+              onClick={() => setIsMobileNavOpen(true)}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="15"
+                viewBox="0 0 28 21"
+                className="vehica-menu-icon"
+              >
+                <g transform="translate(-11925 99)">
+                  <rect width="28" height="4.2" rx="1.5" transform="translate(11925 -99)" fill="#A7A7A7" />
+                  <rect width="19.6" height="4.2" rx="1.5" transform="translate(11925 -90.6)" fill="#A7A7A7" />
+                  <rect width="14" height="4.2" rx="1.5" transform="translate(11925 -82.2)" fill="#A7A7A7" />
+                </g>
+              </svg>
+            </button>
+          </div>
 
-      <div className="account-menu" ref={accountMenuRef}>
-        <button
-          type="button"
-          className={`account-menu__trigger${isMenuOpen ? " account-menu__trigger--active" : ""}`}
-          aria-expanded={isMenuOpen}
-          aria-label={currentAdmin ? header.accountLabel : header.loginLabel}
-          onClick={onMenuToggle}
-        >
-          {currentAdmin ? header.accountLabel : header.loginLabel}
-        </button>
+          <div className="vehica-mobile-menu__logo vehica-mobile-menu__logo--right">
+            <div className="vehica-logo">
+              <button
+                type="button"
+                className="rentzo-logo-button"
+                aria-label={brand.name}
+                onClick={() => handleNavigate("/")}
+              >
+                <img src={brand.logoImagePath} alt={brand.name} />
+              </button>
+            </div>
+          </div>
 
-        {isMenuOpen ? (
-          <div
-            className="account-menu__popup"
-            role="dialog"
-            aria-modal="false"
-            aria-label={header.accountLabel}
-          >
-            {currentAdmin ? (
-              <>
-                <div className="account-menu__identity">
-                  <span className="account-menu__name">{currentAdmin.username}</span>
-                  <span className="account-menu__role">{currentAdmin.role}</span>
+          <div className={"vehica-mobile-menu__open" + (isMobileNavOpen ? " vehica-active" : "")}>
+            <div className="vehica-mobile-menu__open__content">
+              <div className="vehica-mobile-menu__open__top">
+                <div className="vehica-mobile-menu__open__top__submit-button">
+                  <button
+                    type="button"
+                    className="vehica-button"
+                    onClick={currentAdmin ? handleProfile : handleLogin}
+                  >
+                    {header.accountLabel}
+                  </button>
                 </div>
 
                 <button
                   type="button"
-                  className={`account-menu__action${isProfilePage ? " account-menu__action--active" : ""}`}
-                  onClick={onProfileClick}
+                  className="vehica-mobile-menu__open__top__x"
+                  aria-label={header.closeButtonLabel}
+                  onClick={() => setIsMobileNavOpen(false)}
                 >
-                  {header.profileLabel}
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20.124" height="21.636" viewBox="0 0 20.124 21.636">
+                    <g transform="translate(-11872.422 99.636)">
+                      <path
+                        d="M20.163-1.122a2.038,2.038,0,0,1,.61,1.388A1.989,1.989,0,0,1,20.05,1.79a2.4,2.4,0,0,1-1.653.649,2.116,2.116,0,0,1-1.637-.754l-6.034-6.94-6.1,6.94a2.18,2.18,0,0,1-1.637.754A2.364,2.364,0,0,1,1.37,1.79,1.989,1.989,0,0,1,.648.266a2.02,2.02,0,0,1,.578-1.388l6.58-7.363L1.45-15.636a2.038,2.038,0,0,1-.61-1.388,1.989,1.989,0,0,1,.722-1.524A2.364,2.364,0,0,1,3.184-19.2a2.177,2.177,0,0,1,1.669.785l5.874,6.669,5.809-6.669A2.177,2.177,0,0,1,18.2-19.2a2.364,2.364,0,0,1,1.621.649,1.989,1.989,0,0,1,.722,1.524,2.02,2.02,0,0,1-.578,1.388L13.615-8.485Z"
+                        transform="translate(11871.773 -80.439)"
+                        fill="#A7A7A7"
+                      />
+                    </g>
+                  </svg>
                 </button>
+              </div>
 
-                <button
-                  type="button"
-                  className="account-menu__action"
-                  onClick={onLogoutClick}
-                >
-                  {header.logoutLabel}
-                </button>
-              </>
-            ) : (
-              <button
-                type="button"
-                className="account-menu__action"
-                onClick={onLoginClick}
-              >
-                {header.loginLabel}
-              </button>
-            )}
+              <div className="vehica-mobile-menu__nav">
+                <div className="vehica-menu">
+                  {navigationItems.map((item) => (
+                    <div
+                      key={item.path}
+                      className={
+                        "menu-item vehica-menu-item-depth-0" +
+                        (isNavItemActive(item.path) ? " current-menu-item" : "")
+                      }
+                    >
+                      <button
+                        type="button"
+                        title={item.label}
+                        className="vehica-menu__link"
+                        onClick={() => handleNavigate(item.path)}
+                      >
+                        {item.label}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="vehica-mobile-menu__info rentzo-mobile-menu__account">
+                {currentAdmin ? (
+                  <>
+                    <div className="rentzo-mobile-menu__identity">
+                      <strong>{currentAdmin.username}</strong>
+                      <span>{currentAdmin.role}</span>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="rentzo-mobile-menu__action"
+                      onClick={handleProfile}
+                    >
+                      {header.profileLabel}
+                    </button>
+
+                    <button
+                      type="button"
+                      className="rentzo-mobile-menu__action"
+                      onClick={handleLogout}
+                    >
+                      {header.logoutLabel}
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    className="rentzo-mobile-menu__action"
+                    onClick={handleLogin}
+                  >
+                    {header.loginLabel}
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
-        ) : null}
+
+          <button
+            type="button"
+            className={"vehica-mobile-menu-mask" + (isMobileNavOpen ? " vehica-mobile-menu-mask--active" : "")}
+            aria-label="Fermer le menu mobile"
+            onClick={() => setIsMobileNavOpen(false)}
+          ></button>
+        </div>
       </div>
     </header>
   );

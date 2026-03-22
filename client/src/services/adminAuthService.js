@@ -24,7 +24,7 @@ export async function getAdminSession() {
     credentials: "same-origin"
   });
 
-  if (response.status === 401) {
+  if (response.status === 401 || response.status === 503) {
     return null;
   }
 

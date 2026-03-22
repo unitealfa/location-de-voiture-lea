@@ -133,6 +133,7 @@ Il doit servir de reference pour les prochaines evolutions.
   - [client/src/pages/VehicleDetailPage.jsx](./client/src/pages/VehicleDetailPage.jsx)
   - [client/src/pages/AdminVehicleFormPage.jsx](./client/src/pages/AdminVehicleFormPage.jsx)
 - Le style global est dans [client/src/styles/global.css](./client/src/styles/global.css).
+- Toute page ou section reprise depuis le dossier local `rentzoexclusive.com` doit etre reproduite au plus pres du mockup source: tailles, marges, placements, dimensions des images et typographies.
 - Les textes centralises sont dans [server/src/config/defaultContent.js](./server/src/config/defaultContent.js).
 - Le service de contenu back est dans [server/src/services/contentService.js](./server/src/services/contentService.js).
 - Les routes API sont dans [server/src/routes/contentRoutes.js](./server/src/routes/contentRoutes.js).

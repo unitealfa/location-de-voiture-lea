@@ -6,6 +6,7 @@ import AdminLogin from "./pages/AdminLogin";
 import AdminAceulle from "./pages/AdminAceulle";
 import AdminProfile from "./pages/AdminProfile";
 import PublicPage from "./pages/PublicPage";
+import ContactPage from "./pages/ContactPage";
 import LocationVehiclesPage from "./pages/LocationVehiclesPage";
 import VehicleDetailPage from "./pages/VehicleDetailPage";
 import AdminVehicleFormPage from "./pages/AdminVehicleFormPage";
@@ -20,8 +21,16 @@ import {
 } from "./services/adminAuthService";
 import { clearLegacyAdminClientState } from "./services/clientSecurityService";
 
+function normalizePath(path) {
+  if (path === "/Accueil" || path === "/accueil" || path === "/aceulle") {
+    return "/";
+  }
+
+  return path;
+}
+
 function getCurrentPath() {
-  return window.location.pathname;
+  return normalizePath(window.location.pathname);
 }
 
 function isAdminOnlyPath(path) {
@@ -135,15 +144,27 @@ function App() {
     };
   }, []);
 
+  useEffect(() => {
+    const normalizedPath = normalizePath(window.location.pathname);
+
+    if (normalizedPath !== window.location.pathname) {
+      window.history.replaceState({}, "", normalizedPath);
+      setCurrentPath(normalizedPath);
+    }
+  }, []);
+
   const navigateTo = (path) => {
-    if (window.location.pathname === path) {
+    const normalizedPath = normalizePath(path);
+    const currentBrowserPath = normalizePath(window.location.pathname);
+
+    if (currentBrowserPath === normalizedPath) {
       setIsMenuOpen(false);
       return;
     }
 
-    window.history.pushState({}, "", path);
+    window.history.pushState({}, "", normalizedPath);
     window.scrollTo(0, 0);
-    setCurrentPath(path);
+    setCurrentPath(normalizedPath);
     setIsMenuOpen(false);
   };
 
@@ -194,6 +215,7 @@ function App() {
   const reservationDetailScope = getReservationDetailScope(currentPath);
   const reservationEditId = getReservationEditId(currentPath);
   const reservationEditScope = getReservationEditScope(currentPath);
+  const isHomePage = currentPath === "/";
 
   const handleAdminLogout = async () => {
     try {
@@ -225,7 +247,7 @@ function App() {
   }
 
   return (
-    <div className="page-shell">
+    <div className={isHomePage ? "page-shell home" : "page-shell"}>
       <Header
         brand={content.brand}
         header={content.header}
@@ -233,6 +255,7 @@ function App() {
         currentPath={currentPath}
         isProfilePage={currentPath === "/admin/profile"}
         isMenuOpen={isMenuOpen}
+        isHomePage={isHomePage}
         onMenuClose={() => setIsMenuOpen(false)}
         onMenuToggle={() => setIsMenuOpen((currentValue) => !currentValue)}
         onNavigate={navigateTo}
@@ -346,15 +369,24 @@ function App() {
           onVehicleClick={(vehicleId) => navigateTo(`/location-de-voitures/${vehicleId}`)}
         />
       ) : currentPath === "/contact" ? (
-        <PublicPage title={content.publicPages.contact.title} />
+        <ContactPage
+          content={content.contactPage}
+          footerContent={content.footer}
+          brand={content.brand}
+        />
       ) : currentPath === "/foire-aux-questions" ? (
         <PublicPage title={content.publicPages.foireAuxQuestions.title} />
       ) : currentPath === "/admin" && currentAdmin ? (
         <AdminAceulle content={content.adminAceulle} admin={currentAdmin} />
       ) : (
-        <Aceulle content={content.aceulle} />
+        <Aceulle content={content.aceulle} onNavigate={navigateTo} />
       )}
-      <Footer content={content.footer} />
+      <Footer
+        brand={content.brand}
+        content={content.footer}
+        header={content.header}
+        onNavigate={navigateTo}
+      />
     </div>
   );
 }

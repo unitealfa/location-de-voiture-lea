@@ -66,6 +66,10 @@ export async function listVehicles({ adminView = false } = {}) {
     }
   );
 
+  if (!adminView && response.status === 503) {
+    return [];
+  }
+
   const payload = await parseJsonResponse(
     response,
     "Impossible de charger les vehicules."

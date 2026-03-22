@@ -1,1503 +1,2884 @@
+@charset "UTF-8";
+@import url("https://fonts.googleapis.com/css2?family=Muli:wght@400;600;700;800;900&display=swap");
+
 :root {
-  color-scheme: light;
-  --bg-main: #f6efe6;
-  --bg-accent: #eadcc8;
-  --surface: rgba(255, 252, 247, 0.88);
-  --surface-strong: #fffaf2;
-  --text-main: #2a1d14;
-  --text-soft: #6f5948;
-  --line: rgba(42, 29, 20, 0.12);
-  --brand: #9a3412;
-  --brand-dark: #7c2d12;
-  --shadow: 0 24px 60px rgba(74, 42, 26, 0.12);
-  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  --primary: #ff4605;
+  --primary-light: #fff0eb;
+  --white: #ffffff;
 }
 
-* {
-  box-sizing: border-box;
+html {
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
 }
 
 body {
+  overflow-wrap: break-word;
+  overflow-x: hidden;
   margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
-  background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.75), transparent 35%),
-    linear-gradient(145deg, var(--bg-main), #f2e3ce 52%, var(--bg-accent));
-  color: var(--text-main);
-}
-
-button {
-  font: inherit;
-}
-
-#root {
-  min-height: 100vh;
-}
-
-.page-shell {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.page-shell--centered {
-  align-items: center;
-  justify-content: center;
-  padding: 32px;
-}
-
-.top-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 16px;
-  padding: 24px 28px;
-}
-
-.brand-row {
-  display: inline-flex;
-  align-items: center;
-}
-
-.account-menu {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  margin-left: auto;
-}
-
-.site-nav {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  flex: 1;
-  flex-wrap: wrap;
-}
-
-.site-nav__link {
-  border: 0;
-  border-radius: 999px;
-  padding: 11px 14px;
-  background: rgba(255, 252, 247, 0.88);
-  color: var(--text-main);
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: var(--shadow);
-}
-
-.site-nav__link--active {
-  background: rgba(154, 52, 18, 0.14);
-  color: var(--brand-dark);
-}
-
-.brand-block {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 14px 10px 10px;
-  border-radius: 20px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  box-shadow: var(--shadow);
-}
-
-.brand-block__logo {
-  width: 48px;
-  height: 48px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 14px;
-  background: linear-gradient(135deg, var(--brand), #c2410c);
-  color: #fff;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-}
-
-.brand-block__name {
-  font-size: 0.95rem;
-  font-weight: 700;
-}
-
-.account-menu__trigger {
-  border: 0;
-  border-radius: 999px;
-  padding: 12px 18px;
-  background: linear-gradient(135deg, var(--brand), var(--brand-dark));
-  color: #fff;
-  font-weight: 700;
-  cursor: pointer;
-  white-space: nowrap;
-  box-shadow: var(--shadow);
-}
-
-.account-menu__trigger--active {
-  opacity: 0.9;
-}
-
-.account-menu__popup {
-  position: absolute;
-  top: calc(100% + 12px);
-  right: 0;
-  width: min(280px, calc(100vw - 40px));
-  display: grid;
-  gap: 10px;
-  padding: 18px;
-  border-radius: 24px;
-  background: #fff9f1;
-  border: 1px solid rgba(124, 45, 18, 0.12);
-  box-shadow: 0 32px 80px rgba(34, 20, 13, 0.24);
-  z-index: 30;
-}
-
-.account-menu__identity {
-  display: grid;
-  gap: 4px;
-  padding: 4px 2px 10px;
-  border-bottom: 1px solid rgba(42, 29, 20, 0.08);
-}
-
-.account-menu__name {
-  font-size: 1rem;
-  font-weight: 700;
-}
-
-.account-menu__role {
-  color: var(--text-soft);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  font-size: 0.72rem;
-}
-
-.account-menu__action {
-  border: 0;
-  border-radius: 18px;
-  padding: 14px 16px;
-  background: rgba(42, 29, 20, 0.08);
-  color: var(--text-main);
-  font-weight: 700;
-  text-align: left;
-  cursor: pointer;
-}
-
-.account-menu__action--active {
-  background: rgba(154, 52, 18, 0.14);
-  color: var(--brand-dark);
-}
-
-.home-hero {
-  flex: 1;
-  display: grid;
-  place-items: center;
-  padding: 32px 24px 40px;
-}
-
-.public-page {
-  flex: 1;
-  display: grid;
-  place-items: center;
-  padding: 32px 24px 40px;
-}
-
-.public-page__card {
-  width: min(680px, 100%);
-  text-align: center;
-  background: var(--surface-strong);
-  border: 1px solid rgba(124, 45, 18, 0.1);
-  border-radius: 32px;
-  padding: 56px 28px;
-  box-shadow: var(--shadow);
-}
-
-.public-page__card h1 {
-  margin: 0;
-  font-size: clamp(2rem, 6vw, 3.2rem);
-  line-height: 1.08;
-}
-
-.hero-card,
-.login-card,
-.admin-home-card {
-  width: min(680px, 100%);
-  text-align: center;
-  background: var(--surface-strong);
-  border: 1px solid rgba(124, 45, 18, 0.1);
-  border-radius: 32px;
-  padding: 56px 28px;
-  box-shadow: var(--shadow);
-}
-
-.hero-card__eyebrow,
-.login-card__eyebrow,
-.admin-home-card__eyebrow,
-.footer-item__label,
-.status-message {
-  color: var(--text-soft);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  font-size: 0.75rem;
-}
-
-.hero-card h1 {
-  margin: 12px 0 16px;
-  font-size: clamp(2rem, 6vw, 3.6rem);
-  line-height: 1.05;
-}
-
-.hero-card__text,
-.login-card__text,
-.admin-home-card__text {
-  margin: 0;
-  font-size: 1.05rem;
-  line-height: 1.7;
-  color: var(--text-soft);
-}
-
-.admin-home {
-  flex: 1;
-  display: grid;
-  place-items: center;
-  padding: 32px 24px 40px;
-}
-
-.profile-page {
-  flex: 1;
-  width: 100%;
-  padding: 24px 24px 40px;
-}
-
-.profile-page__hero {
-  width: min(760px, 100%);
-  margin: 0 auto 24px;
-  text-align: center;
-}
-
-.profile-page__hero h1 {
-  margin: 12px 0 16px;
-  font-size: clamp(1.9rem, 5vw, 3.2rem);
-}
-
-.profile-grid {
-  width: min(980px, 100%);
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
-}
-
-.profile-card {
-  display: grid;
-  gap: 16px;
-  padding: 28px;
-  border-radius: 28px;
-  background: var(--surface-strong);
-  border: 1px solid rgba(124, 45, 18, 0.1);
-  box-shadow: var(--shadow);
-}
-
-.profile-card h2 {
-  margin: 0;
-  font-size: 1.4rem;
-}
-
-.profile-card__text {
-  margin: 0;
-  color: var(--text-soft);
-  line-height: 1.6;
-}
-
-.profile-page__back {
-  width: min(980px, 100%);
-  margin: 20px auto 0;
-  display: flex;
-  justify-content: center;
-}
-
-.verification-overlay {
-  position: fixed;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  padding: 24px;
-  background: rgba(27, 18, 12, 0.4);
-}
-
-.verification-dialog {
-  position: relative;
-  width: min(460px, 100%);
-  padding: 28px;
-  border-radius: 28px;
-  background: #fff9f1;
-  border: 1px solid rgba(124, 45, 18, 0.12);
-  box-shadow: 0 32px 80px rgba(34, 20, 13, 0.24);
-}
-
-.verification-dialog__close {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 36px;
-  height: 36px;
-  border: 0;
-  border-radius: 999px;
-  background: rgba(42, 29, 20, 0.08);
-  color: var(--text-main);
-  cursor: pointer;
-}
-
-.verification-dialog__eyebrow {
-  color: var(--text-soft);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  font-size: 0.75rem;
-}
-
-.verification-dialog h2 {
-  margin: 10px 0 16px;
-  font-size: 1.8rem;
-}
-
-.verification-dialog__text {
-  margin: 0 0 18px;
-  color: var(--text-soft);
-  line-height: 1.7;
-}
-
-.verification-dialog__form {
-  display: grid;
-  gap: 16px;
-}
-
-.verification-dialog__timer {
-  margin: 0;
-  font-size: 0.92rem;
-  color: var(--text-soft);
-}
-
-.verification-dialog__actions {
-  display: grid;
-  gap: 10px;
-}
-
-.verification-dialog__secondary {
-  border: 0;
-  border-radius: 999px;
-  padding: 14px 24px;
-  background: rgba(42, 29, 20, 0.08);
-  color: var(--text-main);
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.verification-dialog__secondary:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-.admin-home-card h1 {
-  margin: 12px 0 16px;
-  font-size: clamp(1.9rem, 5vw, 3.1rem);
-  line-height: 1.08;
-}
-
-.login-page {
-  flex: 1;
-  display: grid;
-  place-items: center;
-  padding: 32px 24px 40px;
-}
-
-.login-card h1 {
-  margin: 12px 0 16px;
-  font-size: clamp(1.8rem, 5vw, 3rem);
-  line-height: 1.08;
-}
-
-.login-form {
-  display: grid;
-  gap: 16px;
-  margin-top: 28px;
-  text-align: left;
-}
-
-.login-form__field {
-  display: grid;
-  gap: 8px;
-  font-size: 0.95rem;
-  font-weight: 700;
-}
-
-.login-form__field input {
-  width: 100%;
-  border: 1px solid rgba(42, 29, 20, 0.14);
-  border-radius: 18px;
-  background: #fff;
-  padding: 14px 16px;
-  color: var(--text-main);
-}
-
-.login-form__field input:focus {
-  outline: 2px solid rgba(154, 52, 18, 0.18);
-  outline-offset: 2px;
-}
-
-.login-form__message {
-  margin: 0;
-  padding: 12px 14px;
-  border-radius: 16px;
-  font-size: 0.95rem;
-}
-
-.login-form__message--error {
-  background: rgba(153, 27, 27, 0.1);
-  color: #991b1b;
-}
-
-.login-form__message--success {
-  background: rgba(21, 128, 61, 0.1);
-  color: #166534;
-}
-
-.login-form__submit,
-.login-card__back {
-  border: 0;
-  border-radius: 999px;
-  padding: 14px 24px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.login-form__submit {
-  margin-top: 8px;
-  background: linear-gradient(135deg, var(--brand), var(--brand-dark));
-  color: #fff;
-}
-
-.login-form__submit:disabled {
-  opacity: 0.7;
-  cursor: wait;
-}
-
-.login-card__back {
-  margin-top: 14px;
-  background: rgba(42, 29, 20, 0.08);
-  color: var(--text-main);
-}
-
-.site-footer {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-  padding: 22px 28px 28px;
-}
-
-.footer-item {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 18px 20px;
-  border-radius: 22px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-}
-
-.vehicles-page,
-.vehicle-detail-page,
-.vehicle-form-page {
-  flex: 1;
-  width: 100%;
-  padding: 24px 24px 40px;
-}
-
-.vehicles-page__hero,
-.vehicle-form-page__hero,
-.vehicle-detail-page__hero {
-  width: min(1180px, 100%);
-  margin: 0 auto 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-}
-
-.vehicles-page__hero h1,
-.vehicle-form-page__hero h1 {
-  margin: 12px 0 14px;
-  font-size: clamp(2rem, 5vw, 3.4rem);
-  line-height: 1.05;
-}
-
-.vehicles-page__create,
-.vehicle-detail__back,
-.vehicle-detail__secondary-action,
-.vehicle-detail__danger-action {
-  border: 0;
-  border-radius: 999px;
-  padding: 14px 22px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.vehicles-page__create {
-  background: linear-gradient(135deg, var(--brand), var(--brand-dark));
-  color: #fff;
-  box-shadow: var(--shadow);
-}
-
-.vehicle-detail__back,
-.vehicle-detail__secondary-action {
-  background: rgba(42, 29, 20, 0.08);
-  color: var(--text-main);
-}
-
-.vehicle-detail__danger-action {
-  background: rgba(153, 27, 27, 0.12);
-  color: #991b1b;
-}
-
-.vehicle-detail__secondary-action--link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  padding: 0;
+  background: #ffffff;
+  font-size: 16px;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 1.69;
+  letter-spacing: normal;
+  color: #222732;
+}
+
+* {
+  outline: 0;
+  -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
+}
+
+*,
+:after,
+:before {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+*:focus,
+*:active {
+  outline: 0 solid transparent !important;
+}
+
+body,
+textarea,
+input,
+button,
+select {
+  font-family: "Muli", Arial, Helvetica, sans-serif !important;
+  font-size: 14px;
+  line-height: 1.715;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Muli", Arial, Helvetica, sans-serif;
+}
+
+@media (min-width: 1023px) {
+  body,
+  button,
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+    line-height: 1.75;
+  }
+}
+
+a {
+  color: #222732;
+  transition: all 0.2s ease;
   text-decoration: none;
 }
 
-.vehicle-detail__secondary-action:disabled,
-.vehicle-detail__danger-action:disabled {
-  opacity: 0.6;
-  cursor: wait;
+@media (min-width: 1023px) {
+  a:hover,
+  a:focus,
+  a:active {
+    color: #222732;
+    text-decoration: none;
+  }
 }
 
-.vehicle-grid {
-  width: min(1180px, 100%);
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 20px;
+.page-shell.home {
+  background: #000000;
 }
 
-.vehicles-empty {
-  width: min(1180px, 100%);
-  margin: 0 auto;
-  display: grid;
-  place-items: center;
-  min-height: 240px;
+.rentzo-home {
+  background: #000000;
+  color: #ffffff;
 }
 
-.vehicles-empty__card {
-  width: min(620px, 100%);
-  text-align: center;
-  padding: 34px 24px;
-  border-radius: 28px;
-  background: var(--surface-strong);
-  border: 1px solid rgba(124, 45, 18, 0.1);
-  box-shadow: var(--shadow);
-}
-
-.vehicles-empty__card h1,
-.vehicles-empty__card h2 {
-  margin: 0 0 12px;
-}
-
-.vehicles-empty__card p {
-  margin: 0;
-  color: var(--text-soft);
-  line-height: 1.7;
-}
-
-.vehicle-card {
-  min-width: 0;
-}
-
-.vehicle-card__button {
-  width: 100%;
+.rentzo-logo-button {
   padding: 0;
   border: 0;
-  border-radius: 28px;
-  overflow: hidden;
-  background: var(--surface-strong);
-  text-align: left;
+  background: transparent;
   cursor: pointer;
-  box-shadow: var(--shadow);
 }
 
-.vehicle-card__media {
+.rentzo-logo-button img {
+  display: block;
+}
+
+.vehica-hide-desktop,
+.vehica-hide-mobile,
+.vehica-hide-tablet {
+  display: block;
+}
+
+@media only screen and (min-width: 1200px) {
+  .vehica-hide-desktop {
+    display: none;
+  }
+}
+
+@media only screen and (min-width: 900px) and (max-width: 1199px) {
+  .vehica-hide-tablet {
+    display: none;
+  }
+}
+
+@media only screen and (max-width: 899px) {
+  .vehica-hide-mobile {
+    display: none;
+  }
+}
+
+.vehica-header {
   position: relative;
-  aspect-ratio: 4 / 3;
-  overflow: hidden;
-  background: rgba(42, 29, 20, 0.08);
+  z-index: 100;
 }
 
-.vehicle-card__media img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
+.vehica-menu__desktop {
+  height: 100px;
+  background-color: #000000;
 }
 
-.vehicle-card__badge {
-  position: absolute;
-  top: 14px;
-  left: 14px;
-  display: inline-flex;
-  align-items: center;
-  padding: 8px 12px;
-  border-radius: 999px;
-  background: rgba(154, 52, 18, 0.92);
-  color: #fff;
-  font-size: 0.74rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.vehicle-card__body {
-  display: grid;
-  gap: 8px;
-  padding: 20px;
-}
-
-.vehicle-card__body h2 {
-  margin: 0;
-  font-size: 1.3rem;
-}
-
-.vehicle-card__model,
-.vehicle-card__meta,
-.vehicle-detail__subtitle,
-.vehicle-form__help {
-  margin: 0;
-  color: var(--text-soft);
-}
-
-.vehicle-card__price {
-  margin: 0;
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--brand-dark);
-}
-
-.vehicle-card__meta {
-  font-size: 0.92rem;
-  line-height: 1.5;
-}
-
-.vehicle-detail-page__banner {
-  width: min(1180px, 100%);
-  margin: 0 auto 20px;
-}
-
-.vehicle-detail {
-  width: min(1180px, 100%);
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(340px, 0.8fr);
-  gap: 24px;
-}
-
-.vehicle-detail__media,
-.vehicle-detail__summary,
-.vehicle-section-card,
-.vehicle-form {
-  border-radius: 30px;
-  background: var(--surface-strong);
-  border: 1px solid rgba(124, 45, 18, 0.1);
-  box-shadow: var(--shadow);
-}
-
-.vehicle-detail__media {
-  display: grid;
-  gap: 14px;
-  padding: 18px;
-}
-
-.vehicle-detail__media-title {
-  margin: 0;
-  font-size: 1.2rem;
-}
-
-.vehicle-detail__primary-image {
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  border-radius: 24px;
-  object-fit: cover;
-  display: block;
-}
-
-.vehicle-detail__gallery {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 12px;
-  margin-top: 14px;
-}
-
-.vehicle-detail__gallery img {
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  border-radius: 20px;
-  object-fit: cover;
-  display: block;
-}
-
-.vehicle-video-player,
-.vehicle-video-frame {
-  width: 100%;
-  border-radius: 22px;
-  overflow: hidden;
-  background: rgba(42, 29, 20, 0.08);
-}
-
-.vehicle-video-player {
-  display: block;
-}
-
-.vehicle-video-frame {
-  position: relative;
-  aspect-ratio: 16 / 9;
-}
-
-.vehicle-video-frame iframe {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border: 0;
-}
-
-.vehicle-detail__summary {
-  display: grid;
-  gap: 18px;
-  align-content: start;
-  padding: 28px;
-}
-
-.vehicle-detail__summary h1 {
-  margin: 0;
-  font-size: clamp(2rem, 5vw, 3rem);
-  line-height: 1.05;
-}
-
-.vehicle-detail__maintenance {
-  display: grid;
-  gap: 10px;
-  padding: 18px;
-  border-radius: 22px;
-  background: rgba(154, 52, 18, 0.08);
-}
-
-.vehicle-detail__maintenance .vehicle-card__badge {
-  position: static;
-  width: fit-content;
-}
-
-.vehicle-detail__maintenance p {
-  margin: 0;
-  color: var(--text-soft);
-  line-height: 1.6;
-}
-
-.vehicle-price-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.vehicle-price-card {
-  display: grid;
-  gap: 8px;
-  padding: 18px;
-  border-radius: 22px;
-  background: rgba(42, 29, 20, 0.06);
-}
-
-.vehicle-price-card span {
-  color: var(--text-soft);
-  font-size: 0.85rem;
-}
-
-.vehicle-price-card strong {
-  font-size: 1.12rem;
-}
-
-.vehicle-detail__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.vehicle-reservation-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.reservation-form-section {
-  display: grid;
-  gap: 18px;
-  padding: 22px;
-  border-radius: 26px;
-  background: rgba(42, 29, 20, 0.04);
-}
-
-.reservation-form-section__hero h2 {
-  margin: 12px 0 14px;
-  font-size: 1.6rem;
-}
-
-.reservation-form {
-  display: grid;
-  gap: 16px;
-}
-
-.reservation-availability {
-  display: grid;
-  gap: 18px;
-  padding: 20px;
-  border-radius: 22px;
-  background: rgba(255, 250, 242, 0.88);
-  border: 1px solid rgba(124, 45, 18, 0.1);
-}
-
-.reservation-availability__header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.reservation-availability__header h3 {
-  margin: 0 0 8px;
-  font-size: 1.15rem;
-}
-
-.reservation-availability__header p,
-.reservation-availability__helper {
-  margin: 0;
-  color: var(--text-soft);
-  line-height: 1.6;
-}
-
-.reservation-availability__legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 14px;
-}
-
-.reservation-availability__legend-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.84rem;
-  color: var(--text-soft);
-}
-
-.reservation-availability__dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 999px;
-  display: inline-block;
-}
-
-.reservation-availability__dot--available {
-  background: rgba(22, 101, 52, 0.16);
-  border: 1px solid rgba(22, 101, 52, 0.25);
-}
-
-.reservation-availability__dot--selected {
-  background: rgba(154, 52, 18, 0.22);
-  border: 1px solid rgba(154, 52, 18, 0.34);
-}
-
-.reservation-availability__dot--unavailable {
-  background: rgba(42, 29, 20, 0.12);
-  border: 1px solid rgba(42, 29, 20, 0.1);
-}
-
-.reservation-availability__grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
-}
-
-.reservation-availability__panel {
-  display: grid;
-  gap: 14px;
-}
-
-.reservation-calendar {
-  display: grid;
-  gap: 10px;
-}
-
-.reservation-calendar--disabled {
-  opacity: 0.55;
-}
-
-.reservation-calendar__toolbar {
+.vehica-menu__wrapper {
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  padding: 0 30px;
 }
 
-.reservation-calendar__toolbar strong {
-  text-transform: capitalize;
+.vehica-menu__wrapper::before {
+  content: "";
+  position: absolute;
+  height: 1px;
+  left: 0;
+  right: 0;
+  top: 0;
+  width: 100%;
+  display: block;
+  background: #ffffff;
+  opacity: 0.12;
+  z-index: 1;
 }
 
-.reservation-calendar__nav {
+.vehica-menu__wrapper .vehica-logo img {
+  width: auto;
+  max-height: 60px;
+  height: 60px;
+}
+
+.vehica-menu__wrapper .vehica-logo {
+  margin-right: 73px;
+}
+
+.vehica-menu__wrapper .vehica-logo.vehica-logo--sticky {
+  display: none;
+}
+
+.vehica-menu__wrapper .vehica-menu__left {
+  display: flex;
+  align-items: center;
+}
+
+.vehica-menu__wrapper .vehica-menu__container {
+  position: relative;
+}
+
+.vehica-menu__wrapper .vehica-menu {
+  height: 100px;
+  display: flex;
+  align-items: center;
+}
+
+.vehica-menu__wrapper .vehica-menu .menu-item {
+  z-index: 2;
+  height: 100%;
+  position: relative;
+  margin: 0 25px;
+}
+
+.vehica-menu__wrapper .vehica-menu > .menu-item:first-child {
+  margin-left: 0;
+}
+
+.vehica-menu-hover {
+  height: 1px;
+  background-color: var(--primary);
+  position: absolute;
+  left: 0;
+  top: 0;
+  margin-top: 1px;
+  z-index: 10;
+  transition: all ease 0.5s;
+}
+
+.vehica-menu__wrapper .vehica-menu .vehica-menu__link {
+  transition: all ease 0.2s;
+  align-items: center;
+  height: 100%;
+  padding: 0;
+  display: flex;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
   border: 0;
-  border-radius: 999px;
-  padding: 10px 12px;
-  background: rgba(42, 29, 20, 0.08);
-  color: var(--text-main);
+  background: transparent;
   cursor: pointer;
-  font-weight: 700;
 }
 
-.reservation-calendar__nav:disabled {
-  cursor: not-allowed;
-  opacity: 0.45;
+.vehica-menu__wrapper .vehica-menu .menu-item:hover > .vehica-menu__link,
+.vehica-menu__wrapper .vehica-menu .menu-item.current-menu-item > .vehica-menu__link {
+  color: var(--primary);
 }
 
-.reservation-calendar__grid {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 8px;
+.vehica-menu-sticky-active .vehica-menu__wrapper {
+  position: fixed;
+  background: #000000;
+  animation: vehica-slide-down 0.5s;
+  box-shadow: 0 2px 7px 0 rgba(196, 196, 196, 0.18);
 }
 
-.reservation-calendar__weekday {
+.vehica-menu-sticky-active .vehica-menu__wrapper::before,
+.vehica-menu-sticky-active .vehica-menu-hover {
+  height: 0;
+}
+
+.vehica-menu-sticky-active .vehica-logo {
+  display: none;
+}
+
+.vehica-menu-sticky-active .vehica-logo.vehica-logo--sticky {
+  display: block;
+}
+
+@keyframes vehica-slide-down {
+  0% {
+    transform: translateY(-100%);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.vehica-button,
+.elementor-button {
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  line-height: 21px;
+  font-weight: 600;
   text-align: center;
-  font-size: 0.75rem;
-  color: var(--text-soft);
-  text-transform: uppercase;
-}
-
-.reservation-calendar__day {
-  min-height: 42px;
+  color: #ffffff;
   border: 0;
-  border-radius: 14px;
-  background: rgba(22, 101, 52, 0.08);
-  color: var(--text-main);
+  box-shadow: none;
   cursor: pointer;
-  font-weight: 700;
+  padding: 16px 25px;
+  vertical-align: top;
+  border-radius: 10px;
+  background-color: var(--primary);
+  transition: all 0.2s ease-in-out;
+  text-decoration: none;
+  position: relative;
 }
 
-.reservation-calendar__day--muted {
-  opacity: 0.35;
+.vehica-button::before,
+.elementor-button::before {
+  content: "" !important;
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: scale(0, 1);
+  transform-origin: right top;
+  transition: transform 0.2s linear;
+  z-index: -1;
 }
 
-.reservation-calendar__day--selected {
-  background: rgba(154, 52, 18, 0.18);
-  color: var(--brand-dark);
+@media (min-width: 1023px) {
+  .vehica-button:hover::before,
+  .elementor-button:hover::before {
+    transform: scale(1, 1);
+    transform-origin: left top;
+  }
 }
 
-.reservation-calendar__day--unavailable {
-  background: rgba(42, 29, 20, 0.08);
-  color: rgba(42, 29, 20, 0.42);
-  cursor: not-allowed;
+.vehica-button--menu-submit {
+  background: transparent;
+  color: #ffffff;
+  border: 1px solid var(--primary);
+  border-radius: 5px;
+  padding: 13px 25px 13px 20px;
+  line-height: 22px;
+  margin-left: 30px;
+  font-size: 16px;
 }
 
-.reservation-form__grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px 20px;
+.vehica-button--menu-submit::before {
+  display: none;
 }
 
-.reservation-form__checkbox {
+.vehica-button--menu-submit:hover {
+  background: var(--primary);
+}
+
+.vehica-menu__sticky-submit {
+  display: flex;
+  align-items: center;
+  padding-right: 1px;
+}
+
+.vehica-menu__sticky-submit .vehica-menu-item-depth-0 {
   display: inline-flex;
   align-items: center;
+  gap: 8px;
+}
+
+.rentzo-account-menu {
+  position: relative;
+}
+
+.rentzo-account-menu__plus {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.rentzo-account-menu__popup {
+  position: absolute;
+  top: calc(100% + 16px);
+  right: 0;
+  min-width: 280px;
+  padding: 18px;
+  border-radius: 10px;
+  background: #0f141e;
+  border: 1px solid rgba(255, 70, 5, 0.28);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.42);
+  display: grid;
   gap: 10px;
-  font-weight: 700;
+  z-index: 1100;
 }
 
-.reservation-form__license-preview {
-  width: min(320px, 100%);
-}
-
-.reservation-form__license-preview img {
-  width: 100%;
-  display: block;
-  border-radius: 18px;
-  object-fit: cover;
-}
-
-.vehicle-detail__sections {
-  width: min(1180px, 100%);
-  margin: 24px auto 0;
+.rentzo-account-menu__identity {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
-}
-
-.vehicle-section-card {
-  display: grid;
-  gap: 14px;
-  padding: 26px;
-}
-
-.vehicle-section-card h2 {
-  margin: 0;
-  font-size: 1.25rem;
-}
-
-.vehicle-section-card p,
-.vehicle-section-card a {
-  margin: 0;
-  color: var(--text-soft);
-  line-height: 1.7;
-}
-
-.vehicle-info-list {
-  display: grid;
-  gap: 12px;
-  margin: 0;
-}
-
-.vehicle-info-list__row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 14px;
+  gap: 4px;
   padding-bottom: 12px;
-  border-bottom: 1px solid rgba(42, 29, 20, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-.vehicle-info-list__row dt,
-.vehicle-info-list__row dd {
-  margin: 0;
-}
-
-.vehicle-info-list__row dt {
-  color: var(--text-soft);
-}
-
-.vehicle-info-list__row dd {
+.rentzo-account-menu__identity strong {
+  color: #ffffff;
+  font-size: 17px;
   font-weight: 700;
+  line-height: 1.35;
+}
+
+.rentzo-account-menu__identity span {
+  color: rgba(255, 255, 255, 0.68);
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  line-height: 1.4;
+}
+
+.rentzo-account-menu__action,
+.rentzo-mobile-menu__action {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: #ffffff;
+  border-radius: 10px;
+  padding: 12px 14px;
+  text-align: left;
+  font-size: 15px;
+  line-height: 19px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.rentzo-account-menu__action--active,
+.rentzo-account-menu__action:hover,
+.rentzo-mobile-menu__action:hover {
+  background: rgba(255, 70, 5, 0.12);
+  border-color: rgba(255, 70, 5, 0.38);
+  color: var(--primary);
+}
+
+.vehica-mobile-menu__wrapper {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 10px 15px;
+  background: #000000;
+}
+
+@media (min-width: 767px) {
+  .vehica-mobile-menu__wrapper {
+    padding-left: 30px;
+    padding-right: 30px;
+  }
+}
+
+.vehica-mobile-menu__wrapper .vehica-mobile-menu__logo,
+.vehica-mobile-menu__wrapper .vehica-mobile-menu__hamburger {
+  height: 50px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.vehica-mobile-menu__wrapper .vehica-mobile-menu__hamburger {
+  width: 60px;
+  max-width: 60px;
+}
+
+.vehica-mobile-menu__wrapper .vehica-mobile-menu__logo {
   text-align: right;
 }
 
-.vehicle-form {
-  width: min(1180px, 100%);
-  margin: 0 auto;
-  display: grid;
-  gap: 20px;
-  padding: 28px;
+.vehica-mobile-menu__wrapper .vehica-mobile-menu__logo img {
+  height: 50px;
+  width: auto;
 }
 
-.vehicle-form__grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px 20px;
+.rentzo-menu-button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
 }
 
-.vehicle-form__checkbox {
-  display: inline-flex;
+.vehica-mobile-menu__wrapper .vehica-mobile-menu__open {
+  transform: translateX(-100%);
+  transition: 0.2s all ease-out;
+  position: fixed;
+  background-color: #0f141e;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  overflow-y: auto;
+  z-index: 999999;
+}
+
+@media (min-width: 450px) {
+  .vehica-mobile-menu__wrapper .vehica-mobile-menu__open {
+    max-width: 400px;
+  }
+}
+
+.vehica-mobile-menu__wrapper .vehica-mobile-menu__open.vehica-active {
+  transform: translateX(0);
+}
+
+.vehica-mobile-menu__wrapper .vehica-mobile-menu__open__content {
+  padding: 0;
+  margin-bottom: 20px;
+}
+
+.vehica-mobile-menu__wrapper .vehica-mobile-menu__open .vehica-mobile-menu__open__top {
+  display: flex;
   align-items: center;
-  gap: 10px;
-  font-weight: 700;
-  padding-top: 32px;
+  justify-content: space-between;
+  background: #242830;
+  height: 80px;
+  padding-left: 25px;
+  padding-right: 25px;
 }
 
-.vehicle-form__media,
-.vehicle-form__gallery {
+.vehica-mobile-menu__open__top__x {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.vehica-mobile-menu__wrapper .vehica-mobile-menu__nav {
+  margin-bottom: 30px;
+  text-align: left;
+}
+
+.vehica-mobile-menu__wrapper .vehica-mobile-menu__open .vehica-menu > .menu-item {
+  border-bottom: 1px solid #363b48;
+}
+
+.vehica-mobile-menu__wrapper .vehica-mobile-menu__open .vehica-menu .vehica-menu__link {
+  width: 100%;
+  display: block;
+  font-size: 20px;
+  font-weight: 600;
+  color: #ffffff;
+  padding: 15px 25px;
+  text-align: left;
+}
+
+.vehica-mobile-menu__wrapper .vehica-mobile-menu__open .vehica-menu > .menu-item.current-menu-item .vehica-menu__link {
+  color: var(--primary) !important;
+}
+
+.vehica-mobile-menu__wrapper .vehica-mobile-menu__open .vehica-mobile-menu__info {
+  margin-bottom: 40px;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+.rentzo-mobile-menu__identity {
   display: grid;
-  gap: 14px;
+  gap: 4px;
+  color: #ffffff;
+  margin-bottom: 16px;
 }
 
-.vehicle-form__gallery {
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+.rentzo-mobile-menu__identity span {
+  color: #99a1b2;
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.12em;
 }
 
-.vehicle-form__gallery-item {
+.rentzo-mobile-menu__account {
+  display: grid;
+  gap: 10px;
+}
+
+.vehica-mobile-menu-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 999998;
+}
+
+.vehica-mobile-menu-mask--active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.rentzo-home__hero {
+  background: #000000;
+}
+
+.vehica-slider .vehica-slider__slide {
+  position: relative;
+  background-size: cover;
+  background-position: center center;
+}
+
+.vehica-slider .vehica-slider__mask-additional {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+}
+
+.vehica-slider__content {
+  margin: 0 auto;
+  max-width: 1688px;
+  padding-left: 15px;
+  padding-right: 15px;
+  display: flex;
+  align-items: center;
+  min-height: 900px;
+}
+
+@media (max-width: 1199px) {
+  .vehica-slider__content {
+    min-height: 500px;
+  }
+}
+
+@media (max-width: 899px) {
+  .vehica-slider__content {
+    min-height: 260px;
+  }
+}
+
+.rentzo-home__container {
+  width: 100%;
+  max-width: 1468px;
+  margin: 0 auto;
+  padding: 0 30px;
+}
+
+.rentzo-home__intro,
+.rentzo-home__catalog {
+  background: #000000;
+}
+
+.rentzo-home__intro {
+  padding: 70px 0 100px;
+}
+
+.vehica-heading {
+  margin-bottom: 40px;
+}
+
+.vehica-heading .vehica-heading__title {
+  margin: 0;
+  font-weight: 900;
+  color: #ffffff;
+  font-size: 43px;
+  line-height: 1.09;
+  text-align: left;
+}
+
+.vehica-heading .vehica-heading__text {
+  font-size: 18px;
+  margin-top: 25px;
+  font-weight: 700;
+  line-height: 1.61;
+  max-width: 760px;
+  text-align: left;
+  color: #ffffff;
+}
+
+.vehica-heading .vehica-heading__text span {
+  background-color: var(--primary);
+  color: #ffffff;
+  padding: 0 2px;
+}
+
+.vehica-features {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.vehica-features .vehica-features__feature {
+  width: 50%;
+  display: flex;
+  margin-bottom: 40px;
+}
+
+.vehica-features .vehica-features__icon {
+  width: 73px;
+  height: 73px;
+  color: var(--primary);
+  background-color: var(--primary-light);
+  border-radius: 50%;
+  overflow: hidden;
+  font-size: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.rentzo-home__feature-icon {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.vehica-features .vehica-features__content {
+  padding-left: 33px;
+  padding-right: 80px;
+}
+
+.vehica-features .vehica-features__label {
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.48;
+  color: #ffffff;
+}
+
+.vehica-features .vehica-features__text {
+  font-size: 17px;
+  line-height: 1.82;
+  color: #ffffff;
+  margin-top: 24px;
+}
+
+.rentzo-home__catalog {
+  padding: 0 0 130px;
+}
+
+.rentzo-home__catalog-title {
+  margin: 0 0 42px;
+  font-size: 45px;
+  line-height: 62px;
+  color: #ffffff;
+  font-weight: 900;
+}
+
+.rentzo-home__grid-wrap .vehica-grid__element {
+  padding-right: 32px;
+  padding-bottom: 32px;
+}
+
+.rentzo-home__grid-wrap .vehica-grid {
+  margin-right: -32px;
+}
+
+.vehica-grid {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.vehica-grid__element--1of4 {
+  width: 25%;
+}
+
+.vehica-car-card {
+  width: 100%;
+  min-width: 0;
+}
+
+.vehica-car-card__inner {
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+  background: #222732;
+  border-radius: 10px;
+  visibility: visible;
+  height: 100%;
+}
+
+@media (min-width: 1023px) {
+  .vehica-car-card__inner:hover .vehica-car-card__image img {
+    transform: scale3d(1.1, 1.1, 1);
+  }
+}
+
+.vehica-car-card__content {
+  padding: 0 22px 19px 22px;
+}
+
+.vehica-car-card__image-bg {
+  background: #eff0f1;
   position: relative;
 }
 
-.vehicle-form__gallery img {
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
-  border-radius: 18px;
+.vehica-car-card__image {
   display: block;
-}
-
-.vehicle-form__remove-media {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 34px;
-  height: 34px;
-  border: 0;
-  border-radius: 999px;
-  background: rgba(42, 29, 20, 0.82);
-  color: #fff;
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.reservations-page,
-.reservation-detail-page,
-.clients-page {
-  flex: 1;
   width: 100%;
-  padding: 24px 24px 40px;
-}
-
-.reservations-page__hero,
-.reservation-detail-page__hero {
-  width: min(1180px, 100%);
-  margin: 0 auto 24px;
-}
-
-.reservations-page__hero {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 18px;
-}
-
-.reservations-page__hero h1,
-.reservation-detail-page__hero h1 {
-  margin: 12px 0 14px;
-  font-size: clamp(2rem, 5vw, 3.2rem);
-  line-height: 1.05;
-}
-
-.reservation-grid {
-  width: min(1180px, 100%);
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
-}
-
-.reservation-card {
-  padding: 0;
-  border: 0;
-  border-radius: 28px;
+  position: relative;
   overflow: hidden;
-  background: var(--surface-strong);
-  text-align: left;
-  cursor: pointer;
-  box-shadow: var(--shadow);
 }
 
-.reservation-card img,
-.reservation-detail__media img {
+.vehica-car-card__image img {
+  position: absolute;
+  left: 0;
+  top: 0;
   width: 100%;
-  display: block;
+  height: 100%;
   object-fit: cover;
-  aspect-ratio: 4 / 3;
+  opacity: 1;
+  transition: all 0.8s ease;
 }
 
-.reservation-card__body {
-  display: grid;
-  gap: 8px;
-  padding: 18px;
+.vehica-car-card__image-info {
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.38) 8%, rgba(0, 0, 0, 0.02) 94%);
+  position: absolute;
+  text-align: right;
+  z-index: 2;
+  left: 0;
+  bottom: 0;
+  padding: 10px 22px;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 25px;
+  width: 100%;
+  color: #f3f5f7;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
-.reservation-card__body h2,
-.reservation-card__body p {
-  margin: 0;
-}
-
-.reservation-card__body p {
-  color: var(--text-soft);
-}
-
-.reservation-detail {
-  width: min(1180px, 100%);
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: minmax(300px, 0.8fr) minmax(0, 1.2fr);
-  gap: 24px;
-}
-
-.reservation-detail__media,
-.reservation-detail__info {
-  display: grid;
-  gap: 20px;
-}
-
-.reservation-detail__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.reservation-status {
-  display: inline-flex;
-  align-items: center;
-  padding: 8px 12px;
-  border-radius: 999px;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.reservation-status--pending {
-  background: rgba(180, 83, 9, 0.12);
-  color: #92400e;
-}
-
-.reservation-status--accepted {
-  background: rgba(22, 101, 52, 0.12);
-  color: #166534;
-}
-
-.clients-calendar {
-  width: min(1180px, 100%);
-  margin: 0 auto;
-  display: grid;
-  gap: 22px;
-}
-
-.clients-calendar__toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 22px 24px;
-  border-radius: 28px;
-  background: var(--surface-strong);
-  box-shadow: var(--shadow);
-}
-
-.clients-calendar__toolbar h2 {
-  margin: 0;
-  font-size: clamp(1.1rem, 3vw, 1.8rem);
-  text-transform: capitalize;
-}
-
-.clients-calendar__grid {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.clients-calendar__weekday {
-  padding: 12px;
-  text-align: center;
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-soft);
-}
-
-.clients-calendar__day {
-  min-height: 150px;
-  display: grid;
-  align-content: start;
-  gap: 10px;
-  padding: 12px;
-  border-radius: 22px;
-  background: rgba(255, 250, 242, 0.94);
-  border: 1px solid rgba(124, 45, 18, 0.08);
-  box-shadow: var(--shadow);
-}
-
-.clients-calendar__day--muted {
-  opacity: 0.45;
-}
-
-.clients-calendar__day-number {
-  font-size: 0.85rem;
-  font-weight: 700;
-}
-
-.clients-calendar__events {
-  display: grid;
-  gap: 8px;
-}
-
-.clients-calendar__event {
-  border: 0;
-  border-radius: 16px;
-  padding: 10px 12px;
-  display: grid;
-  gap: 4px;
-  background: rgba(154, 52, 18, 0.12);
-  color: var(--brand-dark);
+.vehica-car-card__name {
+  display: block;
   text-align: left;
-  cursor: pointer;
-}
-
-.clients-calendar__event strong,
-.clients-calendar__event span {
+  font-size: 17px;
+  line-height: 21px;
+  margin-top: 11px;
+  margin-bottom: 10px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: #ffffff;
 }
 
-.clients-calendar__event span {
-  color: var(--text-soft);
-  font-size: 0.82rem;
+.vehica-car-card__price {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 10px;
+  line-height: 24px;
+  margin-left: auto;
+  color: #ffffff;
 }
 
-.clients-calendar__list {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
+.vehica-car-card__separator {
+  margin: 0 0 18px 0;
+  background: #343b4a;
+  height: 1px;
 }
 
-.reservation-admin-form {
-  width: min(1180px, 100%);
+.vehica-car-card__info {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  overflow: hidden;
+  max-height: 28px;
+}
+
+.vehica-car-card__info__single {
+  display: inline-block;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #99a1b2;
+  margin-right: 20px;
+  line-height: 28px;
+}
+
+.vehica-car-card__info__single:first-child {
+  padding: 0 11px;
+  color: #ffffff;
+  background: var(--primary);
+}
+
+.vehica-car-card-link {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.rentzo-home__cta {
+  margin-top: 18px;
+}
+
+.rentzo-home__empty {
+  padding: 34px 28px;
+  border: 1px solid #343b4a;
+  border-radius: 10px;
+  color: #ffffff;
+}
+
+.rentzo-home__empty h3,
+.rentzo-home__empty p {
+  margin: 0;
+}
+
+.rentzo-home__empty p + p,
+.rentzo-home__empty h3 + p {
+  margin-top: 10px;
+}
+
+.rentzo-footer {
+  background: #000000;
+  color: #ffffff;
+}
+
+.rentzo-footer__section {
+  width: 100%;
+  max-width: 1468px;
   margin: 0 auto;
+  padding: 50px 30px 37px;
+}
+
+.rentzo-footer__container {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.rentzo-footer__column--brand {
+  width: 37.167%;
+  padding-right: 30px;
+  padding-top: 10px;
+}
+
+.rentzo-footer__column--nav {
+  width: 40.813%;
+  display: flex;
+  align-items: center;
+  padding-top: 50px;
+}
+
+.rentzo-footer__column--contact {
+  width: 21.212%;
+  padding-top: 10px;
   display: grid;
-  gap: 20px;
-  padding: 26px;
+  gap: 16px;
+  justify-content: end;
+  text-align: right;
 }
 
-.reservation-admin-form__meta {
-  display: grid;
-  gap: 12px;
+.vehica-logo-widget img {
+  max-width: 429px;
+  width: 100%;
+  height: auto;
 }
 
-.reservation-admin-form__license {
-  width: min(360px, 100%);
-  display: grid;
-  gap: 10px;
-}
-
-.reservation-admin-form__license strong {
-  font-size: 0.95rem;
-}
-
-.reservation-admin-form__license img {
+.vehica-short-info {
   width: 100%;
   display: block;
-  border-radius: 18px;
+  color: #ffffff;
+  margin-top: 23px;
+  white-space: pre-wrap;
+  line-height: 1.7;
 }
 
-.login-form__field textarea,
-.login-form__field select {
+.vehica-simple-menu {
+  margin: 0 auto;
+  padding: 0;
+}
+
+.vehica-simple-menu-2-columns .vehica-simple-menu {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
   width: 100%;
-  border: 1px solid rgba(42, 29, 20, 0.14);
-  border-radius: 18px;
-  background: #fff;
-  padding: 14px 16px;
-  color: var(--text-main);
+}
+
+.vehica-simple-menu-2-columns .vehica-simple-menu > li {
+  width: 50%;
+  font-size: 17px;
+  line-height: 27px;
+  padding-bottom: 20px;
+  font-weight: 600;
+  float: left;
+  margin: 0;
+  padding-right: 15px;
+  padding-left: 20px;
+  position: relative;
+  top: -5px;
+  list-style: none;
+}
+
+.vehica-simple-menu-2-columns .vehica-simple-menu > li::after {
+  position: absolute;
+  left: 0;
+  top: 2px;
+  content: "•";
+  font-size: 12px;
+  color: var(--primary);
+}
+
+.rentzo-footer__nav-button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #ffffff;
+  transition: 0.2s all ease;
+  cursor: pointer;
+  text-align: left;
   font: inherit;
-  resize: vertical;
 }
 
-.login-form__field input[type="file"] {
-  padding: 12px;
+@media (min-width: 1023px) {
+  .rentzo-footer__nav-button:hover {
+    margin-left: 3px;
+    color: var(--primary) !important;
+  }
 }
 
-.login-form__field textarea:focus,
-.login-form__field select:focus {
-  outline: 2px solid rgba(154, 52, 18, 0.18);
-  outline-offset: 2px;
+.vehica-phone-v2 {
+  font-size: 30px;
+  line-height: 36px;
+  font-weight: 900;
 }
 
-@media (max-width: 720px) {
-  .top-bar {
-    padding: 20px;
+.vehica-phone-v2 a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.vehica-email {
+  font-size: 17px;
+  line-height: 21px;
+}
+
+.vehica-email a {
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.vehica-address {
+  white-space: pre-wrap;
+}
+
+.rentzo-footer__divider {
+  width: 100%;
+  height: 1px;
+  background: #3b4250;
+  margin-top: 45px;
+}
+
+.rentzo-footer__bottom {
+  padding-top: 25px;
+}
+
+.vehica-copyrights {
+  color: #ffffff;
+}
+
+@media (max-width: 1199px) {
+  .rentzo-footer__column--brand,
+  .rentzo-footer__column--nav,
+  .rentzo-footer__column--contact {
+    width: 50%;
   }
 
-  .site-nav {
-    order: 3;
+  .rentzo-footer__column--brand {
+    padding-right: 35px;
+  }
+
+  .rentzo-footer__column--contact {
+    padding-left: 35px;
+  }
+}
+
+@media (max-width: 899px) {
+  .vehica-menu__wrapper {
+    padding: 0 15px;
+  }
+
+  .rentzo-home__container,
+  .rentzo-footer__section {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+  .vehica-heading .vehica-heading__title {
+    font-size: 27px;
+    line-height: 38px;
+  }
+
+  .vehica-features .vehica-features__feature {
     width: 100%;
-    justify-content: flex-start;
-  }
-
-  .site-nav__link {
-    font-size: 0.84rem;
-    padding: 10px 12px;
-  }
-
-  .brand-block__name {
-    display: none;
-  }
-
-  .account-menu__trigger {
-    padding: 10px 14px;
-    font-size: 0.85rem;
-  }
-
-  .account-menu__popup {
-    top: calc(100% + 10px);
-    width: min(250px, calc(100vw - 24px));
-    padding: 14px;
-  }
-
-  .hero-card {
-    padding: 42px 22px;
-  }
-
-  .profile-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .site-footer {
-    grid-template-columns: 1fr;
-    padding: 0 20px 20px;
-  }
-
-  .vehicles-page,
-  .vehicle-detail-page,
-  .vehicle-form-page,
-  .reservations-page,
-  .reservation-detail-page,
-  .clients-page {
-    padding: 20px 20px 32px;
-  }
-
-  .vehicles-page__hero,
-  .vehicle-form-page__hero,
-  .vehicle-detail-page__hero,
-  .reservations-page__hero {
     flex-direction: column;
-    align-items: stretch;
   }
 
-  .vehicle-grid,
-  .vehicle-detail,
-  .vehicle-detail__sections,
-  .reservation-availability__grid,
-  .reservation-form__grid,
-  .reservation-detail,
-  .clients-calendar__grid,
-  .vehicle-form__grid,
-  .vehicle-price-grid {
-    grid-template-columns: 1fr;
+  .vehica-features .vehica-features__icon {
+    margin-left: auto;
+    margin-right: auto;
   }
 
-  .vehicle-detail__actions,
-  .reservation-detail__actions,
-  .clients-calendar__toolbar {
-    flex-direction: column;
-    align-items: stretch;
+  .vehica-features .vehica-features__content {
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 20px;
   }
 
-  .vehicle-info-list__row {
-    grid-template-columns: 1fr;
+  .vehica-features .vehica-features__label,
+  .vehica-features .vehica-features__text {
+    text-align: center;
   }
 
-  .vehicle-info-list__row dd {
+  .rentzo-home__catalog-title {
+    font-size: 27px;
+    line-height: 38px;
+  }
+
+  .vehica-grid__element--tablet-1of2,
+  .vehica-grid__element--mobile-1of1,
+  .vehica-grid__element--1of4 {
+    width: 100%;
+  }
+
+  .rentzo-home__grid-wrap .vehica-grid__element {
+    padding-right: 0;
+  }
+
+  .rentzo-home__grid-wrap .vehica-grid {
+    margin-right: 0;
+  }
+
+  .rentzo-footer__column--brand,
+  .rentzo-footer__column--nav,
+  .rentzo-footer__column--contact {
+    width: 100%;
+    padding: 0;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .vehica-logo-widget {
+    text-align: center;
+  }
+
+  .vehica-short-info__inner {
+    max-width: 320px;
+    margin: 0 auto 20px;
+  }
+
+  .vehica-simple-menu-2-columns .vehica-simple-menu > li {
+    width: 100%;
+    padding-left: 15px;
+    padding-bottom: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #282d3a;
+  }
+
+  .vehica-simple-menu-2-columns .vehica-simple-menu > li:last-child {
+    border-bottom: 1px solid #282d3a;
+  }
+
+  .vehica-simple-menu-2-columns .vehica-simple-menu > li::after {
+    left: auto;
+    right: 15px;
+    top: 12px;
+    content: ">";
+    font-size: 12px;
+    color: #cecfd1;
+  }
+
+  .rentzo-footer__nav-button {
+    width: 100%;
     text-align: left;
   }
 
-  .clients-calendar__weekday {
+  .rentzo-footer__divider {
+    margin-top: 25px;
+  }
+
+  .rentzo-footer__bottom {
+    text-align: center;
+  }
+}
+/* Rentzo local alignment overrides */
+.vehica-menu-hover {
+  width: 0;
+  opacity: 0;
+  transform: translateX(0);
+  pointer-events: none;
+  will-change: transform, width, opacity;
+}
+
+.vehica-text-primary,
+.vehica-text-primary *,
+.vehica-text-primary .elementor-heading-title {
+  color: var(--primary);
+}
+
+.vehica-heading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+@media (min-width: 900px) {
+  .vehica-heading {
+    margin-bottom: 75px;
+  }
+}
+
+.vehica-heading .vehica-heading__title {
+  margin: 0;
+  font-weight: 900;
+  color: #ffffff;
+  font-size: 30px;
+  line-height: 38px;
+  text-align: center;
+}
+
+@media (min-width: 900px) {
+  .vehica-heading .vehica-heading__title {
+    font-size: 43px;
+    line-height: 1.09;
+  }
+}
+
+.vehica-heading .vehica-heading__text {
+  font-size: 16px;
+  margin-top: 15px;
+  font-weight: 700;
+  line-height: 1.61;
+  max-width: 450px;
+  text-align: center;
+  color: #ffffff;
+}
+
+@media (min-width: 600px) {
+  .vehica-heading .vehica-heading__text {
+    font-size: 18px;
+    margin-top: 25px;
+  }
+}
+
+.vehica-features .vehica-features__feature {
+  margin-bottom: 40px;
+}
+
+@media (max-width: 899px) {
+  .vehica-features .vehica-features__feature {
+    flex-direction: column;
+  }
+}
+
+@media (min-width: 900px) {
+  .vehica-features .vehica-features__feature {
+    width: 50%;
+  }
+}
+
+.vehica-features .vehica-features__icon {
+  width: 73px;
+  height: 73px;
+  color: var(--primary);
+  background-color: var(--primary-light);
+  border-radius: 50%;
+  overflow: hidden;
+  font-size: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.vehica-features .vehica-features__icon svg {
+  width: 27px;
+  height: 27px;
+}
+
+.vehica-features .vehica-features__icon svg * {
+  vector-effect: non-scaling-stroke;
+}
+
+@media (max-width: 899px) {
+  .vehica-features .vehica-features__icon {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+.vehica-features .vehica-features__content {
+  padding-top: 20px;
+}
+
+@media (min-width: 900px) {
+  .vehica-features .vehica-features__content {
+    padding-top: 0;
+    padding-left: 33px;
+    padding-right: 105px;
+  }
+}
+
+.vehica-features .vehica-features__label {
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.48;
+  color: #ffffff;
+}
+
+@media (max-width: 899px) {
+  .vehica-features .vehica-features__label {
+    text-align: center;
+  }
+}
+
+.vehica-features .vehica-features__text {
+  font-size: 17px;
+  line-height: 1.82;
+  color: #ffffff;
+  margin-top: 24px;
+}
+
+@media (max-width: 899px) {
+  .vehica-features .vehica-features__text {
+    text-align: center;
+  }
+}
+
+.vehica-hero-v2-title {
+  text-align: start;
+}
+
+.vehica-hero-v2-title .elementor-heading-title {
+  margin: 0 0 42px;
+  color: #ffffff;
+  font-size: 45px;
+  line-height: 62px;
+}
+
+@media (max-width: 899px) {
+  .vehica-hero-v2-title .elementor-heading-title {
+    font-size: 27px;
+    line-height: 38px;
+  }
+}
+
+/* Rentzo cabriolets and footer overrides */
+.vehica-tabs-top-v2__heading {
+  font-size: 38px;
+  line-height: 48px;
+  margin-bottom: 20px;
+  font-weight: 900;
+  padding-left: 15px;
+  padding-right: 15px;
+  width: 100%;
+  text-align: center;
+}
+
+@media (min-width: 900px) {
+  .vehica-tabs-top-v2__heading {
+    font-size: 60px;
+    line-height: 76px;
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  .vehica-tabs-top-v2__heading {
+    font-size: 50px;
+    line-height: 63px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .vehica-tabs-top-v2__heading {
+    text-align: left;
+  }
+}
+
+.rentzo-home__convertibles {
+  background: #e3e3e3;
+  padding: 20px 0 36px;
+}
+
+.rentzo-home__convertibles .rentzo-home__container {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.rentzo-home__convertibles .vehica-tabs-top-v2__heading {
+  color: #222732;
+}
+
+.rentzo-home__convertibles .vehica-carousel-v1 {
+  max-width: 1408px;
+  margin: 30px 0 0;
+}
+
+.rentzo-home__convertibles .vehica-carousel__swiper {
+  overflow: visible;
+}
+
+.rentzo-home__convertibles .vehica-carousel-v1 .vehica-swiper-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+}
+
+.rentzo-home__convertibles .vehica-carousel-v1 .vehica-swiper-slide {
+  width: 100%;
+  margin-right: 0;
+}
+
+@media (min-width: 700px) {
+  .rentzo-home__convertibles .vehica-carousel-v1 .vehica-swiper-slide {
+    width: calc(50% - 11px);
+  }
+}
+
+@media (min-width: 1100px) {
+  .rentzo-home__convertibles .vehica-carousel-v1 .vehica-swiper-slide {
+    width: calc(33.3333333333% - 14.67px);
+  }
+}
+
+@media (min-width: 1408px) {
+  .rentzo-home__convertibles .vehica-carousel-v1 .vehica-swiper-slide {
+    width: calc(25% - 16.5px);
+  }
+}
+
+.rentzo-home__empty--light {
+  color: #222732;
+  border-color: rgba(34, 39, 50, 0.12);
+}
+
+.rentzo-home__empty--light h3,
+.rentzo-home__empty--light p {
+  color: #222732;
+}
+
+.rentzo-footer__nav-button {
+  color: #a6a9ae;
+}
+
+.rentzo-footer__bottom-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding-top: 25px;
+}
+
+.rentzo-footer__bottom-social {
+  margin-left: auto;
+}
+
+.vehica-short-info {
+  margin-top: 23px;
+}
+
+.vehica-short-info__inner {
+  color: #ffffff;
+  white-space: pre-wrap;
+  line-height: 1.7;
+}
+
+.vehica-email {
+  color: #ffffff;
+}
+
+.vehica-email__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 9px;
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.vehica-email__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  color: var(--primary);
+}
+
+.vehica-email__icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.vehica-address a {
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.vehica-social-profiles {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.vehica-social-profiles__v1 {
+  margin-left: -9px;
+  margin-right: -9px;
+  display: flex;
+}
+
+.vehica-social-icon {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+}
+
+.vehica-social-icon a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 41px;
+  height: 41px;
+  background: #3b4250;
+  color: #ffffff;
+  position: relative;
+  border-radius: 50%;
+  margin-left: 9px;
+  text-align: center !important;
+  transition: all 0.2s ease;
+}
+
+.vehica-social-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.vehica-social-icon svg path {
+  fill: #ffffff;
+}
+
+@media (min-width: 1023px) {
+  .vehica-social-profiles__v1 a:hover {
+    background: #0f141e;
+  }
+}
+
+@media (max-width: 899px) {
+  .rentzo-home__convertibles {
+    padding: 10px 0 30px;
+  }
+
+  .rentzo-home__convertibles .vehica-carousel-v1 {
+    margin-top: 20px;
+  }
+
+  .rentzo-home__convertibles .vehica-carousel-v1 .vehica-swiper-slide {
+    width: 100%;
+  }
+
+  .rentzo-footer__bottom-row {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .rentzo-footer__bottom-social {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .vehica-social-profiles {
+    justify-content: center;
+  }
+
+  .vehica-email__link {
+    justify-content: center;
+  }
+
+  .vehica-address a {
+    display: inline-block;
+  }
+}
+
+
+/* Rentzo car hotel and testimonials */
+.rentzo-home__car-hotel {
+  background: #000000;
+  overflow: hidden;
+}
+
+.rentzo-home__car-hotel-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: stretch;
+  opacity: 0;
+  transform: translate3d(100%, 0, 0) skewX(-24deg);
+  transform-origin: 0 0;
+}
+
+.rentzo-home__car-hotel.is-visible .rentzo-home__car-hotel-grid {
+  animation: rentzo-light-speed-in 0.85s ease both;
+}
+
+.rentzo-home__car-hotel-image {
+  min-height: 840px;
+  background-image: url("/home/rentzo-car-hotel.jpg");
+  background-position: center center;
+  background-size: cover;
+}
+
+.rentzo-home__car-hotel-content {
+  padding: 170px 30px 120px 80px;
+}
+
+.rentzo-home__car-hotel-title {
+  margin: 0;
+  color: #ffffff;
+  font-size: 71px;
+  font-weight: 900;
+  line-height: 57px;
+}
+
+.rentzo-home__car-hotel-description {
+  max-width: 584px;
+  margin-top: 52px;
+  text-align: start;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 29px;
+  color: #ffffff;
+}
+
+.rentzo-home__car-hotel-description p,
+.rentzo-home__car-hotel-services-title p {
+  margin: 0;
+}
+
+.rentzo-home__car-hotel-description strong {
+  font-weight: 800;
+}
+
+.rentzo-home__car-hotel-services-title {
+  max-width: 584px;
+  margin-top: 50px;
+  font-size: 27px;
+  line-height: 31px;
+  color: #ffffff;
+}
+
+.rentzo-home__car-hotel-divider {
+  max-width: 584px;
+  padding: 11px 0;
+}
+
+.rentzo-home__car-hotel-divider span {
+  display: block;
+  width: 59%;
+  border-top: 1.8px solid #929292;
+}
+
+.rentzo-home__car-hotel-list {
+  max-width: 584px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.rentzo-home__car-hotel-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 37px;
+  color: #ffffff;
+}
+
+.rentzo-home__car-hotel-item-icon {
+  color: #ffffff;
+  width: 14px;
+  min-width: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 11px;
+}
+
+.rentzo-home__car-hotel-item-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.rentzo-home__testimonials {
+  background: #ffffff;
+  color: #222732;
+  padding: 125px 0 135px;
+}
+
+.rentzo-home__testimonials.is-visible .vehica-testimonial-carousel,
+.rentzo-home__testimonials.is-visible .vehica-heading {
+  animation: rentzo-fade-up 0.65s ease both;
+}
+
+.rentzo-home__testimonials .vehica-heading {
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+@media (min-width: 900px) {
+  .rentzo-home__testimonials .vehica-heading {
+    margin-bottom: 75px;
+  }
+}
+
+.rentzo-home__testimonials .vehica-heading__icon {
+  width: 73px;
+  height: 73px;
+  box-shadow: 0 13px 54px 0 rgba(207, 207, 228, 0.3);
+  background-color: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  color: var(--primary);
+}
+
+.rentzo-home__testimonials .vehica-heading__icon svg {
+  width: 34.011px;
+  height: 29.76px;
+}
+
+.rentzo-home__testimonials .vehica-heading__title {
+  margin: 0;
+  font-weight: 900;
+  color: #222732;
+  font-size: 30px;
+  line-height: 38px;
+  text-align: center;
+}
+
+@media (min-width: 900px) {
+  .rentzo-home__testimonials .vehica-heading__title {
+    font-size: 43px;
+    line-height: 1.09;
+  }
+}
+
+.rentzo-home__testimonials .vehica-heading__text {
+  font-size: 16px;
+  margin-top: 15px;
+  font-weight: 700;
+  line-height: 1.61;
+  max-width: 450px;
+  text-align: center;
+  color: #222732;
+}
+
+@media (min-width: 600px) {
+  .rentzo-home__testimonials .vehica-heading__text {
+    font-size: 18px;
+    margin-top: 25px;
+  }
+}
+
+@media (max-width: 899px) {
+  .rentzo-home__testimonials .vehica-heading__text br {
+    display: none;
+  }
+}
+
+.rentzo-home__testimonials .vehica-heading__text span {
+  background-color: var(--primary);
+  color: #ffffff;
+  padding: 0 2px;
+}
+
+.vehica-testimonial-carousel {
+  max-width: 1520px;
+  margin: 0 auto;
+  position: relative;
+}
+
+@media (min-width: 900px) {
+  .vehica-testimonial-carousel {
+    padding-left: 57px;
+    padding-right: 57px;
+  }
+}
+
+.vehica-testimonial-carousel .vehica-swiper-container {
+  overflow: hidden;
+  padding: 0;
+  position: relative;
+}
+
+.vehica-testimonial-carousel .vehica-swiper-wrapper {
+  display: flex;
+  transition: transform 0.45s ease;
+  will-change: transform;
+}
+
+.vehica-testimonial-carousel .vehica-swiper-slide {
+  width: 100%;
+  flex: 0 0 100%;
+  display: flex;
+}
+
+@media (min-width: 900px) {
+  .vehica-testimonial-carousel .vehica-swiper-slide {
+    width: 50%;
+    flex-basis: 50%;
+  }
+}
+
+@media (min-width: 1200px) {
+  .vehica-testimonial-carousel .vehica-swiper-slide {
+    width: 33.333%;
+    flex-basis: 33.333%;
+  }
+}
+
+.vehica-testimonial-carousel .vehica-testimonial-carousel__testimonial {
+  border-radius: 10px;
+  box-shadow: 0 1px 7px 0 #e2e2e2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 50px 30px 30px;
+  border: solid 1px transparent;
+  transition: 0.3s all;
+  position: relative;
+  margin: 45px 2px 0;
+  flex-grow: 1;
+  justify-content: space-between;
+  text-align: center;
+  background: #ffffff;
+}
+
+@media (min-width: 1280px) {
+  .vehica-testimonial-carousel .vehica-testimonial-carousel__testimonial {
+    padding: 70px 61px 44px;
+  }
+}
+
+@media (max-width: 900px) {
+  .vehica-testimonial-carousel .vehica-testimonial-carousel__testimonial {
+    max-width: 541px;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+}
+
+.vehica-testimonial-carousel .vehica-swiper-slide-active .vehica-testimonial-carousel__testimonial {
+  border: solid 1px var(--primary);
+}
+
+.vehica-testimonial-carousel .vehica-testimonial-carousel__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.vehica-testimonial-carousel .vehica-testimonial-carousel__stars {
+  color: #ffd200;
+  font-size: 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.vehica-testimonial-carousel .vehica-testimonial-carousel__stars svg {
+  width: 15px;
+  height: 15px;
+}
+
+.vehica-testimonial-carousel .vehica-testimonial-carousel__text {
+  font-size: 22px;
+  font-style: italic;
+  line-height: 1.55;
+  text-align: center;
+  color: #222732;
+  margin: 25px 0;
+}
+
+.vehica-testimonial-carousel .vehica-testimonial-carousel__pagination {
+  margin-top: 35px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  gap: 26px;
+}
+
+@media (min-width: 900px) {
+  .vehica-testimonial-carousel .vehica-testimonial-carousel__pagination {
+    margin-top: 50px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .vehica-testimonial-carousel .vehica-testimonial-carousel__pagination {
+    margin-top: 70px;
+  }
+}
+
+.vehica-testimonial-carousel .vehica-testimonial-carousel__bullet {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  border: 0;
+  border-radius: 50%;
+  background-color: #dfe3eb;
+  opacity: 1;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.vehica-testimonial-carousel .vehica-testimonial-carousel__bullet:hover {
+  background: #111111;
+}
+
+.vehica-testimonial-carousel .vehica-testimonial-carousel__bullet.is-active {
+  background-color: var(--primary);
+}
+
+.vehica-testimonial-carousel .vehica-testimonial-carousel__nav {
+  display: none;
+  width: 55px;
+  height: 55px;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  box-shadow: 0 3px 40px 0 #dbe0e8;
+  background-color: #ffffff;
+  position: absolute;
+  top: 50%;
+  margin-top: -72.5px;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.2s ease;
+  border: 0;
+  color: #222732;
+  opacity: 0;
+  transform: translate3d(0, 10px, 0);
+}
+
+.vehica-testimonial-carousel .vehica-testimonial-carousel__nav svg {
+  width: 14px;
+  height: 24px;
+}
+
+@media (min-width: 900px) {
+  .vehica-testimonial-carousel .vehica-testimonial-carousel__nav {
+    display: flex;
+  }
+}
+
+.vehica-testimonial-carousel .vehica-testimonial-carousel__nav--prev {
+  left: 34px;
+}
+
+.vehica-testimonial-carousel .vehica-testimonial-carousel__nav--next {
+  right: 34px;
+}
+
+.vehica-testimonial-carousel .vehica-testimonial-carousel__nav:hover {
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+.vehica-testimonial-carousel:hover .vehica-testimonial-carousel__nav {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.vehica-testimonial-carousel__name {
+  font-size: 24px;
+  line-height: 30px;
+  margin-bottom: 3px;
+  font-weight: 700;
+  color: #222732;
+}
+
+.vehica-testimonial-carousel__title {
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+@media (max-width: 1199px) {
+  .rentzo-home__car-hotel-content {
+    padding: 105px 30px 85px 30px;
+  }
+
+  .rentzo-home__car-hotel-image {
+    min-height: 680px;
+  }
+
+  .rentzo-home__car-hotel-title {
+    font-size: 38px;
+    line-height: 48px;
+  }
+}
+
+@media (max-width: 899px) {
+  .rentzo-home__car-hotel-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rentzo-home__car-hotel-image {
+    min-height: 420px;
+  }
+
+  .rentzo-home__car-hotel-content {
+    padding: 45px 15px;
+  }
+
+  .rentzo-home__car-hotel-description {
+    margin-top: 45px;
+    font-size: 18px;
+    line-height: 28px;
+  }
+
+  .rentzo-home__car-hotel-services-title {
+    margin-top: 35px;
+    font-size: 24px;
+    line-height: 30px;
+  }
+
+  .rentzo-home__car-hotel-divider span {
+    width: 100%;
+  }
+
+  .rentzo-home__car-hotel-item {
+    line-height: 30px;
+  }
+
+  .rentzo-home__testimonials {
+    padding: 90px 0 100px;
+  }
+}
+
+@keyframes rentzo-light-speed-in {
+  0% {
+    opacity: 0;
+    transform: translate3d(100%, 0, 0) skewX(-30deg);
+  }
+
+  60% {
+    opacity: 1;
+    transform: skewX(20deg);
+  }
+
+  80% {
+    transform: skewX(-5deg);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes rentzo-fade-up {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 28px, 0);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+
+/* Admin login page */
+.admin-login-page {
+  background: #ffffff;
+  padding: 130px 15px 90px;
+}
+
+.admin-login-page__section {
+  max-width: 1468px;
+  margin: 0 auto;
+}
+
+.admin-login-page__container {
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.admin-login-page__panel {
+  position: relative;
+  display: flex;
+}
+
+.admin-login-page .vehica-login {
+  background: #f2f5fb;
+  padding: 50px 15px;
+  text-align: center;
+  width: 100%;
+  display: flex;
+  border-radius: 10px;
+}
+
+.admin-login-page .vehica-login .vehica-login__inner {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  z-index: 2;
+}
+
+.admin-login-page .vehica-panel-login-register h2 {
+  font-size: 30px;
+  line-height: 38px;
+  font-weight: 900;
+  margin: 0 0 9px;
+  color: #222732;
+}
+
+.admin-login-page .vehica-panel-login-register h3 {
+  font-size: 15px;
+  line-height: 19px;
+  font-weight: 400;
+  margin: 0 0 20px;
+  color: #222732;
+}
+
+.admin-login-page .vehica-register-login-notice {
+  margin: 0 0 20px !important;
+  border: 1px solid var(--primary) !important;
+  background: var(--primary-light);
+  color: var(--primary);
+  font-size: 16px;
+  line-height: 23px;
+  padding: 15px !important;
+  border-radius: 10px;
+  text-align: center;
+  min-height: 48px !important;
+}
+
+.admin-login-page .vehica-fields {
+  margin-bottom: 15px;
+}
+
+.admin-login-page .vehica-field {
+  margin-bottom: 12px;
+}
+
+.admin-login-page .vehica-field input[type="text"],
+.admin-login-page .vehica-field input[type="password"] {
+  border-radius: 10px;
+  box-shadow: 1px 1px 0 0 rgba(196, 196, 196, 0.24);
+  border: solid 1px #e7edf3;
+  height: 53px;
+  line-height: 53px;
+  padding: 0 27px;
+  font-size: 15px;
+  color: #2f3b48;
+  width: 100%;
+  background: #ffffff;
+}
+
+.admin-login-page .vehica-field input[type="text"]::placeholder,
+.admin-login-page .vehica-field input[type="password"]::placeholder {
+  font-size: 15px;
+  color: #2f3b48;
+}
+
+.admin-login-page .vehica-field input[type="text"]:focus,
+.admin-login-page .vehica-field input[type="password"]:focus {
+  border-color: var(--primary);
+}
+
+.admin-login-page .vehica-login__below-fields {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 30px;
+  margin-bottom: 30px;
+  flex-direction: column;
+}
+
+.admin-login-page .vehica-login__forgotten-password a {
+  font-size: 15px;
+  color: #2f3b48;
+  text-decoration: underline;
+}
+
+.admin-login-page .vehica-login__remember {
+  color: #2f3b48;
+  display: flex;
+  align-items: center;
+}
+
+.admin-login-page .vehica-login__remember .vehica-checkbox {
+  font-size: 15px;
+  font-weight: 600;
+  color: #2f3b48;
+  margin: 0;
+}
+
+.admin-login-page .vehica-checkbox {
+  margin: 0;
+  color: #6d6d6d;
+}
+
+.admin-login-page .vehica-checkbox:after {
+  clear: both;
+  content: "";
+  display: table;
+}
+
+.admin-login-page .vehica-checkbox label {
+  transition: all 0.2s ease;
+}
+
+.admin-login-page .vehica-checkbox input {
+  position: absolute;
+  opacity: 0;
+}
+
+.admin-login-page .vehica-checkbox input + label {
+  font-size: 14px;
+  line-height: 16px;
+  display: block;
+  position: relative;
+  cursor: pointer;
+  min-height: 20px;
+  padding: 2px 0 0 31px;
+  color: #2f3b48 !important;
+}
+
+.admin-login-page .vehica-checkbox input + label:before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  content: "";
+  display: inline-block;
+  vertical-align: text-top;
+  width: 20px;
+  height: 20px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+.admin-login-page .vehica-checkbox input + label:after {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 2px;
+  width: 5px;
+  height: 10px;
+  border: solid #ffffff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.admin-login-page .vehica-checkbox input:checked + label:before {
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+}
+
+.admin-login-page .vehica-checkbox input:checked + label:after {
+  opacity: 1;
+}
+
+.admin-login-page .vehica-checkbox input:checked + label {
+  color: #2f3b48;
+}
+
+.admin-login-page .vehica-button--login {
+  width: 100%;
+}
+
+.admin-login-page .vehica-button--with-progress-animation {
+  min-width: 120px;
+  transition: color 0s ease;
+}
+
+.admin-login-page .vehica-button--with-progress-animation.vehica-button--with-progress-animation--active {
+  color: rgba(0, 0, 0, 0) !important;
+  position: relative;
+}
+
+.admin-login-page .vehica-button--with-progress-animation.vehica-button--with-progress-animation--active:after,
+.admin-login-page .vehica-button--with-progress-animation.vehica-button--with-progress-animation--active:before {
+  display: none;
+}
+
+.admin-login-page .vehica-button--with-progress-animation.vehica-button--with-progress-animation--active svg {
+  transform: scale(0.3);
+  position: absolute;
+  left: 0;
+  top: 11px;
+  margin: 0 auto;
+  right: 0;
+}
+
+@media (min-width: 1023px) {
+  .admin-login-page .vehica-checkbox:hover,
+  .admin-login-page .vehica-checkbox:hover label,
+  .admin-login-page .vehica-login__forgotten-password a:hover {
+    color: var(--primary) !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .admin-login-page .vehica-login__below-fields {
+    align-items: center;
+    flex-direction: row;
+  }
+}
+
+@media (min-width: 1024px) {
+  .admin-login-page {
+    padding: 170px 30px 120px;
+  }
+
+  .admin-login-page__container {
+    max-width: 620px;
+  }
+
+  .admin-login-page .vehica-login {
+    padding: 90px 30px;
+    text-align: left;
+  }
+
+  .admin-login-page .vehica-login .vehica-login__inner {
+    width: 480px;
+    max-width: 100%;
+  }
+
+  .admin-login-page .vehica-panel-login-register h3 {
+    margin-bottom: 40px;
+  }
+}
+
+
+/* Contact page */
+.rentzo-contact-page {
+  background: #ffffff;
+}
+
+.rentzo-contact-hero {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  background: url("/home/rentzo-contact-hero.jpg") center center / cover no-repeat;
+  overflow: hidden;
+}
+
+.rentzo-contact-hero__overlay {
+  position: absolute;
+  inset: 0;
+  background: #0f141e;
+  opacity: 0.6;
+}
+
+.rentzo-contact-hero__inner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1468px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 50px 20px 0;
+}
+
+.rentzo-contact-hero__title {
+  margin: 0;
+  font-size: 45px;
+  line-height: 51px;
+  color: #ffffff;
+  font-weight: 800;
+}
+
+.rentzo-contact-hero__subtitle {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 51px;
+  color: rgba(255, 255, 255, 0.61);
+}
+
+.rentzo-pattern-divider {
+  padding: 15px 0;
+}
+
+.rentzo-pattern-divider__inner {
+  width: 100%;
+  height: 20px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none' overflow='visible' height='100%25' viewBox='0 0 24 24' fill='black' stroke='none'%3E%3Cpath d='M24,8v12H0V8H24z M24,4v1H0V4H24z'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-size: 24px 20px;
+}
+
+.rentzo-contact-main {
+  padding: 0;
+}
+
+.rentzo-contact-main__container {
+  max-width: 1468px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.rentzo-contact-main__column {
+  width: 100%;
+}
+
+.rentzo-contact-main__column--info {
+  padding: 0 20px 0 30px;
+}
+
+.rentzo-contact-main__column--empty {
+  padding: 0 30px 0 20px;
+}
+
+.rentzo-contact-main__ghost-form {
+  width: 100%;
+  min-height: 404px;
+  border-radius: 20px;
+  visibility: hidden;
+}
+
+.rentzo-contact-main__title {
+  margin: 0;
+  font-size: 50px;
+  font-weight: 900;
+  line-height: 63px;
+  color: #222732;
+}
+
+.rentzo-contact-main__short-info {
+  width: 520px;
+  max-width: 100%;
+  margin: 0;
+}
+
+.rentzo-contact-main__address a {
+  white-space: pre-line;
+}
+
+.rentzo-contact-main .vehica-short-info__inner,
+.rentzo-contact-main .vehica-email,
+.rentzo-contact-main .vehica-email__link,
+.rentzo-contact-main .vehica-address a {
+  color: #222732;
+}
+
+.rentzo-contact-main .vehica-email__link {
+  justify-content: flex-start;
+}
+
+.rentzo-contact-main .vehica-social-profiles {
+  justify-content: flex-start;
+}
+
+.rentzo-contact-main .vehica-social-profiles__v2 {
+  text-align: left;
+}
+
+.rentzo-contact-main .vehica-social-profiles__v2__inner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.rentzo-contact-main .vehica-social-profiles__v2__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #222732;
+  margin-right: 8px;
+}
+
+.rentzo-contact-main .vehica-social-icon a {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #0f141e;
+  color: #ffffff;
+}
+
+.rentzo-contact-main .vehica-social-icon svg {
+  width: 17px;
+  height: 17px;
+  fill: currentColor;
+}
+
+.rentzo-contact-main__spacer {
+  width: 100%;
+}
+
+.rentzo-contact-main__spacer--title {
+  height: 40px;
+}
+
+.rentzo-contact-main__spacer--regular {
+  height: 37px;
+}
+
+.rentzo-contact-main__spacer--small {
+  height: 12px;
+}
+
+.rentzo-contact-divider {
+  padding: 15px 0;
+}
+
+.rentzo-contact-divider__container {
+  max-width: 1468px;
+  margin: 0 auto;
+}
+
+.rentzo-contact-divider__line {
+  width: 100%;
+  height: 1px;
+  background: #000000;
+}
+
+.rentzo-contact-hours {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0;
+}
+
+.rentzo-contact-hours__column {
+  width: 100%;
+}
+
+.rentzo-contact-hours__column--info {
+  background: #f8f7f7;
+  padding: 0 30px;
+}
+
+.rentzo-contact-hours__inner {
+  min-height: 549px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.rentzo-contact-hours__inner h2 {
+  width: 670px;
+  max-width: 100%;
+  margin: 0;
+  font-size: 41px;
+  font-weight: 900;
+  line-height: 57px;
+  color: #111111;
+}
+
+.rentzo-contact-hours__inner h3 {
+  width: 670px;
+  max-width: 100%;
+  margin: 0;
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 31px;
+  color: #111111;
+}
+
+.rentzo-contact-hours__text {
+  width: 675px;
+  max-width: 100%;
+  font-size: 17px;
+  line-height: 36px;
+  color: #111111;
+}
+
+.rentzo-contact-hours__text ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.rentzo-contact-hours__text li {
+  margin: 0;
+}
+
+.rentzo-contact-hours__spacer {
+  width: 100%;
+}
+
+.rentzo-contact-hours__spacer--top,
+.rentzo-contact-hours__spacer--bottom {
+  height: 30px;
+}
+
+.rentzo-contact-hours__spacer--minor {
+  height: 11px;
+}
+
+.rentzo-contact-hours__spacer--major {
+  height: 44px;
+}
+
+.rentzo-contact-hours__column--map {
+  padding: 0;
+}
+
+.rentzo-contact-hours .elementor-custom-embed iframe {
+  width: 100%;
+  height: 549px;
+  border: 0;
+  display: block;
+}
+
+@media (min-width: 900px) {
+  .rentzo-contact-main__column,
+  .rentzo-contact-hours__column {
+    width: 50%;
+  }
+}
+
+@media (max-width: 1199px) {
+  .rentzo-contact-main__column--info {
+    padding: 0 10px 0 30px;
+  }
+
+  .rentzo-contact-main__column--empty {
+    padding: 0 30px 0 10px;
+  }
+
+  .rentzo-contact-main__title {
+    font-size: 38px;
+    line-height: 48px;
+  }
+}
+
+@media (max-width: 899px) {
+  .rentzo-contact-hero {
     display: none;
   }
 
-  .clients-calendar__day {
+  .rentzo-contact-main__column--info {
+    padding: 0 15px;
+  }
+
+  .rentzo-contact-main__column--empty {
+    display: none;
+  }
+
+  .rentzo-contact-main__title {
+    font-size: 30px;
+    line-height: 38px;
+    text-align: center;
+  }
+
+  .rentzo-contact-main__short-info,
+  .rentzo-contact-main__address,
+  .rentzo-contact-main__phone,
+  .rentzo-contact-main__email,
+  .rentzo-contact-main__socials {
+    text-align: center;
+  }
+
+  .rentzo-contact-main .vehica-email__link,
+  .rentzo-contact-main .vehica-social-profiles,
+  .rentzo-contact-main .vehica-social-profiles__v2__inner {
+    justify-content: center;
+  }
+
+  .rentzo-contact-main .vehica-social-profiles__v2 {
+    text-align: center;
+  }
+
+  .rentzo-contact-main__spacer--title {
+    height: 20px;
+  }
+
+  .rentzo-contact-main__spacer--regular {
+    height: 20px;
+  }
+
+  .rentzo-contact-main__spacer--small {
+    height: 10px;
+  }
+
+  .rentzo-contact-divider__container {
+    padding: 0 15px;
+  }
+
+  .rentzo-contact-hours__column--info {
+    padding: 0 15px;
+  }
+
+  .rentzo-contact-hours__inner {
     min-height: 0;
+    justify-content: flex-start;
   }
 
-  .reservation-calendar__weekday {
-    font-size: 0.68rem;
+  .rentzo-contact-hours__inner h2 {
+    font-size: 30px;
+    line-height: 38px;
   }
 
-  .reservation-calendar__day {
-    min-height: 38px;
-    font-size: 0.8rem;
+  .rentzo-contact-hours__inner h3 {
+    line-height: 1.48em;
+  }
+
+  .rentzo-contact-hours__spacer--top,
+  .rentzo-contact-hours__spacer--bottom {
+    height: 45px;
+  }
+
+  .rentzo-contact-hours__spacer--major {
+    height: 30px;
+  }
+
+  .rentzo-contact-hours .elementor-custom-embed iframe {
+    height: 420px;
+  }
+}
+
+/* Admin profile page */
+.admin-profile-page {
+  background: #ffffff;
+  padding: 130px 15px 90px;
+}
+
+.admin-profile-page__section {
+  max-width: 1468px;
+  margin: 0 auto;
+}
+
+.admin-profile-page__container {
+  position: relative;
+}
+
+.admin-profile-page__panel {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-profile-page .vehica-login,
+.admin-profile-page .vehica-register {
+  width: 100%;
+  display: flex;
+  padding: 50px 15px;
+  text-align: center;
+  background: #f2f5fb;
+}
+
+.admin-profile-page .vehica-login__inner,
+.admin-profile-page .vehica-register__inner {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  z-index: 2;
+}
+
+.admin-profile-page .vehica-panel-login-register h2 {
+  font-size: 30px;
+  line-height: 38px;
+  font-weight: 900;
+  margin: 0 0 9px;
+  color: #222732;
+}
+
+.admin-profile-page .vehica-panel-login-register h3 {
+  font-size: 15px;
+  line-height: 19px;
+  font-weight: 400;
+  margin: 0 0 20px;
+  color: #222732;
+}
+
+.admin-profile-page .vehica-fields {
+  margin-bottom: 15px;
+}
+
+.admin-profile-page .vehica-field {
+  margin-bottom: 12px;
+}
+
+.admin-profile-page .vehica-field input[type="text"],
+.admin-profile-page .vehica-field input[type="email"],
+.admin-profile-page .vehica-field input[type="password"] {
+  border-radius: 10px;
+  box-shadow: 1px 1px 0 0 rgba(196, 196, 196, 0.24);
+  border: solid 1px #e7edf3;
+  height: 53px;
+  line-height: 53px;
+  padding: 0 27px;
+  font-size: 15px;
+  color: #2f3b48;
+  width: 100%;
+  background: #ffffff;
+}
+
+.admin-profile-page .vehica-field input[type="text"]::placeholder,
+.admin-profile-page .vehica-field input[type="email"]::placeholder,
+.admin-profile-page .vehica-field input[type="password"]::placeholder {
+  font-size: 15px;
+  color: #2f3b48;
+}
+
+.admin-profile-page .vehica-field input[type="text"]:focus,
+.admin-profile-page .vehica-field input[type="email"]:focus,
+.admin-profile-page .vehica-field input[type="password"]:focus {
+  border-color: var(--primary);
+}
+
+.admin-profile-page__submit {
+  width: 100%;
+}
+
+.admin-profile-page__back-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 25px;
+}
+
+.admin-profile-page__back-button {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font-size: 15px;
+  line-height: 19px;
+  color: #2f3b48;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+@media (min-width: 1024px) {
+  .admin-profile-page {
+    padding: 170px 30px 120px;
+  }
+
+  .admin-profile-page__container:after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 50%;
+    height: 100%;
+    display: block;
+    background: #f2f5fb;
+    z-index: 0;
+  }
+
+  .admin-profile-page__panel {
+    flex-direction: row;
+  }
+
+  .admin-profile-page .vehica-panel-login-register h3 {
+    margin-bottom: 40px;
+  }
+
+  .admin-profile-page .vehica-login {
+    width: 50%;
+    padding: 90px 90px 90px 30px;
+    text-align: left;
+  }
+
+  .admin-profile-page .vehica-login__inner {
+    width: 480px;
+    margin-left: auto;
+    max-width: 100%;
+  }
+
+  .admin-profile-page .vehica-register {
+    width: 50%;
+    padding: 90px 30px 90px 90px;
+    text-align: left;
+    background: #ffffff;
+  }
+
+  .admin-profile-page .vehica-register__inner {
+    width: 480px;
+    max-width: 100%;
+  }
+}
+
+@media (min-width: 1200px) {
+  .admin-profile-page .vehica-login {
+    padding: 90px 140px 90px 30px;
+    min-height: 600px;
+  }
+
+  .admin-profile-page .vehica-register {
+    padding: 90px 30px 90px 140px;
   }
 }

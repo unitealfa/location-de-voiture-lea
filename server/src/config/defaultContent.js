@@ -1,7 +1,8 @@
 const defaultContent = {
   brand: {
     name: "Mon Location Lea",
-    logoText: "LEA"
+    logoText: "LEA",
+    logoImagePath: "/home/rentzo-logo.jpg"
   },
   header: {
     accountLabel: "Mon compte",
@@ -10,11 +11,12 @@ const defaultContent = {
     closeButtonLabel: "Fermer la fenetre",
     profileLabel: "Profile",
     logoutLabel: "Se deconnecter",
+    dashboardLabel: "Dashboard",
     clientsLabel: "Clients",
     navigationItems: [
       {
         label: "ACCUEIL",
-        path: "/Accueil"
+        path: "/"
       },
       {
         label: "LOCATION DE VOITURES",
@@ -31,21 +33,94 @@ const defaultContent = {
     ]
   },
   aceulle: {
-    eyebrow: "Page d'accueil",
-    title: "Liste des voitures et tout",
+    eyebrow: "EXCLUSIVITÉ RENTZO",
+    title: "LOCATION DE VOITURES DE LUXE À ALGER",
     description:
-      "Cette zone centrale est deja separee pour recevoir plus tard un contenu gere par l'administration."
+      "Une page d'accueil premium inspiree du rendu Rentzo, avec vos vraies voitures, une navigation legere et un chargement optimise.",
+    primaryActionLabel: "Voir les vehicules",
+    secondaryActionLabel: "Nous contacter",
+    introEyebrow: "ACCUEIL",
+    introTitle:
+      "Des vehicules reels, visibles rapidement, avec une presentation haut de gamme.",
+    introDescription:
+      "Retrouvez vos voitures disponibles avec un rendu premium, des informations claires et une navigation adaptee meme aux connexions lentes.",
+    highlights: [
+      "Catalogue rapide a charger",
+      "Reservation simple depuis chaque vehicule",
+      "Remise bureau ou aeroport"
+    ],
+    fleetEyebrow: "LOCATION DE VOITURES",
+    fleetTitle: "Notre flotte de voitures de luxe à Alger",
+    fleetDescription:
+      "Decouvrez les vehicules actuellement visibles sur le site avec leur image principale, leur nom et leur prix journalier.",
+    fleetLoadingLabel: "Chargement des vehicules...",
+    fleetEmptyTitle: "Aucun vehicule disponible",
+    fleetEmptyDescription:
+      "Le catalogue public est vide pour le moment. Revenez plus tard pour voir les prochaines disponibilites.",
+    fleetActionLabel: "Voir tout le catalogue",
+    convertiblesTitle: "Découvrez nos cabriolets à louer !",
+    convertiblesEmptyTitle: "Aucun cabriolet disponible",
+    convertiblesEmptyDescription:
+      "Aucun véhicule cabriolet n'est visible pour le moment. Revenez plus tard pour découvrir les prochaines disponibilités.",
+    carHotelTitle: "HÔTEL DE VOITURES",
+    carHotelDescription:
+      "Chez RENTZO EXCLUSIVE, nous proposons un hébergement et des soins spécialisés pour votre véhicule, notamment pour les véhicules de luxe ou haut de gamme.",
+    carHotelServicesTitle: "NOS SERVICES",
+    carHotelServices: [
+      "Sécurité et surveillance 24h/24",
+      "Votre véhicule de luxe sera propre",
+      "Nous maintenons le niveau de pression des pneus correct.",
+      "État optimal de la batterie de la voiture en permanence"
+    ],
+    testimonialsTitle: "L'avis de nos clients",
+    testimonialsHighlight: "La satisfaction",
+    testimonialsTextLine1: "de nos clients",
+    testimonialsTextLine2: "nous aide à nous améliorer constamment.",
+    testimonialsItems: [
+      {
+        text:
+          "Une expérience de luxe du début à la fin. J'ai loué une voiture sportive avec eux et tout a dépassé mes attentes. L'accueil a été excellent et très professionnel.",
+        name: "Ana Costas Viñarás",
+        title: "Client"
+      },
+      {
+        text:
+          "Service spectaculaire. Nous avons loué une Mercedes pendant une semaine et je n'ai que de bons mots pour l'équipe. Nous reviendrons.",
+        name: "Javier Sánchez - Brunete",
+        title: "Client"
+      },
+      {
+        text: "Service excellent, traitement imbattable",
+        name: "Estefanía Jimenez López",
+        title: "Client"
+      },
+      {
+        text: "Les meilleures voitures exclusives à louer en ville.",
+        name: "Adelina Elena",
+        title: "Client"
+      },
+      {
+        text:
+          "Service irréprochable, 100 %. Je ne peux pas mettre plus, mais pour moi c'est la meilleure adresse pour les voitures exclusives.",
+        name: "Sonia Valero",
+        title: "Client"
+      }
+    ]
   },
   adminLogin: {
     eyebrow: "Espace admin",
-    title: "Connexion administrateur",
-    description:
-      "Cette page prepare le futur acces admin. Le formulaire est deja en place pour la suite.",
-    loginLabel: "Email ou nom d'utilisateur",
-    loginPlaceholder: "exemple@gmail.com",
+    title: "Connectez-vous à votre compte",
+    description: "Bienvenue ! Connectez-vous à votre compte.",
+    loginLabel: "Adresse e-mail ou nom d'utilisateur",
+    loginPlaceholder: "Adresse e-mail ou nom d'utilisateur",
     passwordLabel: "Mot de passe",
-    passwordPlaceholder: "Entrez votre mot de passe",
-    submitLabel: "Se connecter",
+    passwordPlaceholder: "Mot de passe",
+    rememberLabel: "Souviens-toi",
+    forgotPasswordLabel: "Mot de passe oublié ?",
+    forgotPasswordUrl:
+      "mailto:lea@gmail.com?subject=Mot%20de%20passe%20oubli%C3%A9",
+    supportEmail: "lea@gmail.com",
+    submitLabel: "Accéder",
     backLabel: "Retour a l'accueil",
     successMessage: "Connexion admin reussie.",
     errorMessage: "Identifiants invalides."
@@ -96,6 +171,34 @@ const defaultContent = {
     foireAuxQuestions: {
       title: "Foire aux questions"
     }
+  },
+  contactPage: {
+    heroTitleStart: "Contactez",
+    heroTitleAccent: "nous",
+    heroSubtitle: "Nous serons ravis de vous repondre",
+    pageTitle: "Contact",
+    shortInfo: "✔︎ MON LOCATION LEA.\nLocation de voitures de luxe à ALGER.",
+    socialTitle: "Suivez-nous",
+    mapQuery: "Alger Centre, Alger, Algeria",
+    formNamePlaceholder: "Nom",
+    formEmailPlaceholder: "Adresse e-mail*",
+    formPhonePlaceholder: "Telephone",
+    formMessagePlaceholder: "Message*",
+    formPrivacyLabel: "J'accepte la politique de confidentialite",
+    formSubmitLabel: "Envoyer",
+    formNotice:
+      "Le formulaire de contact sera raccorde au back ensuite. Utilisez le telephone ou l'email pour une reponse immediate.",
+    hoursTitle: "Horaires",
+    hoursSubtitle: "Contactez-nous et nous vous reserverons un rendez-vous",
+    hoursItems: [
+      { day: "Lundi", value: "10:00 - 18:00" },
+      { day: "Mardi", value: "10:00 - 18:00" },
+      { day: "Mercredi", value: "10:00 - 18:00" },
+      { day: "Jeudi", value: "10:00 - 18:00" },
+      { day: "Vendredi", value: "10:00 - 18:00" },
+      { day: "Samedi", value: "Ferme" },
+      { day: "Dimanche", value: "Ferme" }
+    ]
   },
   vehicles: {
     eyebrow: "Catalogue",
@@ -294,12 +397,26 @@ const defaultContent = {
     detailErrorMessage: "Impossible de charger cette reservation."
   },
   footer: {
+    caption:
+      "Location de voitures premium en Algerie avec un catalogue optimise pour un affichage rapide.",
+    navigationTitle: "Navigation",
+    contactTitle: "Contact",
+    phoneCtaLabel: "Appelez-nous",
     phoneLabel: "Numero de tel",
-    phoneValue: "+213 555 00 00 00",
+    phoneValue: "0779 10 74 46",
+    emailValue: "lea@gmail.com",
     locationLabel: "Localisation",
-    locationValue: "Algerie",
+    locationValue: "Alger",
+    addressValue: "Alger\nMon Location Lea",
+    mapUrl: "https://maps.google.com/?q=Alger%2C+Algerie",
     brandLabel: "Nom",
-    brandValue: "Mon Location Lea"
+    brandValue: "Mon Location Lea",
+    shortInfo: "✔︎ MON LOCATION LEA. Location de voitures de luxe à ALGER.",
+    facebookUrl: "#",
+    instagramUrl: "#",
+    youtubeUrl: "#",
+    copyrightText: "Copyright ©. Tous les droits reserves.",
+    legalText: "Lea Location"
   }
 };
 
