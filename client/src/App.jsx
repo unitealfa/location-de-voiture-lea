@@ -7,6 +7,7 @@ import AdminAceulle from "./pages/AdminAceulle";
 import AdminProfile from "./pages/AdminProfile";
 import PublicPage from "./pages/PublicPage";
 import ContactPage from "./pages/ContactPage";
+import FaqPage from "./pages/FaqPage";
 import LocationVehiclesPage from "./pages/LocationVehiclesPage";
 import VehicleDetailPage from "./pages/VehicleDetailPage";
 import AdminVehicleFormPage from "./pages/AdminVehicleFormPage";
@@ -251,6 +252,7 @@ function App() {
       <Header
         brand={content.brand}
         header={content.header}
+        footerContent={content.footer}
         currentAdmin={currentAdmin}
         currentPath={currentPath}
         isProfilePage={currentPath === "/admin/profile"}
@@ -375,7 +377,10 @@ function App() {
           brand={content.brand}
         />
       ) : currentPath === "/foire-aux-questions" ? (
-        <PublicPage title={content.publicPages.foireAuxQuestions.title} />
+        <FaqPage
+          content={content.faqPage}
+          onContactClick={() => navigateTo("/contact")}
+        />
       ) : currentPath === "/admin" && currentAdmin ? (
         <AdminAceulle content={content.adminAceulle} admin={currentAdmin} />
       ) : (

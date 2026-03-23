@@ -1,8 +1,33 @@
 import { useEffect, useRef, useState } from "react";
 
+function MobilePhoneIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M6.2 3.5h2.7c.4 0 .8.3.9.7l.8 3.3a1 1 0 0 1-.3 1l-1.6 1.4a14.7 14.7 0 0 0 5.5 5.5l1.4-1.6a1 1 0 0 1 1-.3l3.3.8c.4.1.7.5.7.9v2.7c0 .6-.4 1-.9 1.1-.7.1-1.4.2-2 .2C9.3 20.2 3.8 14.7 3.8 8.2c0-.7.1-1.4.2-2 .1-.5.5-.9 1.1-.9Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
+function MobileEmailIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M4 6.5h16A1.5 1.5 0 0 1 21.5 8v8A1.5 1.5 0 0 1 20 17.5H4A1.5 1.5 0 0 1 2.5 16V8A1.5 1.5 0 0 1 4 6.5Z"
+        fill="none"
+        stroke="currentColor"
+      />
+      <path d="M3.5 8l8.5 6 8.5-6" fill="none" stroke="currentColor" />
+    </svg>
+  );
+}
+
 function Header({
   brand,
   header,
+  footerContent,
   currentAdmin,
   currentPath,
   isProfilePage,
@@ -25,6 +50,9 @@ function Header({
     width: "0px",
     transform: "translateX(0px)"
   });
+
+  const telHref = footerContent?.phoneValue ? "tel:" + footerContent.phoneValue.replace(/[^+\d]/g, "") : "#";
+  const mailHref = footerContent?.emailValue ? "mailto:" + footerContent.emailValue : "#";
 
   const navigationItems = currentAdmin
     ? [
@@ -377,7 +405,10 @@ function Header({
                     className="vehica-button"
                     onClick={currentAdmin ? handleProfile : handleLogin}
                   >
-                    {header.accountLabel}
+                    <span className="vehica-menu-item-depth-0">
+                      <span className="rentzo-account-menu__plus">+</span>
+                      <span>{header.accountLabel}</span>
+                    </span>
                   </button>
                 </div>
 
@@ -420,6 +451,26 @@ function Header({
                     </div>
                   ))}
                 </div>
+              </div>
+
+              <div className="vehica-mobile-menu__info">
+                {footerContent?.phoneValue ? (
+                  <a href={telHref} className="rentzo-mobile-menu__info-link">
+                    <span className="rentzo-mobile-menu__info-icon">
+                      <MobilePhoneIcon />
+                    </span>
+                    <span>{footerContent.phoneValue}</span>
+                  </a>
+                ) : null}
+
+                {footerContent?.emailValue ? (
+                  <a href={mailHref} className="rentzo-mobile-menu__info-link">
+                    <span className="rentzo-mobile-menu__info-icon">
+                      <MobileEmailIcon />
+                    </span>
+                    <span>{footerContent.emailValue}</span>
+                  </a>
+                ) : null}
               </div>
 
               <div className="vehica-mobile-menu__info rentzo-mobile-menu__account">

@@ -23,12 +23,12 @@ const defaultContent = {
         path: "/location-de-voitures"
       },
       {
-        label: "CONTACT",
-        path: "/contact"
-      },
-      {
         label: "Foire aux questions",
         path: "/foire-aux-questions"
+      },
+      {
+        label: "CONTACT",
+        path: "/contact"
       }
     ]
   },
@@ -171,6 +171,65 @@ const defaultContent = {
     foireAuxQuestions: {
       title: "Foire aux questions"
     }
+  },
+  faqPage: {
+    heroTitleStart: "Questions",
+    heroTitleAccent: "fréquentes",
+    heroSubtitle: "Nous répondrons à toutes vos questions",
+    pageTitle: "Questions fréquentes",
+    contactButtonLabel: "Contact",
+    leftItems: [
+      {
+        question: "Quels documents dois-je fournir pour louer un véhicule haut de gamme ?",
+        answer: "Une carte d'identité ou un passeport, un permis de conduire en cours de validité, ainsi qu'une carte de crédit pour la caution."
+      },
+      {
+        question: "Quels types de véhicules proposez-vous ?",
+        answer: "Citadines, compactes, SUV, sportives et véhicules haut de gamme."
+      },
+      {
+        question: "Quel est l'âge minimum pour louer une voiture exclusive ?",
+        answer: "25 ans minimum et au moins 4 ans d'expérience de conduite."
+      },
+      {
+        question: "L'assurance est-elle incluse dans la location ?",
+        answer: "Oui, tous les véhicules incluent une assurance tous risques avec franchise."
+      },
+      {
+        question: "Puis-je demander la livraison et la récupération du véhicule ?",
+        answer: "Oui, nous proposons la livraison et la reprise du véhicule dans toute la province."
+      },
+      {
+        question: "Les conducteurs supplémentaires sont-ils autorisés ?",
+        answer: "Oui, avec un coût supplémentaire. Consultez les conditions."
+      }
+    ],
+    rightItems: [
+      {
+        question: "Comment réserver une voiture exclusive ?",
+        answer: "Via le formulaire web, WhatsApp ou par e-mail."
+      },
+      {
+        question: "Que se passe-t-il si je dois annuler ou modifier ma réservation ?",
+        answer: "Cela entraîne un coût supplémentaire."
+      },
+      {
+        question: "Puis-je louer une voiture pour seulement quelques heures ?",
+        answer: "La durée minimale de location est d'une journée."
+      },
+      {
+        question: "Avez-vous une assistance client 24h/24 et 7j/7 ?",
+        answer: "Oui, via WhatsApp."
+      },
+      {
+        question: "Puis-je restituer la voiture en dehors des horaires de bureau ?",
+        answer: "Oui, avec un coût supplémentaire de 15 €."
+      },
+      {
+        question: "Proposez-vous des extras comme chauffeur, champagne ou services spéciaux ?",
+        answer: "Oui, nous disposons de notre propre flotte VTC pour proposer un service entièrement personnalisé."
+      }
+    ]
   },
   contactPage: {
     heroTitleStart: "Contactez",
