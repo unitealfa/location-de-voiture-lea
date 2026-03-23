@@ -16,6 +16,14 @@ const {
 const AVAILABILITY_STATUSES = new Set(["available", "maintenance", "reserved"]);
 const TRANSMISSION_OPTIONS = ["Automatique", "Manuelle"];
 const FUEL_TYPE_OPTIONS = ["Essence", "Diesel", "GPL"];
+const VEHICLE_RANGE_OPTIONS = [
+  "Luxe",
+  "SUV",
+  "Cabriolet",
+  "Citadines",
+  "Berlines",
+  "Sportives"
+];
 
 function normalizeString(value) {
   return String(value || "").trim();
@@ -89,6 +97,57 @@ function normalizeAvailabilityStatus(value, defaultValue) {
   return normalizedValue;
 }
 
+function normalizeVehicleRanges(value) {
+  let parsedValue = value;
+
+  if (typeof parsedValue === "string") {
+    const trimmedValue = parsedValue.trim();
+
+    if (!trimmedValue) {
+      parsedValue = [];
+    } else {
+      try {
+        parsedValue = JSON.parse(trimmedValue);
+      } catch (error) {
+        parsedValue = trimmedValue
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean);
+      }
+    }
+  }
+
+  if (!Array.isArray(parsedValue)) {
+    throw new Error("La gamme du vehicule est invalide.");
+  }
+
+  const normalizedVehicleRanges = [];
+
+  parsedValue.forEach((vehicleRange) => {
+    const matchedOption = VEHICLE_RANGE_OPTIONS.find(
+      (option) => option.toLowerCase() === normalizeString(vehicleRange).toLowerCase()
+    );
+
+    if (!matchedOption) {
+      throw new Error("La gamme du vehicule est invalide.");
+    }
+
+    if (!normalizedVehicleRanges.includes(matchedOption)) {
+      normalizedVehicleRanges.push(matchedOption);
+    }
+  });
+
+  if (normalizedVehicleRanges.length === 0) {
+    throw new Error("La gamme du vehicule est requise.");
+  }
+
+  if (normalizedVehicleRanges.length > 2) {
+    throw new Error("Vous pouvez selectionner au maximum 2 gammes du vehicule.");
+  }
+
+  return normalizedVehicleRanges;
+}
+
 function normalizeVehiclePayload(payload, { isCreate, currentVehicle = null }) {
   const submittedPhotoUrls = normalizePhotoUrls(payload.photoUrls);
   const shouldUseSubmittedPhotoUrls =
@@ -108,6 +167,9 @@ function normalizeVehiclePayload(payload, { isCreate, currentVehicle = null }) {
     brand: normalizeString(payload.brand),
     model: normalizeString(payload.model),
     version: normalizeString(payload.version),
+    vehicleRanges: normalizeVehicleRanges(
+      payload.vehicleRangesJson ?? payload.vehicleRanges ?? currentVehicle?.vehicleRanges ?? []
+    ),
     fuelType: normalizeOption(payload.fuelType, FUEL_TYPE_OPTIONS, "Carburant"),
     transmission: normalizeOption(
       payload.transmission,

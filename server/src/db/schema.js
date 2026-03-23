@@ -61,6 +61,7 @@ async function ensureSchema() {
       brand VARCHAR(191) NOT NULL,
       model VARCHAR(191) NOT NULL,
       version VARCHAR(191) NOT NULL,
+      vehicle_ranges LONGTEXT NULL,
       fuel_type VARCHAR(100) NOT NULL,
       transmission VARCHAR(100) NOT NULL,
       seats INT UNSIGNED NOT NULL,
@@ -131,6 +132,23 @@ async function ensureSchema() {
     UPDATE admin_users
     SET role = 'admin'
     WHERE role IS NULL OR TRIM(role) = ''
+  `);
+
+  const [vehicleRangesRows] = await pool.execute(`
+    SHOW COLUMNS FROM vehicles LIKE 'vehicle_ranges'
+  `);
+
+  if (vehicleRangesRows.length === 0) {
+    await pool.execute(`
+      ALTER TABLE vehicles
+      ADD COLUMN vehicle_ranges LONGTEXT NULL AFTER version
+    `);
+  }
+
+  await pool.execute(`
+    UPDATE vehicles
+    SET vehicle_ranges = '[]'
+    WHERE vehicle_ranges IS NULL OR TRIM(vehicle_ranges) = ''
   `);
 
   const [reservationStatusRows] = await pool.execute(`

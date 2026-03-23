@@ -27,14 +27,39 @@ const TIME_OPTIONS = Array.from({ length: 48 }, (_, index) => {
 
 function getInitialFormValues() {
   return {
-    firstName: "",
-    lastName: "",
+    fullName: "",
     email: "",
     phone: "",
+    birthDate: "",
     comment: "",
     pickupLocationType: "bureau",
     returnLocationType: "bureau",
     privacyPolicyAccepted: false
+  };
+}
+
+function splitFullName(fullName) {
+  const normalized = String(fullName || "").trim().replace(/\s+/g, " ");
+
+  if (!normalized) {
+    return {
+      firstName: "",
+      lastName: ""
+    };
+  }
+
+  const parts = normalized.split(" ");
+
+  if (parts.length === 1) {
+    return {
+      firstName: normalized,
+      lastName: normalized
+    };
+  }
+
+  return {
+    firstName: parts.slice(0, -1).join(" "),
+    lastName: parts[parts.length - 1]
   };
 }
 
@@ -106,15 +131,25 @@ function ReservationCalendar({
   monthDate,
   onMonthChange,
   selectedDateValue,
+  selectedTimeValue = "",
   isDayAvailable,
   onDateSelect,
-  isDisabled
+  isDisabled,
+  getTimeOptions,
+  onTimeSelect
 }) {
   const calendarDays = useMemo(() => createCalendarDays(monthDate), [monthDate]);
   const weekdayLabels = useMemo(
     () => calendarDays.slice(0, 7).map((day) => WEEKDAY_FORMATTER.format(day)),
     [calendarDays]
   );
+  const availableTimeOptions = useMemo(() => {
+    if (!selectedDateValue || typeof getTimeOptions !== "function") {
+      return [];
+    }
+
+    return getTimeOptions(selectedDateValue);
+  }, [getTimeOptions, selectedDateValue]);
 
   return (
     <div className={`reservation-calendar${isDisabled ? " reservation-calendar--disabled" : ""}`}>
@@ -177,11 +212,37 @@ function ReservationCalendar({
           );
         })}
       </div>
+
+      {selectedDateValue && typeof getTimeOptions === "function" ? (
+        <div className="reservation-calendar__times">
+          {availableTimeOptions.length ? (
+            availableTimeOptions.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                className={`reservation-calendar__time${
+                  selectedTimeValue === option.value
+                    ? " reservation-calendar__time--selected"
+                    : ""
+                }`}
+                onClick={() => onTimeSelect?.(option.value)}
+                disabled={isDisabled}
+              >
+                {option.label}
+              </button>
+            ))
+          ) : (
+            <p className="reservation-calendar__times-empty">
+              {content.reservationNoAvailabilityLabel}
+            </p>
+          )}
+        </div>
+      ) : null}
     </div>
   );
 }
 
-function VehicleReservationForm({ content, vehicle }) {
+function VehicleReservationForm({ content, vehicle, hideActionButtons = false, hideIntro = false }) {
   const sectionRef = useRef(null);
   const currentDateRef = useRef(new Date());
   const [formValues, setFormValues] = useState(getInitialFormValues);
@@ -203,6 +264,7 @@ function VehicleReservationForm({ content, vehicle }) {
   const [returnMonthDate, setReturnMonthDate] = useState(() =>
     createMonthReference(new Date())
   );
+  const [openDatePanel, setOpenDatePanel] = useState(null);
 
   useEffect(() => {
     return () => {
@@ -263,6 +325,10 @@ function VehicleReservationForm({ content, vehicle }) {
 
     return `https://wa.me/${content.whatsappInternationalNumber}?text=${message}`;
   }, [content.whatsappInternationalNumber, vehicle]);
+  const drivingLicenseInputId = useMemo(
+    () => `driving-license-photo-${vehicle.id}`,
+    [vehicle.id]
+  );
 
   const reservationRanges = useMemo(
     () =>
@@ -283,6 +349,16 @@ function VehicleReservationForm({ content, vehicle }) {
     () => createDateTime(returnDate, returnTime),
     [returnDate, returnTime]
   );
+  const pickupSummaryText =
+    pickupDate && pickupTime
+      ? pickupDate + " " + pickupTime
+      : content.reservationPickupDatetimeLabel;
+  const returnSummaryText =
+    returnDate && returnTime
+      ? returnDate + " " + returnTime
+      : content.reservationReturnDatetimeLabel;
+  const drivingLicenseSelectedLabel =
+    drivingLicensePhoto?.name || content.reservationDrivingLicenseEmptyLabel;
 
   const updateField = (event) => {
     const { name, value, type, checked } = event.target;
@@ -313,10 +389,27 @@ function VehicleReservationForm({ content, vehicle }) {
     });
   };
 
-  const scrollToForm = () => {
-    sectionRef.current?.scrollIntoView({
-      behavior: "smooth",
-      block: "start"
+  const scrollToForm = (event) => {
+    event?.currentTarget?.blur();
+
+    const target = sectionRef.current;
+
+    if (!target || typeof window === "undefined") {
+      return;
+    }
+
+    const stickyHeader = document.querySelector(".vehica-menu__wrapper");
+    const headerOffset = Math.ceil(
+      stickyHeader?.getBoundingClientRect().height || 100
+    );
+    const targetTop = Math.max(
+      window.scrollY + target.getBoundingClientRect().top - headerOffset - 24,
+      0
+    );
+
+    window.scrollTo({
+      top: targetTop,
+      behavior: "smooth"
     });
   };
 
@@ -420,8 +513,24 @@ function VehicleReservationForm({ content, vehicle }) {
     }
   }, [pickupDate, returnMonthDate]);
 
+  const getPickupTimeOptions = (dateValue) =>
+    TIME_OPTIONS.filter((option) =>
+      isPickupSlotAvailable(createDateTime(dateValue, option.value))
+    );
+
+  const getReturnTimeOptions = (dateValue) => {
+    if (!pickupDateTime) {
+      return [];
+    }
+
+    return TIME_OPTIONS.filter((option) =>
+      isReturnSlotAvailable(createDateTime(dateValue, option.value), pickupDateTime)
+    );
+  };
+
   const handlePickupDateSelect = (dateValue) => {
     setPickupDate(dateValue);
+    setPickupTime("");
     setSuccessMessage("");
   };
 
@@ -431,6 +540,7 @@ function VehicleReservationForm({ content, vehicle }) {
     }
 
     setReturnDate(dateValue);
+    setReturnTime("");
     setSuccessMessage("");
   };
 
@@ -448,8 +558,22 @@ function VehicleReservationForm({ content, vehicle }) {
         throw new Error("Selectionnez une date et une heure disponibles.");
       }
 
+      const parsedFullName = splitFullName(formValues.fullName);
+      const commentParts = [formValues.comment];
+
+      if (formValues.birthDate) {
+        commentParts.unshift("Date de naissance : " + formValues.birthDate);
+      }
+
       await createVehicleReservation(vehicle.id, {
-        ...formValues,
+        firstName: parsedFullName.firstName,
+        lastName: parsedFullName.lastName,
+        email: formValues.email,
+        phone: formValues.phone,
+        comment: commentParts.filter(Boolean).join("\n\n"),
+        pickupLocationType: formValues.pickupLocationType,
+        returnLocationType: formValues.returnLocationType,
+        privacyPolicyAccepted: formValues.privacyPolicyAccepted,
         pickupDatetime,
         returnDatetime,
         drivingLicensePhoto
@@ -478,295 +602,366 @@ function VehicleReservationForm({ content, vehicle }) {
 
   return (
     <>
-      <div className="vehicle-reservation-actions">
-        <button
-          type="button"
-          className="login-form__submit"
-          onClick={scrollToForm}
-        >
-          {content.reserveFormLabel}
-        </button>
-
-        <a
-          className="vehicle-detail__secondary-action vehicle-detail__secondary-action--link"
-          href={whatsappUrl}
-          target="_blank"
-          rel="noreferrer"
-        >
-          {content.reserveWhatsappLabel}
-        </a>
-      </div>
-
-      <section className="reservation-form-section" ref={sectionRef}>
-        <div className="reservation-form-section__hero">
-          <p className="hero-card__eyebrow">{content.reservationSectionEyebrow}</p>
-          <h2>{content.reservationSectionTitle}</h2>
-          <p className="hero-card__text">{content.reservationSectionDescription}</p>
-        </div>
-
-        <div className="reservation-availability">
-          <div className="reservation-availability__header">
-            <div>
-              <h3>{content.reservationAvailabilityTitle}</h3>
-              <p>{content.reservationAvailabilityDescription}</p>
-            </div>
-
-            <div className="reservation-availability__legend">
-              <span className="reservation-availability__legend-item">
-                <i className="reservation-availability__dot reservation-availability__dot--available" />
-                {content.reservationAvailableLegendLabel}
-              </span>
-              <span className="reservation-availability__legend-item">
-                <i className="reservation-availability__dot reservation-availability__dot--selected" />
-                {content.reservationSelectedLegendLabel}
-              </span>
-              <span className="reservation-availability__legend-item">
-                <i className="reservation-availability__dot reservation-availability__dot--unavailable" />
-                {content.reservationUnavailableLegendLabel}
-              </span>
-            </div>
-          </div>
-
-          {isAvailabilityLoading ? (
-            <p className="status-message">
-              {content.reservationAvailabilityLoadingLabel}
-            </p>
-          ) : availabilityErrorMessage ? (
-            <p className="login-form__message login-form__message--error">
-              {availabilityErrorMessage}
-            </p>
-          ) : (
-            <div className="reservation-availability__grid">
-              <div className="reservation-availability__panel">
-                <label className="login-form__field">
-                  <span>{content.reservationPickupDateLabel}</span>
-                </label>
-
-                <ReservationCalendar
-                  content={content}
-                  monthDate={pickupMonthDate}
-                  onMonthChange={setPickupMonthDate}
-                  selectedDateValue={pickupDate}
-                  onDateSelect={handlePickupDateSelect}
-                  isDayAvailable={hasAvailablePickupSlotForDay}
-                  isDisabled={false}
-                />
-
-                <label className="login-form__field">
-                  <span>{content.reservationPickupTimeLabel}</span>
-                  <select
-                    value={pickupTime}
-                    onChange={(event) => setPickupTime(event.target.value)}
-                    disabled={!pickupDate || isAvailabilityLoading}
-                  >
-                    <option value="">Selectionner</option>
-                    {TIME_OPTIONS.map((option) => {
-                      const candidateDateTime = createDateTime(
-                        pickupDate,
-                        option.value
-                      );
-
-                      return (
-                        <option
-                          key={`pickup-${option.value}`}
-                          value={option.value}
-                          disabled={!isPickupSlotAvailable(candidateDateTime)}
-                        >
-                          {option.label}
-                        </option>
-                      );
-                    })}
-                  </select>
-                </label>
-              </div>
-
-              <div className="reservation-availability__panel">
-                <label className="login-form__field">
-                  <span>{content.reservationReturnDateLabel}</span>
-                </label>
-
-                {!pickupDateTime ? (
-                  <p className="reservation-availability__helper">
-                    {content.reservationSelectPickupFirstLabel}
-                  </p>
-                ) : null}
-
-                <ReservationCalendar
-                  content={content}
-                  monthDate={returnMonthDate}
-                  onMonthChange={setReturnMonthDate}
-                  selectedDateValue={returnDate}
-                  onDateSelect={handleReturnDateSelect}
-                  isDayAvailable={hasAvailableReturnSlotForDay}
-                  isDisabled={!pickupDateTime}
-                />
-
-                <label className="login-form__field">
-                  <span>{content.reservationReturnTimeLabel}</span>
-                  <select
-                    value={returnTime}
-                    onChange={(event) => setReturnTime(event.target.value)}
-                    disabled={!returnDate || !pickupDateTime || isAvailabilityLoading}
-                  >
-                    <option value="">Selectionner</option>
-                    {TIME_OPTIONS.map((option) => {
-                      const candidateDateTime = createDateTime(
-                        returnDate,
-                        option.value
-                      );
-
-                      return (
-                        <option
-                          key={`return-${option.value}`}
-                          value={option.value}
-                          disabled={
-                            !isReturnSlotAvailable(candidateDateTime, pickupDateTime)
-                          }
-                        >
-                          {option.label}
-                        </option>
-                      );
-                    })}
-                  </select>
-                </label>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <form className="reservation-form" onSubmit={handleSubmit}>
-          <div className="reservation-form__grid">
-            <label className="login-form__field">
-              <span>{content.reservationLastNameLabel}</span>
-              <input
-                type="text"
-                name="lastName"
-                value={formValues.lastName}
-                onChange={updateField}
-                required
-              />
-            </label>
-
-            <label className="login-form__field">
-              <span>{content.reservationFirstNameLabel}</span>
-              <input
-                type="text"
-                name="firstName"
-                value={formValues.firstName}
-                onChange={updateField}
-                required
-              />
-            </label>
-
-            <label className="login-form__field">
-              <span>{content.reservationEmailLabel}</span>
-              <input
-                type="email"
-                name="email"
-                value={formValues.email}
-                onChange={updateField}
-              />
-            </label>
-
-            <label className="login-form__field">
-              <span>{content.reservationPhoneLabel}</span>
-              <input
-                type="tel"
-                name="phone"
-                value={formValues.phone}
-                onChange={updateField}
-                required
-              />
-            </label>
-
-            <label className="login-form__field">
-              <span>{content.reservationPickupLocationLabel}</span>
-              <select
-                name="pickupLocationType"
-                value={formValues.pickupLocationType}
-                onChange={updateField}
-              >
-                {content.reservationPickupLocationOptions.map((option) => (
-                  <option key={`pickup-${option.value}`} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="login-form__field">
-              <span>{content.reservationReturnLocationLabel}</span>
-              <select
-                name="returnLocationType"
-                value={formValues.returnLocationType}
-                onChange={updateField}
-              >
-                {content.reservationPickupLocationOptions.map((option) => (
-                  <option key={`return-${option.value}`} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-
-          <label className="login-form__field">
-            <span>{content.reservationDrivingLicenseLabel}</span>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleDrivingLicensePhoto}
-              required
-            />
-          </label>
-
-          {previewUrl ? (
-            <div className="reservation-form__license-preview">
-              <img src={previewUrl} alt={content.reservationDrivingLicenseLabel} />
-            </div>
-          ) : null}
-
-          <label className="login-form__field">
-            <span>{content.reservationCommentLabel}</span>
-            <textarea
-              name="comment"
-              value={formValues.comment}
-              onChange={updateField}
-              rows="4"
-              required
-            />
-          </label>
-
-          <label className="reservation-form__checkbox">
-            <input
-              type="checkbox"
-              name="privacyPolicyAccepted"
-              checked={formValues.privacyPolicyAccepted}
-              onChange={updateField}
-              required
-            />
-            <span>{content.reservationPrivacyLabel}</span>
-          </label>
-
-          {errorMessage ? (
-            <p className="login-form__message login-form__message--error">
-              {errorMessage}
-            </p>
-          ) : null}
-
-          {successMessage ? (
-            <p className="login-form__message login-form__message--success">
-              {successMessage}
-            </p>
-          ) : null}
-
+      {hideActionButtons ? null : (
+        <div className="vehicle-reservation-actions">
           <button
-            type="submit"
+            type="button"
             className="login-form__submit"
-            disabled={isSubmitting || isAvailabilityLoading}
+            onClick={scrollToForm}
           >
-            {content.reservationSubmitLabel}
+            {content.reserveFormLabel}
           </button>
+
+          <a
+            className="vehicle-detail__secondary-action vehicle-detail__secondary-action--link"
+            href={whatsappUrl}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {content.reserveWhatsappLabel}
+          </a>
+        </div>
+      )}
+
+      <section
+        className="reservation-form-section"
+        ref={sectionRef}
+        id="contact"
+        data-vehicle-reservation-form="true"
+      >
+        {hideIntro ? null : (
+          <div className="reservation-form-section__hero">
+            <p className="hero-card__eyebrow">{content.reservationSectionEyebrow}</p>
+            <h2>{content.reservationSectionTitle}</h2>
+            <p className="hero-card__text">{content.reservationSectionDescription}</p>
+          </div>
+        )}
+
+        {isAvailabilityLoading ? (
+          <p className="rentzo-detail-form__status">
+            {content.reservationAvailabilityLoadingLabel}
+          </p>
+        ) : null}
+
+        {!isAvailabilityLoading && availabilityErrorMessage ? (
+          <p className="login-form__message login-form__message--error">
+            {availabilityErrorMessage}
+          </p>
+        ) : null}
+
+        <form className="reservation-form vehica-contact-form rentzo-detail-form rentzo-detail-form--source" onSubmit={handleSubmit}>
+          <div className="clearfix">
+            <div className="rentzo-detail-form__group">
+              <div className="vehica-3-fields">
+                <p>
+                  <label>{content.reservationPickupGroupLabel}</label>
+                </p>
+
+                <div className="vehica-3-fields__left">
+                  <p>
+                    <span className="wpcf7-form-control-wrap">
+                      <select
+                        name="pickupLocationType"
+                        value={formValues.pickupLocationType}
+                        onChange={updateField}
+                      >
+                        {content.reservationPickupLocationOptions.map((option) => (
+                          <option key={`pickup-location-${option.value}`} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </span>
+                  </p>
+                </div>
+
+                <div className="vehica-3-fields__right">
+                  <p>
+                    <button
+                      type="button"
+                      className="rentzo-detail-form__datetime-trigger"
+                      onClick={() =>
+                        setOpenDatePanel((currentPanel) =>
+                          currentPanel === "pickup" ? null : "pickup"
+                        )
+                      }
+                      disabled={isAvailabilityLoading}
+                    >
+                      {pickupSummaryText}
+                    </button>
+                  </p>
+                </div>
+              </div>
+
+              {openDatePanel === "pickup" ? (
+                <div className="rentzo-detail-form__datetime-panel">
+                  <ReservationCalendar
+                    content={content}
+                    monthDate={pickupMonthDate}
+                    onMonthChange={setPickupMonthDate}
+                    selectedDateValue={pickupDate}
+                    selectedTimeValue={pickupTime}
+                    onDateSelect={handlePickupDateSelect}
+                    isDayAvailable={hasAvailablePickupSlotForDay}
+                    isDisabled={false}
+                    getTimeOptions={getPickupTimeOptions}
+                    onTimeSelect={(timeValue) => {
+                      setPickupTime(timeValue);
+                      setOpenDatePanel(null);
+                    }}
+                  />
+                </div>
+              ) : null}
+            </div>
+
+            <div className="rentzo-detail-form__group">
+              <div className="vehica-3-fields">
+                <p>
+                  <label>{content.reservationReturnGroupLabel}</label>
+                </p>
+
+                <div className="vehica-3-fields__left">
+                  <p>
+                    <span className="wpcf7-form-control-wrap">
+                      <select
+                        name="returnLocationType"
+                        value={formValues.returnLocationType}
+                        onChange={updateField}
+                      >
+                        {content.reservationPickupLocationOptions.map((option) => (
+                          <option key={`return-location-${option.value}`} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </span>
+                  </p>
+                </div>
+
+                <div className="vehica-3-fields__right">
+                  <p>
+                    <button
+                      type="button"
+                      className="rentzo-detail-form__datetime-trigger"
+                      onClick={() => {
+                        if (!pickupDateTime) {
+                          return;
+                        }
+
+                        setOpenDatePanel((currentPanel) =>
+                          currentPanel === "return" ? null : "return"
+                        );
+                      }}
+                      disabled={!pickupDateTime || isAvailabilityLoading}
+                    >
+                      {returnSummaryText}
+                    </button>
+                  </p>
+                </div>
+              </div>
+
+              {openDatePanel === "return" ? (
+                <div className="rentzo-detail-form__datetime-panel">
+                  {!pickupDateTime ? (
+                    <p className="rentzo-detail-form__helper">
+                      {content.reservationSelectPickupFirstLabel}
+                    </p>
+                  ) : null}
+
+                  <ReservationCalendar
+                    content={content}
+                    monthDate={returnMonthDate}
+                    onMonthChange={setReturnMonthDate}
+                    selectedDateValue={returnDate}
+                    selectedTimeValue={returnTime}
+                    onDateSelect={handleReturnDateSelect}
+                    isDayAvailable={hasAvailableReturnSlotForDay}
+                    isDisabled={!pickupDateTime}
+                    getTimeOptions={getReturnTimeOptions}
+                    onTimeSelect={(timeValue) => {
+                      setReturnTime(timeValue);
+                      setOpenDatePanel(null);
+                    }}
+                  />
+                </div>
+              ) : null}
+            </div>
+
+            <p className="rentzo-detail-form__section-label">
+              <label> </label>
+              <br />
+              <label>{content.reservationCustomerGroupLabel}</label>
+            </p>
+
+            <div className="vehica-1-fields rentzo-detail-form__customer-fields">
+              <div className="vehica-1-fields__middle">
+                <p>
+                  <span className="wpcf7-form-control-wrap">
+                    <input
+                      type="text"
+                      name="fullName"
+                      value={formValues.fullName}
+                      onChange={updateField}
+                      placeholder={content.reservationFullNamePlaceholder}
+                      required
+                    />
+                  </span>
+                </p>
+              </div>
+
+              <div className="vehica-1-fields__middle">
+                <p>
+                  <span className="wpcf7-form-control-wrap">
+                    <input
+                      type="email"
+                      name="email"
+                      value={formValues.email}
+                      onChange={updateField}
+                      placeholder={content.reservationEmailPlaceholder}
+                      required
+                    />
+                  </span>
+                </p>
+              </div>
+
+              <div className="vehica-1-fields__middle">
+                <p>
+                  <span className="wpcf7-form-control-wrap">
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formValues.phone}
+                      onChange={updateField}
+                      placeholder={content.reservationPhonePlaceholder}
+                      required
+                    />
+                  </span>
+                </p>
+              </div>
+
+              <div className="vehica-1-fields__middle">
+                <p>
+                  <span className="wpcf7-form-control-wrap">
+                    <input
+                      type="text"
+                      name="birthDate"
+                      value={formValues.birthDate}
+                      onChange={updateField}
+                      placeholder={content.reservationBirthDatePlaceholder}
+                      required
+                    />
+                  </span>
+                </p>
+              </div>
+            </div>
+
+            <p className="rentzo-detail-form__section-label rentzo-detail-form__section-label--license">
+              <label> </label>
+              <br />
+              <label>{content.reservationLicenseGroupLabel}</label>
+              <br />
+            </p>
+
+            <div className="vehica-1-fields rentzo-detail-form__license-fields">
+              <div className="vehica-1-fields__middle vehica-1-fields__middle--full">
+                <div className="rentzo-detail-form__license-upload">
+                  <p className="rentzo-detail-form__license-selected">
+                    {drivingLicenseSelectedLabel}
+                  </p>
+
+                  <input
+                    id={drivingLicenseInputId}
+                    className="rentzo-detail-form__license-input"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleDrivingLicensePhoto}
+                    required
+                  />
+
+                  <label
+                    className="rentzo-detail-form__license-trigger"
+                    htmlFor={drivingLicenseInputId}
+                  >
+                    <span className="rentzo-detail-form__license-trigger-text">
+                      {content.reservationDrivingLicensePlaceholder}
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {previewUrl ? (
+              <div className="reservation-form__license-preview">
+                <img src={previewUrl} alt={content.reservationDrivingLicenseLabel} />
+              </div>
+            ) : null}
+
+            <p className="rentzo-detail-form__section-block rentzo-detail-form__section-block--comment">
+              <label> </label>
+              <br />
+              <label>{content.reservationCommentGroupLabel}</label>
+              <br />
+              <span className="wpcf7-form-control-wrap">
+                <textarea
+                  name="comment"
+                  value={formValues.comment}
+                  onChange={updateField}
+                  rows="4"
+                  placeholder={content.reservationCommentPlaceholder}
+                  required
+                />
+              </span>
+            </p>
+
+            {errorMessage ? (
+              <p className="login-form__message login-form__message--error">
+                {errorMessage}
+              </p>
+            ) : null}
+
+            {successMessage ? (
+              <p className="login-form__message login-form__message--success">
+                {successMessage}
+              </p>
+            ) : null}
+
+            <div className="detail-reservation-form__actions">
+              <div className="detail-reservation-form__policy">
+                <p>
+                  <span className="wpcf7-form-control-wrap">
+                    <span className="wpcf7-form-control wpcf7-acceptance">
+                      <span className="wpcf7-list-item">
+                        <label>
+                          <input
+                            type="checkbox"
+                            name="privacyPolicyAccepted"
+                            checked={formValues.privacyPolicyAccepted}
+                            onChange={updateField}
+                            required
+                          />
+                          <span className="wpcf7-list-item-label">
+                            {content.reservationPrivacyLabel}
+                          </span>
+                        </label>
+                      </span>
+                    </span>
+                  </span>
+                </p>
+              </div>
+
+              <div className="detail-reservation-form__submit-wrap">
+                <p>
+                  <button
+                    type="submit"
+                    className="wpcf7-form-control wpcf7-submit detail-reservation-form__submit"
+                    disabled={isSubmitting || isAvailabilityLoading}
+                  >
+                    {content.reservationSubmitLabel}
+                  </button>
+                </p>
+              </div>
+            </div>
+          </div>
         </form>
       </section>
     </>

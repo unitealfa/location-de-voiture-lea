@@ -9,6 +9,7 @@ import PublicPage from "./pages/PublicPage";
 import ContactPage from "./pages/ContactPage";
 import FaqPage from "./pages/FaqPage";
 import LocationVehiclesPage from "./pages/LocationVehiclesPage";
+import ComparePage from "./pages/ComparePage";
 import VehicleDetailPage from "./pages/VehicleDetailPage";
 import AdminVehicleFormPage from "./pages/AdminVehicleFormPage";
 import CommencerReservationsPage from "./pages/CommencerReservationsPage";
@@ -21,6 +22,11 @@ import {
   logoutAdmin
 } from "./services/adminAuthService";
 import { clearLegacyAdminClientState } from "./services/clientSecurityService";
+import {
+  getStoredCompareVehicleIds,
+  persistCompareVehicleIds,
+  toggleCompareVehicleId
+} from "./services/compareService";
 
 function normalizePath(path) {
   if (path === "/Accueil" || path === "/accueil" || path === "/aceulle") {
@@ -102,6 +108,7 @@ function App() {
   const [currentPath, setCurrentPath] = useState(getCurrentPath);
   const [currentAdmin, setCurrentAdmin] = useState(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const [compareVehicleIds, setCompareVehicleIds] = useState(getStoredCompareVehicleIds);
 
   useEffect(() => {
     const loadContent = async () => {
@@ -208,6 +215,30 @@ function App() {
 
   const handleAdminUpdated = (admin) => {
     setCurrentAdmin(admin);
+  };
+
+  const persistCompareIds = (nextVehicleIds) => {
+    const persistedVehicleIds = persistCompareVehicleIds(nextVehicleIds);
+    setCompareVehicleIds(persistedVehicleIds);
+    return persistedVehicleIds;
+  };
+
+  const handleCompareToggle = (vehicleId) => {
+    setCompareVehicleIds((currentValue) => {
+      const nextValue = toggleCompareVehicleId(currentValue, vehicleId);
+      return persistCompareVehicleIds(nextValue);
+    });
+  };
+
+  const handleCompareRemove = (vehicleId) => {
+    setCompareVehicleIds((currentValue) => {
+      const nextValue = currentValue.filter((entry) => entry !== vehicleId);
+      return persistCompareVehicleIds(nextValue);
+    });
+  };
+
+  const handleCompareClear = () => {
+    persistCompareIds([]);
   };
 
   const vehicleDetailId = getVehicleDetailId(currentPath);
@@ -362,13 +393,27 @@ function App() {
           onBackClick={() => navigateTo("/location-de-voitures")}
           onDeleted={() => navigateTo("/location-de-voitures")}
           onEditClick={() => navigateTo(`/location-de-voitures/${vehicleDetailId}/modifier`)}
+          onVehicleClick={(nextVehicleId) => navigateTo(`/location-de-voitures/${nextVehicleId}`)}
         />
       ) : currentPath === "/location-de-voitures" ? (
         <LocationVehiclesPage
           content={content.vehicles}
           currentAdmin={currentAdmin}
+          compareVehicleIds={compareVehicleIds}
+          onCompareToggle={handleCompareToggle}
+          onCompareRemove={handleCompareRemove}
+          onCompareClear={handleCompareClear}
+          onComparePageOpen={() => navigateTo("/compare")}
           onCreateClick={() => navigateTo("/location-de-voitures/creer")}
           onVehicleClick={(vehicleId) => navigateTo(`/location-de-voitures/${vehicleId}`)}
+        />
+      ) : currentPath === "/compare" ? (
+        <ComparePage
+          content={content.vehicles}
+          compareVehicleIds={compareVehicleIds}
+          onBackClick={() => navigateTo("/location-de-voitures")}
+          onRemove={handleCompareRemove}
+          onVehicleOpen={(vehicleId) => navigateTo(`/location-de-voitures/${vehicleId}`)}
         />
       ) : currentPath === "/contact" ? (
         <ContactPage

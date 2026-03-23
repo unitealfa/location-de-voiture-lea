@@ -11,6 +11,7 @@ function buildInitialFormValues() {
     brand: "",
     model: "",
     version: "",
+    vehicleRanges: [],
     fuelType: "",
     transmission: "",
     seats: "",
@@ -31,6 +32,9 @@ function mapVehicleToFormValues(vehicle) {
     brand: vehicle.brand,
     model: vehicle.model,
     version: vehicle.version,
+    vehicleRanges: Array.isArray(vehicle.vehicleRanges)
+      ? vehicle.vehicleRanges
+      : [],
     fuelType: vehicle.fuelType,
     transmission: vehicle.transmission,
     seats: String(vehicle.seats),
@@ -127,7 +131,7 @@ function AdminVehicleFormPage({
     return () => {
       objectUrls.forEach((url) => URL.revokeObjectURL(url));
     };
-  }, [existingPhotoUrls, photoFiles]);
+  }, [photoFiles]);
 
   useEffect(() => {
     if (!videoFile) {
@@ -150,6 +154,26 @@ function AdminVehicleFormPage({
       ...currentValues,
       [name]: type === "checkbox" ? checked : value
     }));
+  };
+
+  const handleVehicleRangeToggle = (vehicleRange) => {
+    setFormValues((currentValues) => {
+      const isSelected = currentValues.vehicleRanges.includes(vehicleRange);
+
+      if (!isSelected && currentValues.vehicleRanges.length >= 2) {
+        setErrorMessage(content.vehicleRangesLimitMessage);
+        return currentValues;
+      }
+
+      setErrorMessage("");
+
+      return {
+        ...currentValues,
+        vehicleRanges: isSelected
+          ? currentValues.vehicleRanges.filter((item) => item !== vehicleRange)
+          : [...currentValues.vehicleRanges, vehicleRange]
+      };
+    });
   };
 
   const handleExistingPhotoRemove = (photoUrlToRemove) => {
@@ -179,7 +203,8 @@ function AdminVehicleFormPage({
 
     try {
       const payload = {
-        ...formValues
+        ...formValues,
+        vehicleRanges: formValues.vehicleRanges
       };
 
       payload.photoFiles = photoFiles;
@@ -213,6 +238,8 @@ function AdminVehicleFormPage({
       </main>
     );
   }
+
+  const isVehicleRangeLimitReached = formValues.vehicleRanges.length >= 2;
 
   return (
     <main className="vehicle-form-page">
@@ -265,6 +292,34 @@ function AdminVehicleFormPage({
               onChange={handleChange}
             />
           </label>
+
+          <div className="vehicle-form__option-group">
+            <span className="vehicle-form__option-group-title">
+              {content.vehicleRangesLabel}
+            </span>
+
+            <div className="vehicle-form__option-group-grid">
+              {content.vehicleRangeOptions.map((option) => {
+                const isSelected = formValues.vehicleRanges.includes(option);
+
+                return (
+                  <label key={option} className="vehicle-form__option-item">
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => handleVehicleRangeToggle(option)}
+                      disabled={!isSelected && isVehicleRangeLimitReached}
+                    />
+                    <span>{option}</span>
+                  </label>
+                );
+              })}
+            </div>
+
+            <small className="vehicle-form__option-group-hint">
+              {content.vehicleRangesHint}
+            </small>
+          </div>
 
           <label className="login-form__field">
             <span>{content.fuelTypeLabel}</span>

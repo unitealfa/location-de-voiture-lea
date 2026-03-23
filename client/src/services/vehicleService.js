@@ -39,6 +39,10 @@ function buildVehicleFormData(payload) {
     "availabilityStatus"
   ].forEach((key) => appendFormField(formData, key, payload[key]));
 
+  if (Array.isArray(payload.vehicleRanges)) {
+    formData.append("vehicleRangesJson", JSON.stringify(payload.vehicleRanges));
+  }
+
   if (payload.videoFile) {
     formData.append("video", payload.videoFile);
   }

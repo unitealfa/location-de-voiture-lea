@@ -6,13 +6,13 @@ function getYoutubeEmbedUrl(url) {
   const shortMatch = url.match(/youtu\.be\/([a-zA-Z0-9_-]+)/);
 
   if (shortMatch) {
-    return `https://www.youtube.com/embed/${shortMatch[1]}`;
+    return `https://www.youtube.com/embed/${shortMatch[1]}?feature=oembed`;
   }
 
   const fullMatch = url.match(/[?&]v=([a-zA-Z0-9_-]+)/);
 
   if (fullMatch) {
-    return `https://www.youtube.com/embed/${fullMatch[1]}`;
+    return `https://www.youtube.com/embed/${fullMatch[1]}?feature=oembed`;
   }
 
   return "";
@@ -27,21 +27,22 @@ function VehicleVideo({ src, title }) {
 
   if (youtubeEmbedUrl) {
     return (
-      <div className="vehicle-video-frame">
-        <iframe
-          src={youtubeEmbedUrl}
-          title={title}
-          loading="lazy"
-          referrerPolicy="strict-origin-when-cross-origin"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowFullScreen
-        />
-      </div>
+      <iframe
+        title={title}
+        width="600"
+        height="338"
+        src={youtubeEmbedUrl}
+        frameBorder="0"
+        loading="lazy"
+        referrerPolicy="strict-origin-when-cross-origin"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowFullScreen
+      />
     );
   }
 
   return (
-    <video className="vehicle-video-player" controls preload="metadata">
+    <video className="vehica-car-embed__video" controls preload="metadata">
       <source src={src} />
     </video>
   );

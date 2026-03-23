@@ -1,12 +1,16 @@
 const { getPool } = require("../db/pool");
 
-function parsePhotoUrls(value) {
+function parseJsonArray(value) {
   try {
     const parsedValue = JSON.parse(value);
     return Array.isArray(parsedValue) ? parsedValue : [];
   } catch (error) {
     return [];
   }
+}
+
+function parsePhotoUrls(value) {
+  return parseJsonArray(value);
 }
 
 function mapVehicle(row) {
@@ -19,6 +23,7 @@ function mapVehicle(row) {
     brand: row.brand,
     model: row.model,
     version: row.version,
+    vehicleRanges: parseJsonArray(row.vehicle_ranges),
     fuelType: row.fuel_type,
     transmission: row.transmission,
     seats: row.seats,
@@ -49,6 +54,7 @@ async function listVehicles({ includeMaintenance }) {
         brand,
         model,
         version,
+        vehicle_ranges,
         fuel_type,
         transmission,
         seats,
@@ -89,6 +95,7 @@ async function findVehicleById(id) {
         brand,
         model,
         version,
+        vehicle_ranges,
         fuel_type,
         transmission,
         seats,
@@ -125,6 +132,7 @@ async function createVehicle(vehicle) {
         brand,
         model,
         version,
+        vehicle_ranges,
         fuel_type,
         transmission,
         seats,
@@ -142,12 +150,13 @@ async function createVehicle(vehicle) {
         photo_urls,
         availability_status
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `,
     [
       vehicle.brand,
       vehicle.model,
       vehicle.version,
+      JSON.stringify(vehicle.vehicleRanges),
       vehicle.fuelType,
       vehicle.transmission,
       vehicle.seats,
@@ -179,6 +188,7 @@ async function updateVehicle(id, vehicle) {
         brand = ?,
         model = ?,
         version = ?,
+        vehicle_ranges = ?,
         fuel_type = ?,
         transmission = ?,
         seats = ?,
@@ -201,6 +211,7 @@ async function updateVehicle(id, vehicle) {
       vehicle.brand,
       vehicle.model,
       vehicle.version,
+      JSON.stringify(vehicle.vehicleRanges),
       vehicle.fuelType,
       vehicle.transmission,
       vehicle.seats,
