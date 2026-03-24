@@ -97,6 +97,11 @@ function toDateTimeLocalValue(value) {
     return "";
   }
 
+  const date = new Date(String(value).replace(" ", "T"));
+  if (isNaN(date.getTime())) {
+    return "";
+  }
+
   return String(value).replace(" ", "T").slice(0, 16);
 }
 
@@ -146,7 +151,10 @@ function formatDurationLabel(pickupDatetime, returnDatetime) {
 }
 
 function toDate(value) {
-  return new Date(String(value).replace(" ", "T"));
+  if (!value) return null;
+  const date = new Date(String(value).replace(" ", "T"));
+  if (isNaN(date.getTime())) return null;
+  return date;
 }
 
 function getDatePart(value) {
@@ -558,17 +566,24 @@ function AdminReservationFormPage({
             reservation.id !== currentReservation?.id
         )
         .sort(
-          (left, right) =>
-            toDate(left.pickupDatetime).getTime() - toDate(right.pickupDatetime).getTime()
+          (left, right) => {
+            const leftTime = toDate(left.pickupDatetime)?.getTime() || 0;
+            const rightTime = toDate(right.pickupDatetime)?.getTime() || 0;
+            return leftTime - rightTime;
+          }
         ),
     [acceptedReservations, currentReservation?.id, formValues.vehicleId]
   );
   const reservationRanges = useMemo(
     () =>
-      selectedVehicleReservations.map((reservation) => ({
-        start: toDate(reservation.pickupDatetime),
-        end: toDate(reservation.returnDatetime)
-      })),
+      selectedVehicleReservations
+        .map((reservation) => {
+          const start = toDate(reservation.pickupDatetime);
+          const end = toDate(reservation.returnDatetime);
+          if (!start || !end) return null;
+          return { start, end };
+        })
+        .filter(Boolean),
     [selectedVehicleReservations]
   );
   const todayStartDate = useMemo(() => {

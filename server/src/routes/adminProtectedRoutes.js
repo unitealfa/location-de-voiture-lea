@@ -25,6 +25,7 @@ router.get("/dashboard", async (request, response, next) => {
       stats
     });
   } catch (error) {
+    console.error("Dashboard error:", error);
     next(error);
   }
 });

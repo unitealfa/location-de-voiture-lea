@@ -28,7 +28,10 @@ function createCalendarDays(monthDate) {
 }
 
 function toDate(value) {
-  return new Date(String(value).replace(" ", "T"));
+  if (!value) return null;
+  const date = new Date(String(value).replace(" ", "T"));
+  if (isNaN(date.getTime())) return null;
+  return date;
 }
 
 function getDayKey(day) {

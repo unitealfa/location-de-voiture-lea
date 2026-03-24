@@ -97,6 +97,26 @@ function buildReservationsByMonthChart(acceptedReservations, count = 6) {
   }));
 }
 
+function buildRevenueByMonthChart(acceptedReservations, count = 6) {
+  const months = createLastMonths(count);
+  const monthRevenues = new Map(months.map((monthDate) => [getMonthKey(monthDate), 0]));
+
+  acceptedReservations.forEach((reservation) => {
+    const pickupDate = toDate(reservation.pickupDatetime);
+    const key = getMonthKey(createMonthReference(pickupDate));
+    const price = reservation.totalPrice || 0;
+
+    if (monthRevenues.has(key)) {
+      monthRevenues.set(key, (monthRevenues.get(key) || 0) + price);
+    }
+  });
+
+  return months.map((monthDate) => ({
+    label: createMonthLabel(monthDate),
+    value: monthRevenues.get(getMonthKey(monthDate)) || 0
+  }));
+}
+
 function buildReservationsByWeekdayChart(acceptedReservations) {
   const weekdayCounts = Array.from({ length: 7 }, () => 0);
 
@@ -248,8 +268,16 @@ async function getAdminDashboardStats() {
   const visibleThisMonthCount = acceptedReservations.filter((reservation) =>
     reservationTouchesMonth(reservation, currentMonth)
   ).length;
+  const totalRevenue = allAcceptedReservations.reduce(
+    (sum, reservation) => sum + (reservation.totalPrice || 0),
+    0
+  );
+  const monthRevenue = allAcceptedReservations
+    .filter((reservation) => reservationTouchesMonth(reservation, currentMonth))
+    .reduce((sum, reservation) => sum + (reservation.totalPrice || 0), 0);
   const topVehicles = buildTopVehiclesChart(allAcceptedReservations);
   const reservationsByMonth = buildReservationsByMonthChart(allAcceptedReservations);
+  const revenueByMonth = buildRevenueByMonthChart(allAcceptedReservations);
   const reservationsByWeekday = buildReservationsByWeekdayChart(allAcceptedReservations);
   const fleetStatus = buildFleetStatusChart(vehicles);
 
@@ -258,6 +286,8 @@ async function getAdminDashboardStats() {
       pendingCount: pendingReservations.length,
       acceptedCount: acceptedReservations.length,
       visibleThisMonthCount,
+      totalRevenue,
+      monthRevenue,
       totalVisits: siteVisits.totalVisits,
       totalVisitors: siteVisits.totalVisitors,
       monthVisits: siteVisits.monthVisits,
@@ -271,6 +301,7 @@ async function getAdminDashboardStats() {
     },
     charts: {
       reservationsByMonth,
+      revenueByMonth,
       topVehicles,
       reservationsByWeekday,
       fleetStatus,

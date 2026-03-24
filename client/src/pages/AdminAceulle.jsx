@@ -178,6 +178,18 @@ function AdminAceulle({ content, admin }) {
               subLabel={content.thisMonthLabel}
               subValue={summary.monthVisitors}
             />
+            <DashboardSummaryCard
+              label="Revenus totaux"
+              value={`${summary.totalRevenue} €`}
+              helper="Revenus générés par toutes les réservations acceptées"
+              accent="revenue"
+            />
+            <DashboardSummaryCard
+              label="Revenus ce mois"
+              value={`${summary.monthRevenue} €`}
+              helper="Revenus générés ce mois-ci"
+              accent="revenue"
+            />
           </section>
 
           <section className="admin-home__insights-grid">
@@ -203,6 +215,12 @@ function AdminAceulle({ content, admin }) {
               title={content.chartReservationsByMonthTitle}
               items={charts.reservationsByMonth}
               emptyLabel={content.emptyChartLabel}
+            />
+            <DashboardBarsChart
+              title="Revenus par mois"
+              items={charts.revenueByMonth.map(item => ({ ...item, value: `${item.value} €` }))}
+              emptyLabel={content.emptyChartLabel}
+              accent="revenue"
             />
             <DashboardBarsChart
               title={content.chartTopVehiclesTitle}
