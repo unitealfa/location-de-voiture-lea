@@ -2,6 +2,9 @@ const express = require("express");
 const {
   requireAdminApiAuth
 } = require("../middleware/adminAuthMiddleware");
+const {
+  getAdminDashboardStats
+} = require("../services/adminDashboardService");
 
 const router = express.Router();
 
@@ -13,11 +16,17 @@ router.get("/me", (request, response) => {
   });
 });
 
-router.get("/dashboard", (request, response) => {
-  response.json({
-    message: "Zone admin protegee.",
-    admin: request.admin
-  });
+router.get("/dashboard", async (request, response, next) => {
+  try {
+    const stats = await getAdminDashboardStats();
+
+    response.json({
+      admin: request.admin,
+      stats
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
 module.exports = router;

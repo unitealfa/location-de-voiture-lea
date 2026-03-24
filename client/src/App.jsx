@@ -16,7 +16,10 @@ import CommencerReservationsPage from "./pages/CommencerReservationsPage";
 import ReservationDetailPage from "./pages/ReservationDetailPage";
 import ClientsCalendarPage from "./pages/ClientsCalendarPage";
 import AdminReservationFormPage from "./pages/AdminReservationFormPage";
-import { getHomePageContent } from "./services/contentService";
+import {
+  getCachedHomePageContent,
+  getHomePageContent
+} from "./services/contentService";
 import {
   getAdminSession,
   logoutAdmin
@@ -33,6 +36,26 @@ function normalizePath(path) {
     return "/";
   }
 
+  if (path === "/clients") {
+    return "/reservations";
+  }
+
+  if (path === "/clients/reservations/creer") {
+    return "/reservations/creer";
+  }
+
+  const clientReservationEditMatch = path.match(/^\/clients\/reservations\/(\d+)\/modifier$/);
+
+  if (clientReservationEditMatch) {
+    return `/reservations/${clientReservationEditMatch[1]}/modifier`;
+  }
+
+  const clientReservationDetailMatch = path.match(/^\/clients\/reservations\/(\d+)$/);
+
+  if (clientReservationDetailMatch) {
+    return `/reservations/${clientReservationDetailMatch[1]}`;
+  }
+
   return path;
 }
 
@@ -43,13 +66,15 @@ function getCurrentPath() {
 function isAdminOnlyPath(path) {
   return (
     path === "/admin/profile" ||
-    path === "/clients" ||
-    path === "/clients/reservations/creer" ||
+    path === "/reservations" ||
+    path === "/reservations/creer" ||
     path === "/location-de-voitures/creer" ||
+    /^\/location-de-voitures\/\d+\/reserver$/.test(path) ||
     /^\/location-de-voitures\/\d+\/modifier$/.test(path) ||
     /^\/commencer\/reservations\/\d+$/.test(path) ||
-    /^\/clients\/reservations\/\d+$/.test(path) ||
-    /^\/(commencer|clients)\/reservations\/\d+\/modifier$/.test(path)
+    /^\/reservations\/\d+$/.test(path) ||
+    /^\/commencer\/reservations\/\d+\/modifier$/.test(path) ||
+    /^\/reservations\/\d+\/modifier$/.test(path)
   );
 }
 
@@ -63,64 +88,125 @@ function getVehicleEditId(path) {
   return match ? Number(match[1]) : null;
 }
 
+function getVehicleReserveId(path) {
+  const match = path.match(/^\/location-de-voitures\/(\d+)\/reserver$/);
+  return match ? Number(match[1]) : null;
+}
+
 function getReservationDetailId(path) {
-  const match = path.match(/^\/(commencer|clients)\/reservations\/(\d+)$/);
-  return match ? Number(match[2]) : null;
+  let match = path.match(/^\/commencer\/reservations\/(\d+)$/);
+
+  if (match) {
+    return Number(match[1]);
+  }
+
+  match = path.match(/^\/reservations\/(\d+)$/);
+  return match ? Number(match[1]) : null;
 }
 
 function getReservationDetailScope(path) {
-  const match = path.match(/^\/(commencer|clients)\/reservations\/\d+$/);
-  return match ? match[1] : null;
+  if (/^\/commencer\/reservations\/\d+$/.test(path)) {
+    return "commencer";
+  }
+
+  if (/^\/reservations\/\d+$/.test(path)) {
+    return "reservations";
+  }
+
+  return null;
 }
 
 function getReservationEditId(path) {
-  const match = path.match(/^\/(commencer|clients)\/reservations\/(\d+)\/modifier$/);
-  return match ? Number(match[2]) : null;
+  let match = path.match(/^\/commencer\/reservations\/(\d+)\/modifier$/);
+
+  if (match) {
+    return Number(match[1]);
+  }
+
+  match = path.match(/^\/reservations\/(\d+)\/modifier$/);
+  return match ? Number(match[1]) : null;
 }
 
 function getReservationEditScope(path) {
-  const match = path.match(/^\/(commencer|clients)\/reservations\/\d+\/modifier$/);
-  return match ? match[1] : null;
+  if (/^\/commencer\/reservations\/\d+\/modifier$/.test(path)) {
+    return "commencer";
+  }
+
+  if (/^\/reservations\/\d+\/modifier$/.test(path)) {
+    return "reservations";
+  }
+
+  return null;
 }
 
 function isReservationDetailPath(path) {
-  return /^\/(commencer|clients)\/reservations\/\d+$/.test(path);
+  return /^\/commencer\/reservations\/\d+$/.test(path) || /^\/reservations\/\d+$/.test(path);
 }
 
 function isReservationEditPath(path) {
-  return /^\/(commencer|clients)\/reservations\/\d+\/modifier$/.test(path);
+  return /^\/commencer\/reservations\/\d+\/modifier$/.test(path) || /^\/reservations\/\d+\/modifier$/.test(path);
 }
 
 function getReservationListPath(path) {
   const scope = getReservationDetailScope(path);
-  return scope === "clients" ? "/clients" : "/commencer";
+  return scope === "reservations" ? "/reservations" : "/commencer";
 }
 
 function getReservationDetailDestination(scopePath, reservationId) {
-  const scope = scopePath === "/clients" ? "clients" : "commencer";
-  return `/${scope || "commencer"}/reservations/${reservationId}`;
+  if (scopePath === "/reservations") {
+    return `/reservations/${reservationId}`;
+  }
+
+  return `/commencer/reservations/${reservationId}`;
 }
 
 function App() {
-  const [content, setContent] = useState(null);
+  const [content, setContent] = useState(() => getCachedHomePageContent());
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isContentLoading, setIsContentLoading] = useState(
+    () => !getCachedHomePageContent()
+  );
   const [currentPath, setCurrentPath] = useState(getCurrentPath);
   const [currentAdmin, setCurrentAdmin] = useState(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [compareVehicleIds, setCompareVehicleIds] = useState(getStoredCompareVehicleIds);
 
   useEffect(() => {
+    let isActive = true;
+
     const loadContent = async () => {
+      setIsContentLoading((currentValue) => (content ? false : currentValue));
+
       try {
         const response = await getHomePageContent();
+
+        if (!isActive) {
+          return;
+        }
+
         setContent(response);
+        setErrorMessage("");
       } catch (error) {
-        setErrorMessage("Le contenu n'a pas pu etre charge depuis le serveur.");
+        if (!isActive) {
+          return;
+        }
+
+        if (!content) {
+          setErrorMessage("Le contenu n'a pas pu etre charge depuis le serveur.");
+        }
+      } finally {
+        if (isActive) {
+          setIsContentLoading(false);
+        }
       }
     };
 
     loadContent();
+
+    return () => {
+      isActive = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -243,6 +329,7 @@ function App() {
 
   const vehicleDetailId = getVehicleDetailId(currentPath);
   const vehicleEditId = getVehicleEditId(currentPath);
+  const vehicleReserveId = getVehicleReserveId(currentPath);
   const reservationDetailId = getReservationDetailId(currentPath);
   const reservationDetailScope = getReservationDetailScope(currentPath);
   const reservationEditId = getReservationEditId(currentPath);
@@ -262,7 +349,11 @@ function App() {
     }
   };
 
-  if ((!content && !errorMessage) || isAuthLoading) {
+  const isProtectedPath =
+    ((currentPath.startsWith("/admin") && currentPath !== "/admin/login") ||
+      isAdminOnlyPath(currentPath));
+
+  if ((!content && isContentLoading && !errorMessage) || (isProtectedPath && isAuthLoading && !currentAdmin)) {
     return (
       <main className="page-shell page-shell--centered">
         <p className="status-message">Chargement de la page d'accueil...</p>
@@ -270,7 +361,7 @@ function App() {
     );
   }
 
-  if (errorMessage) {
+  if (errorMessage && !content) {
     return (
       <main className="page-shell page-shell--centered">
         <p className="status-message">{errorMessage}</p>
@@ -295,7 +386,7 @@ function App() {
         onLoginClick={() => navigateTo("/admin/login")}
         onLogoutClick={handleAdminLogout}
         onProfileClick={() => navigateTo("/admin/profile")}
-        onClientsClick={() => navigateTo("/clients")}
+        onClientsClick={() => navigateTo("/reservations")}
       />
       {currentPath === "/admin/login" ? (
         <AdminLogin
@@ -310,14 +401,14 @@ function App() {
           onAdminUpdated={handleAdminUpdated}
           onBackClick={() => navigateTo("/admin")}
         />
-      ) : currentPath === "/clients/reservations/creer" && currentAdmin ? (
+      ) : currentPath === "/reservations/creer" && currentAdmin ? (
         <AdminReservationFormPage
           content={content.reservations}
           vehicleContent={content.vehicles}
           mode="create"
-          onBackClick={() => navigateTo("/clients")}
+          onBackClick={() => navigateTo("/reservations")}
           onSaved={(reservation) =>
-            navigateTo(`/clients/reservations/${reservation.id}`)
+            navigateTo(`/reservations/${reservation.id}`)
           }
         />
       ) : reservationEditId && currentAdmin && isReservationEditPath(currentPath) ? (
@@ -327,12 +418,16 @@ function App() {
           mode="edit"
           reservationId={reservationEditId}
           onBackClick={() =>
-            navigateTo(`/${reservationEditScope}/reservations/${reservationEditId}`)
+            navigateTo(
+              reservationEditScope === "reservations"
+                ? `/reservations/${reservationEditId}`
+                : `/commencer/reservations/${reservationEditId}`
+            )
           }
           onSaved={(reservation) =>
             navigateTo(
               reservation.status === "accepted"
-                ? `/clients/reservations/${reservation.id}`
+                ? `/reservations/${reservation.id}`
                 : `/commencer/reservations/${reservation.id}`
             )
           }
@@ -343,13 +438,17 @@ function App() {
           vehicleContent={content.vehicles}
           reservationId={reservationDetailId}
           detailScope={reservationDetailScope}
-          onAccepted={() => navigateTo("/clients")}
+          onAccepted={() => navigateTo("/reservations")}
           onRejected={() => navigateTo("/commencer")}
           onEditClick={() =>
-            navigateTo(`/${reservationDetailScope}/reservations/${reservationDetailId}/modifier`)
+            navigateTo(
+              reservationDetailScope === "reservations"
+                ? `/reservations/${reservationDetailId}/modifier`
+                : `/commencer/reservations/${reservationDetailId}/modifier`
+            )
           }
           onDeleted={() =>
-            navigateTo(reservationDetailScope === "clients" ? "/clients" : "/commencer")
+            navigateTo(reservationDetailScope === "reservations" ? "/reservations" : "/commencer")
           }
           onBackClick={() => navigateTo(getReservationListPath(currentPath))}
         />
@@ -360,12 +459,12 @@ function App() {
             navigateTo(getReservationDetailDestination("/commencer", reservationId))
           }
         />
-      ) : currentPath === "/clients" && currentAdmin ? (
+      ) : currentPath === "/reservations" && currentAdmin ? (
         <ClientsCalendarPage
           content={content.reservations}
-          onCreateClick={() => navigateTo("/clients/reservations/creer")}
+          onCreateClick={() => navigateTo("/reservations/creer")}
           onReservationClick={(reservationId) =>
-            navigateTo(getReservationDetailDestination("/clients", reservationId))
+            navigateTo(getReservationDetailDestination("/reservations", reservationId))
           }
         />
       ) : currentPath === "/commencer" ? (
@@ -376,6 +475,15 @@ function App() {
           mode="create"
           onBackClick={() => navigateTo("/location-de-voitures")}
           onSaved={() => navigateTo("/location-de-voitures")}
+        />
+      ) : vehicleReserveId && currentAdmin ? (
+        <AdminReservationFormPage
+          content={content.reservations}
+          vehicleContent={content.vehicles}
+          mode="create"
+          initialVehicleId={vehicleReserveId}
+          onBackClick={() => navigateTo(`/location-de-voitures/${vehicleReserveId}`)}
+          onSaved={(reservation) => navigateTo(`/reservations/${reservation.id}`)}
         />
       ) : vehicleEditId && currentAdmin ? (
         <AdminVehicleFormPage
@@ -393,6 +501,7 @@ function App() {
           onBackClick={() => navigateTo("/location-de-voitures")}
           onDeleted={() => navigateTo("/location-de-voitures")}
           onEditClick={() => navigateTo(`/location-de-voitures/${vehicleDetailId}/modifier`)}
+          onReserveClick={() => navigateTo(`/location-de-voitures/${vehicleDetailId}/reserver`)}
           onVehicleClick={(nextVehicleId) => navigateTo(`/location-de-voitures/${nextVehicleId}`)}
         />
       ) : currentPath === "/location-de-voitures" ? (

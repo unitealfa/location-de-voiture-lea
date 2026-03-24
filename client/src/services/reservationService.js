@@ -31,7 +31,8 @@ function buildAdminReservationFormData(payload) {
     "pickupLocationType",
     "returnLocationType",
     "pickupDatetime",
-    "returnDatetime"
+    "returnDatetime",
+    "totalPrice"
   ].forEach((key) => appendReservationFormField(formData, key, payload[key]));
 
   formData.append(
@@ -39,8 +40,8 @@ function buildAdminReservationFormData(payload) {
     payload.privacyPolicyAccepted ? "true" : "false"
   );
 
-  if (payload.drivingLicensePhoto) {
-    formData.append("drivingLicensePhoto", payload.drivingLicensePhoto);
+  for (const drivingLicensePhoto of payload.drivingLicensePhotos || []) {
+    formData.append("drivingLicensePhoto", drivingLicensePhoto);
   }
 
   return formData;
@@ -70,8 +71,8 @@ export async function createVehicleReservation(vehicleId, payload) {
     payload.privacyPolicyAccepted ? "true" : "false"
   );
 
-  if (payload.drivingLicensePhoto) {
-    formData.append("drivingLicensePhoto", payload.drivingLicensePhoto);
+  for (const drivingLicensePhoto of payload.drivingLicensePhotos || []) {
+    formData.append("drivingLicensePhoto", drivingLicensePhoto);
   }
 
   const response = await fetch(`/api/vehicles/${vehicleId}/reservations`, {

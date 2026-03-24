@@ -19,7 +19,6 @@ const FUEL_TYPE_OPTIONS = ["Essence", "Diesel", "GPL"];
 const VEHICLE_RANGE_OPTIONS = [
   "Luxe",
   "SUV",
-  "Cabriolet",
   "Citadines",
   "Berlines",
   "Sportives"

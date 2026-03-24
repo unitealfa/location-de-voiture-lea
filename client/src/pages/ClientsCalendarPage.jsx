@@ -31,10 +31,26 @@ function toDate(value) {
   return new Date(String(value).replace(" ", "T"));
 }
 
+function getDayKey(day) {
+  const year = day.getFullYear();
+  const month = String(day.getMonth() + 1).padStart(2, "0");
+  const date = String(day.getDate()).padStart(2, "0");
+  return `${year}-${month}-${date}`;
+}
+
 function isSameMonth(day, monthDate) {
   return (
     day.getFullYear() === monthDate.getFullYear() &&
     day.getMonth() === monthDate.getMonth()
+  );
+}
+
+function isToday(day) {
+  const today = new Date();
+  return (
+    day.getFullYear() === today.getFullYear() &&
+    day.getMonth() === today.getMonth() &&
+    day.getDate() === today.getDate()
   );
 }
 
@@ -51,8 +67,29 @@ function buildDayLabels(calendarDays) {
   return calendarDays.slice(0, 7).map((day) => weekdayFormatter.format(day));
 }
 
+function sortByPickup(left, right) {
+  return toDate(left.pickupDatetime).getTime() - toDate(right.pickupDatetime).getTime();
+}
+
+function sortByCreatedDesc(left, right) {
+  return toDate(right.createdAt).getTime() - toDate(left.createdAt).getTime();
+}
+
+function ReservationStatusPill({ label, type }) {
+  return (
+    <span
+      className={
+        "reservations-calendar-page__status reservations-calendar-page__status--" + type
+      }
+    >
+      {label}
+    </span>
+  );
+}
+
 function ClientsCalendarPage({ content, onCreateClick, onReservationClick }) {
-  const [reservations, setReservations] = useState([]);
+  const [pendingReservations, setPendingReservations] = useState([]);
+  const [acceptedReservations, setAcceptedReservations] = useState([]);
   const [monthDate, setMonthDate] = useState(() => createMonthReference(new Date()));
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -65,15 +102,17 @@ function ClientsCalendarPage({ content, onCreateClick, onReservationClick }) {
       setErrorMessage("");
 
       try {
-        const nextReservations = await listAdminReservations({
-          scope: "accepted"
-        });
+        const [nextPendingReservations, nextAcceptedReservations] = await Promise.all([
+          listAdminReservations({ scope: "pending" }),
+          listAdminReservations({ scope: "accepted" })
+        ]);
 
         if (!isActive) {
           return;
         }
 
-        setReservations(nextReservations);
+        setPendingReservations(nextPendingReservations.sort(sortByCreatedDesc));
+        setAcceptedReservations(nextAcceptedReservations.sort(sortByPickup));
       } catch (error) {
         if (!isActive) {
           return;
@@ -96,35 +135,53 @@ function ClientsCalendarPage({ content, onCreateClick, onReservationClick }) {
 
   const calendarDays = useMemo(() => createCalendarDays(monthDate), [monthDate]);
   const weekdayLabels = useMemo(() => buildDayLabels(calendarDays), [calendarDays]);
-  const visibleReservations = useMemo(
+  const visibleAcceptedReservations = useMemo(
     () =>
-      reservations.filter((reservation) =>
+      acceptedReservations.filter((reservation) =>
         calendarDays.some((day) => reservationTouchesDay(reservation, day))
       ),
-    [calendarDays, reservations]
+    [acceptedReservations, calendarDays]
   );
+  const reservationsByDay = useMemo(() => {
+    const map = new Map(calendarDays.map((day) => [getDayKey(day), []]));
+
+    visibleAcceptedReservations.forEach((reservation) => {
+      calendarDays.forEach((day) => {
+        if (reservationTouchesDay(reservation, day)) {
+          map.get(getDayKey(day))?.push(reservation);
+        }
+      });
+    });
+
+    return map;
+  }, [calendarDays, visibleAcceptedReservations]);
+  const visibleCountLabel = `${visibleAcceptedReservations.length} ${content.clientsVisibleCountSuffix}`;
+  const hasAnyReservation =
+    pendingReservations.length > 0 || acceptedReservations.length > 0;
 
   return (
-    <main className="clients-page">
-      <section className="reservations-page__hero">
-        <div>
-          <p className="hero-card__eyebrow">{content.eyebrow}</p>
-          <h1>{content.clientsTitle}</h1>
-          <p className="hero-card__text">{content.clientsDescription}</p>
-        </div>
+    <main className="reservations-calendar-page">
+      <section className="reservations-calendar-page__hero">
+        <div className="reservations-calendar-page__container reservations-calendar-page__hero-inner">
+          <div className="reservations-calendar-page__hero-copy">
+            <p className="hero-card__eyebrow">{content.eyebrow}</p>
+            <h1>{content.clientsTitle}</h1>
+            <p className="hero-card__text">{content.clientsDescription}</p>
+          </div>
 
-        <button
-          type="button"
-          className="vehicles-page__create"
-          onClick={onCreateClick}
-        >
-          {content.createLabel}
-        </button>
+          <button
+            type="button"
+            className="login-form__submit reservations-calendar-page__create"
+            onClick={onCreateClick}
+          >
+            {content.createLabel}
+          </button>
+        </div>
       </section>
 
       {isLoading ? (
         <section className="vehicles-empty">
-          <p className="status-message">Chargement des reservations acceptees...</p>
+          <p className="status-message">Chargement des reservations...</p>
         </section>
       ) : errorMessage ? (
         <section className="vehicles-empty">
@@ -132,7 +189,7 @@ function ClientsCalendarPage({ content, onCreateClick, onReservationClick }) {
             {errorMessage}
           </p>
         </section>
-      ) : reservations.length === 0 ? (
+      ) : !hasAnyReservation ? (
         <section className="vehicles-empty">
           <div className="vehicles-empty__card">
             <h2>{content.clientsEmptyTitle}</h2>
@@ -140,117 +197,256 @@ function ClientsCalendarPage({ content, onCreateClick, onReservationClick }) {
           </div>
         </section>
       ) : (
-        <section className="clients-calendar">
-          <div className="clients-calendar__toolbar">
-            <button
-              type="button"
-              className="vehicle-detail__secondary-action"
-              onClick={() =>
-                setMonthDate(
-                  (currentMonthDate) =>
-                    new Date(
-                      currentMonthDate.getFullYear(),
-                      currentMonthDate.getMonth() - 1,
-                      1
-                    )
-                )
-              }
-            >
-              {content.clientsMonthPreviousLabel}
-            </button>
+        <section className="reservations-calendar-page__body">
+          <div className="reservations-calendar-page__container">
 
-            <h2>{monthFormatter.format(monthDate)}</h2>
+            <section className="reservations-calendar-page__panel reservations-calendar-page__panel--pending">
+              <div className="reservations-calendar-page__panel-head">
+                <div className="reservations-calendar-page__panel-head-copy">
+                  <p className="hero-card__eyebrow">{content.clientsPendingEyebrow}</p>
+                  <h2>{content.clientsPendingTitle}</h2>
+                  <p className="reservations-calendar-page__panel-text">
+                    {content.clientsPendingDescription}
+                  </p>
+                </div>
 
-            <button
-              type="button"
-              className="vehicle-detail__secondary-action"
-              onClick={() =>
-                setMonthDate(
-                  (currentMonthDate) =>
-                    new Date(
-                      currentMonthDate.getFullYear(),
-                      currentMonthDate.getMonth() + 1,
-                      1
-                    )
-                )
-              }
-            >
-              {content.clientsMonthNextLabel}
-            </button>
-          </div>
-
-          <div className="clients-calendar__grid" role="grid">
-            {weekdayLabels.map((label) => (
-              <div key={label} className="clients-calendar__weekday">
-                {label}
+                <span className="reservations-calendar-page__count reservations-calendar-page__count--pending">
+                  {pendingReservations.length} {content.clientsPendingCountSuffix}
+                </span>
               </div>
-            ))}
 
-            {calendarDays.map((day) => {
-              const dayReservations = visibleReservations.filter((reservation) =>
-                reservationTouchesDay(reservation, day)
-              );
+              {pendingReservations.length === 0 ? (
+                <div className="reservations-calendar-page__empty-box">
+                  <h3>{content.clientsPendingEmptyTitle}</h3>
+                  <p>{content.clientsPendingEmptyDescription}</p>
+                </div>
+              ) : (
+                <div className="reservations-calendar-page__pending-list">
+                  {pendingReservations.map((reservation) => (
+                    <button
+                      key={reservation.id}
+                      type="button"
+                      className="reservations-calendar-page__pending-card"
+                      onClick={() => onReservationClick(reservation.id)}
+                    >
+                      <img
+                        src={reservation.vehiclePhotoUrl || "/home/rentzo-catalog-hero.jpg"}
+                        alt={reservation.vehicleName}
+                        loading="lazy"
+                        decoding="async"
+                      />
 
-              return (
-                <div
-                  key={day.toISOString()}
-                  className={`clients-calendar__day${isSameMonth(day, monthDate) ? "" : " clients-calendar__day--muted"}`}
-                >
-                  <span className="clients-calendar__day-number">
-                    {day.getDate()}
-                  </span>
+                      <div className="reservations-calendar-page__pending-body">
+                        <div className="reservations-calendar-page__pending-top">
+                          <ReservationStatusPill
+                            label={content.statusPendingLabel}
+                            type="pending"
+                          />
+                          <span className="reservations-calendar-page__pending-date">
+                            {content.createdAtLabel}: {formatReservationDateTime(reservation.createdAt)}
+                          </span>
+                        </div>
 
-                  <div className="clients-calendar__events">
-                    {dayReservations.map((reservation) => (
+                        <h3>{reservation.vehicleName}</h3>
+                        <p className="reservations-calendar-page__pending-client">
+                          {reservation.firstName} {reservation.lastName}
+                        </p>
+
+                        <div className="reservations-calendar-page__pending-meta">
+                          <span>{reservation.durationLabel}</span>
+                          <span>
+                            {content.calendarPickupLabel}: {formatReservationDateTime(reservation.pickupDatetime)}
+                          </span>
+                          <span>
+                            {content.calendarReturnLabel}: {formatReservationDateTime(reservation.returnDatetime)}
+                          </span>
+                        </div>
+
+                        <span className="reservations-calendar-page__pending-cta">
+                          {content.clientsPendingActionLabel}
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            <div className="reservations-calendar-page__layout">
+              <section className="reservations-calendar-page__panel reservations-calendar-page__panel--calendar">
+                <div className="reservations-calendar-page__panel-head">
+                  <div className="reservations-calendar-page__panel-head-copy">
+                    <p className="hero-card__eyebrow">{content.clientsAcceptedEyebrow}</p>
+                    <h2>{monthFormatter.format(monthDate)}</h2>
+                    <p className="reservations-calendar-page__panel-text">
+                      {content.clientsAcceptedDescription}
+                    </p>
+                  </div>
+
+                  <span className="reservations-calendar-page__count">{visibleCountLabel}</span>
+                </div>
+
+                <div className="reservations-calendar-page__toolbar">
+                  <button
+                    type="button"
+                    className="vehicle-detail__secondary-action reservations-calendar-page__nav"
+                    onClick={() =>
+                      setMonthDate(
+                        (currentMonthDate) =>
+                          new Date(
+                            currentMonthDate.getFullYear(),
+                            currentMonthDate.getMonth() - 1,
+                            1
+                          )
+                      )
+                    }
+                  >
+                    {content.clientsMonthPreviousLabel}
+                  </button>
+
+                  <button
+                    type="button"
+                    className="vehicle-detail__secondary-action reservations-calendar-page__nav"
+                    onClick={() =>
+                      setMonthDate(
+                        (currentMonthDate) =>
+                          new Date(
+                            currentMonthDate.getFullYear(),
+                            currentMonthDate.getMonth() + 1,
+                            1
+                          )
+                      )
+                    }
+                  >
+                    {content.clientsMonthNextLabel}
+                  </button>
+                </div>
+
+                {acceptedReservations.length === 0 ? (
+                  <div className="reservations-calendar-page__empty-box reservations-calendar-page__empty-box--calendar">
+                    <h3>{content.clientsAcceptedEmptyTitle}</h3>
+                    <p>{content.clientsAcceptedEmptyDescription}</p>
+                  </div>
+                ) : (
+                  <div className="reservations-calendar-page__grid" role="grid">
+                    {weekdayLabels.map((label) => (
+                      <div key={label} className="reservations-calendar-page__weekday">
+                        {label}
+                      </div>
+                    ))}
+
+                    {calendarDays.map((day) => {
+                      const dayReservations = reservationsByDay.get(getDayKey(day)) || [];
+
+                      return (
+                        <div
+                          key={day.toISOString()}
+                          className={
+                            "reservations-calendar-page__day" +
+                            (isSameMonth(day, monthDate)
+                              ? ""
+                              : " reservations-calendar-page__day--muted") +
+                            (isToday(day) ? " reservations-calendar-page__day--today" : "") +
+                            (dayReservations.length > 0
+                              ? " reservations-calendar-page__day--has-events"
+                              : "") +
+                            (dayReservations.length > 2
+                              ? " reservations-calendar-page__day--busy"
+                              : "")
+                          }
+                        >
+                          <div className="reservations-calendar-page__day-head">
+                            <span className="reservations-calendar-page__day-number">
+                              {day.getDate()}
+                            </span>
+
+                            {dayReservations.length > 0 ? (
+                              <span className="reservations-calendar-page__day-count">
+                                {dayReservations.length}
+                              </span>
+                            ) : null}
+                          </div>
+
+                          <div className="reservations-calendar-page__events">
+                            {dayReservations.map((reservation) => (
+                              <button
+                                key={`${reservation.id}-${day.toISOString()}`}
+                                type="button"
+                                className="reservations-calendar-page__event"
+                                onClick={() => onReservationClick(reservation.id)}
+                              >
+                                <span className="reservations-calendar-page__event-name">
+                                  {reservation.firstName} {reservation.lastName}
+                                </span>
+                                <span className="reservations-calendar-page__event-vehicle">
+                                  {reservation.vehicleName}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </section>
+
+              <aside className="reservations-calendar-page__panel reservations-calendar-page__panel--sidebar">
+                <div className="reservations-calendar-page__panel-head reservations-calendar-page__panel-head--sidebar">
+                  <div className="reservations-calendar-page__panel-head-copy">
+                    <p className="hero-card__eyebrow">{content.clientsSidebarTitle}</p>
+                    <h2>{acceptedReservations.length} {content.clientsAcceptedCountSuffix}</h2>
+                    <p className="reservations-calendar-page__panel-text">
+                      {content.clientsAcceptedSidebarDescription}
+                    </p>
+                  </div>
+                </div>
+
+                {acceptedReservations.length === 0 ? (
+                  <div className="reservations-calendar-page__empty-box reservations-calendar-page__empty-box--sidebar">
+                    <h3>{content.clientsAcceptedEmptyTitle}</h3>
+                    <p>{content.clientsAcceptedEmptyDescription}</p>
+                  </div>
+                ) : (
+                  <div className="reservations-calendar-page__list">
+                    {visibleAcceptedReservations.map((reservation) => (
                       <button
-                        key={`${reservation.id}-${day.toISOString()}`}
+                        key={reservation.id}
                         type="button"
-                        className="clients-calendar__event"
+                        className="reservations-calendar-page__card"
                         onClick={() => onReservationClick(reservation.id)}
                       >
-                        <strong>
-                          {reservation.firstName} {reservation.lastName}
-                        </strong>
-                        <span>{reservation.vehicleName}</span>
+                        <img
+                          src={reservation.vehiclePhotoUrl || "/home/rentzo-catalog-hero.jpg"}
+                          alt={reservation.vehicleName}
+                          loading="lazy"
+                          decoding="async"
+                        />
+                        <div className="reservations-calendar-page__card-body">
+                          <div className="reservations-calendar-page__card-top">
+                            <ReservationStatusPill
+                              label={content.statusAcceptedLabel}
+                              type="accepted"
+                            />
+                          </div>
+                          <h3>{reservation.vehicleName}</h3>
+                          <p>
+                            {reservation.firstName} {reservation.lastName}
+                          </p>
+                          <p>{reservation.durationLabel}</p>
+                          <p>
+                            {content.calendarPickupLabel}: {formatReservationDateTime(reservation.pickupDatetime)}
+                          </p>
+                          <p>
+                            {content.calendarReturnLabel}: {formatReservationDateTime(reservation.returnDatetime)}
+                          </p>
+                        </div>
                       </button>
                     ))}
                   </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="clients-calendar__list">
-            {visibleReservations.map((reservation) => (
-              <button
-                key={reservation.id}
-                type="button"
-                className="reservation-card"
-                onClick={() => onReservationClick(reservation.id)}
-              >
-                <img
-                  src={reservation.vehiclePhotoUrl}
-                  alt={reservation.vehicleName}
-                  loading="lazy"
-                  decoding="async"
-                />
-                <div className="reservation-card__body">
-                  <h2>{reservation.vehicleName}</h2>
-                  <p>
-                    {reservation.firstName} {reservation.lastName}
-                  </p>
-                  <p>{reservation.durationLabel}</p>
-                  <p>
-                    {content.calendarPickupLabel}:{" "}
-                    {formatReservationDateTime(reservation.pickupDatetime)}
-                  </p>
-                  <p>
-                    {content.calendarReturnLabel}:{" "}
-                    {formatReservationDateTime(reservation.returnDatetime)}
-                  </p>
-                </div>
-              </button>
-            ))}
+                )}
+              </aside>
+            </div>
           </div>
         </section>
       )}

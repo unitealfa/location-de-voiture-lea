@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import VehicleReservationForm from "../components/VehicleReservationForm";
 import VehicleVideo from "../components/VehicleVideo";
 import {
@@ -31,6 +31,10 @@ function getRelatedSlidesPerView(width) {
   }
 
   return 1;
+}
+
+function getGallerySlidesPerView(width) {
+  return width < 768 ? 1 : 2;
 }
 
 function formatVehicleRanges(vehicle) {
@@ -207,8 +211,9 @@ function RelatedVehicleCard({ content, vehicle, onOpen }) {
 const HEADLINE_ANIMATION_DURATION_MS = 1200;
 const HEADLINE_ITERATION_DELAY_MS = 8000;
 const HEADLINE_HIDE_DURATION_MS = 400;
-const HEADLINE_MARKER_PATH =
-  "M26,78 C20,50 46,29 98,22 C149,16 212,18 275,17 C337,16 401,22 447,33 C474,39 488,56 486,77 C484,98 467,113 436,122 C391,135 336,131 279,133 C212,136 153,140 100,135 C58,131 32,116 26,78 Z";
+const HEADLINE_MARKER_PATHS = [
+  "M36,85 C25,51 50,24 109,17 C176,10 260,12 337,17 C402,21 453,31 479,49 C493,59 498,75 492,92 C484,117 456,130 410,138 C345,147 260,146 184,143 C118,140 68,130 44,112 C27,99 26,80 36,65 C45,53 59,48 69,51"
+];
 
 function AnimatedReservationHeadline({ accentText, startText }) {
   const [cycleKey, setCycleKey] = useState(0);
@@ -267,7 +272,9 @@ function AnimatedReservationHeadline({ accentText, startText }) {
             preserveAspectRatio="none"
             aria-hidden="true"
           >
-            <path d={HEADLINE_MARKER_PATH}></path>
+            {HEADLINE_MARKER_PATHS.map((markerPath, markerIndex) => (
+              <path key={markerIndex} d={markerPath}></path>
+            ))}
           </svg>
         </span>
       </h3>
@@ -282,6 +289,7 @@ function VehicleDetailPage({
   onBackClick,
   onDeleted,
   onEditClick,
+  onReserveClick,
   onVehicleClick
 }) {
   const [vehicle, setVehicle] = useState(null);
@@ -290,6 +298,17 @@ function VehicleDetailPage({
   const [isLoading, setIsLoading] = useState(true);
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
+  const [gallerySlidesPerView, setGallerySlidesPerView] = useState(() => {
+    if (typeof window === "undefined") {
+      return 2;
+    }
+
+    return getGallerySlidesPerView(window.innerWidth);
+  });
+  const [galleryTrackWidth, setGalleryTrackWidth] = useState(0);
+  const [galleryDragOffset, setGalleryDragOffset] = useState(0);
+  const [isGalleryDragging, setIsGalleryDragging] = useState(false);
+  const [isGalleryTransitionEnabled, setIsGalleryTransitionEnabled] = useState(true);
   const [relatedSlidesPerView, setRelatedSlidesPerView] = useState(() => {
     if (typeof window === "undefined") {
       return 4;
@@ -299,6 +318,14 @@ function VehicleDetailPage({
   });
   const [relatedTrackWidth, setRelatedTrackWidth] = useState(0);
   const [relatedActiveIndex, setRelatedActiveIndex] = useState(0);
+  const galleryGestureRef = useRef({
+    dragging: false,
+    pointerId: null,
+    startX: 0,
+    deltaX: 0
+  });
+  const galleryImagePreloadRef = useRef(new Set());
+  const galleryTrackRef = useRef(null);
   const relatedTrackRef = useRef(null);
 
   useEffect(() => {
@@ -354,6 +381,7 @@ function VehicleDetailPage({
     }
 
     const handleResize = () => {
+      setGallerySlidesPerView(getGallerySlidesPerView(window.innerWidth));
       setRelatedSlidesPerView(getRelatedSlidesPerView(window.innerWidth));
     };
 
@@ -364,6 +392,40 @@ function VehicleDetailPage({
       window.removeEventListener("resize", handleResize);
     };
   }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !galleryTrackRef.current) {
+      return undefined;
+    }
+
+    const updateWidth = () => {
+      if (!galleryTrackRef.current) {
+        return;
+      }
+
+      setGalleryTrackWidth(galleryTrackRef.current.clientWidth || 0);
+    };
+
+    updateWidth();
+
+    if (!("ResizeObserver" in window)) {
+      window.addEventListener("resize", updateWidth);
+
+      return () => {
+        window.removeEventListener("resize", updateWidth);
+      };
+    }
+
+    const observer = new ResizeObserver(() => {
+      updateWidth();
+    });
+
+    observer.observe(galleryTrackRef.current);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [vehicleId, gallerySlidesPerView, vehicle?.photoUrls?.length]);
 
   useEffect(() => {
     if (typeof window === "undefined" || !relatedTrackRef.current) {
@@ -450,21 +512,70 @@ function VehicleDetailPage({
 
     return vehicle.photoUrls;
   }, [vehicle]);
+  const galleryPreloadUrls = useMemo(() => [...new Set(photoUrls)], [photoUrls]);
 
-  const galleryIndexLimit = Math.max(0, photoUrls.length - 2);
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+
+    galleryPreloadUrls.forEach((photoUrl) => {
+      if (!photoUrl || galleryImagePreloadRef.current.has(photoUrl)) {
+        return;
+      }
+
+      const image = new window.Image();
+      image.decoding = "async";
+      image.src = photoUrl;
+      galleryImagePreloadRef.current.add(photoUrl);
+
+      if (typeof image.decode === "function") {
+        image.decode().catch(() => undefined);
+      }
+    });
+
+    return undefined;
+  }, [galleryPreloadUrls]);
+
+  const isGalleryInteractive = photoUrls.length > gallerySlidesPerView;
+  const gallerySlides = useMemo(() => {
+    if (!isGalleryInteractive) {
+      return photoUrls;
+    }
+
+    const prefixSlides = photoUrls.slice(-gallerySlidesPerView);
+    const suffixSlides = photoUrls.slice(0, gallerySlidesPerView);
+    return [...prefixSlides, ...photoUrls, ...suffixSlides];
+  }, [gallerySlidesPerView, isGalleryInteractive, photoUrls]);
+  const galleryStepWidth =
+    galleryTrackWidth > 0 ? galleryTrackWidth / gallerySlidesPerView : 0;
   const galleryClassName =
     "vehica-gallery-v3 rentzo-single-car__gallery" +
     (photoUrls.length === 1
       ? " vehica-gallery-v3--count-1"
       : photoUrls.length === 2
         ? " vehica-gallery-v3--count-2"
-        : "");
+        : "") +
+    (isGalleryInteractive ? " vehica-gallery-v3--interactive" : "") +
+    (isGalleryDragging ? " is-dragging" : "");
+  const galleryBaseTranslate =
+    galleryStepWidth > 0
+      ? activePhotoIndex * galleryStepWidth
+      : activePhotoIndex * (100 / gallerySlidesPerView);
   const galleryTrackStyle =
-    photoUrls.length > 2
+    galleryStepWidth > 0
       ? {
-          transform: "translate3d(-" + activePhotoIndex * 50 + "%, 0, 0)"
+          transform:
+            "translate3d(" + (-galleryBaseTranslate + galleryDragOffset) + "px, 0, 0)",
+          transition:
+            isGalleryTransitionEnabled && !isGalleryDragging ? undefined : "none"
         }
-      : undefined;
+      : {
+          transform:
+            "translate3d(-" + activePhotoIndex * (100 / gallerySlidesPerView) + "%, 0, 0)",
+          transition:
+            isGalleryTransitionEnabled && !isGalleryDragging ? undefined : "none"
+        };
   const detailAttributes = useMemo(
     () => (vehicle ? buildDetailAttributes(vehicle, content) : []),
     [vehicle, content]
@@ -522,26 +633,136 @@ function VehicleDetailPage({
         }
       : undefined;
 
+  function resetGallerySwipe() {
+    galleryGestureRef.current = {
+      dragging: false,
+      pointerId: null,
+      startX: 0,
+      deltaX: 0
+    };
+    setGalleryDragOffset(0);
+    setIsGalleryDragging(false);
+  }
+
+  useLayoutEffect(() => {
+    resetGallerySwipe();
+    setIsGalleryTransitionEnabled(true);
+    setActivePhotoIndex(isGalleryInteractive ? gallerySlidesPerView : 0);
+  }, [gallerySlidesPerView, isGalleryInteractive, photoUrls.length, vehicleId]);
+
   useEffect(() => {
-    setActivePhotoIndex((currentIndex) => Math.min(currentIndex, galleryIndexLimit));
-  }, [galleryIndexLimit]);
+    if (isGalleryTransitionEnabled || typeof window === "undefined") {
+      return undefined;
+    }
+
+    let animationFrameId = 0;
+    let nestedAnimationFrameId = 0;
+
+    animationFrameId = window.requestAnimationFrame(() => {
+      nestedAnimationFrameId = window.requestAnimationFrame(() => {
+        setIsGalleryTransitionEnabled(true);
+      });
+    });
+
+    return () => {
+      window.cancelAnimationFrame(animationFrameId);
+      window.cancelAnimationFrame(nestedAnimationFrameId);
+    };
+  }, [isGalleryTransitionEnabled]);
 
   useEffect(() => {
     setRelatedActiveIndex((currentIndex) => Math.min(currentIndex, relatedMaxIndex));
   }, [relatedMaxIndex]);
 
   const goToPreviousPhoto = () => {
-    setActivePhotoIndex((currentIndex) => {
-      const nextIndex = currentIndex - 1;
-      return nextIndex < 0 ? galleryIndexLimit : nextIndex;
-    });
+    if (!isGalleryInteractive) {
+      return;
+    }
+
+    setIsGalleryTransitionEnabled(true);
+    setActivePhotoIndex((currentIndex) => currentIndex - 1);
   };
 
   const goToNextPhoto = () => {
-    setActivePhotoIndex((currentIndex) => {
-      const nextIndex = currentIndex + 1;
-      return nextIndex > galleryIndexLimit ? 0 : nextIndex;
-    });
+    if (!isGalleryInteractive) {
+      return;
+    }
+
+    setIsGalleryTransitionEnabled(true);
+    setActivePhotoIndex((currentIndex) => currentIndex + 1);
+  };
+
+  const handleGalleryTransitionEnd = () => {
+    if (!isGalleryInteractive) {
+      return;
+    }
+
+    if (activePhotoIndex < gallerySlidesPerView) {
+      setIsGalleryTransitionEnabled(false);
+      setActivePhotoIndex((currentIndex) => currentIndex + photoUrls.length);
+      return;
+    }
+
+    if (activePhotoIndex >= photoUrls.length + gallerySlidesPerView) {
+      setIsGalleryTransitionEnabled(false);
+      setActivePhotoIndex((currentIndex) => currentIndex - photoUrls.length);
+    }
+  };
+
+  const handleGalleryPointerDown = (event) => {
+    if (!isGalleryInteractive) {
+      return;
+    }
+
+    galleryGestureRef.current = {
+      dragging: true,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      deltaX: 0
+    };
+    setGalleryDragOffset(0);
+    setIsGalleryTransitionEnabled(false);
+    setIsGalleryDragging(true);
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+  };
+
+  const handleGalleryPointerMove = (event) => {
+    if (
+      !galleryGestureRef.current.dragging ||
+      galleryGestureRef.current.pointerId !== event.pointerId
+    ) {
+      return;
+    }
+
+    galleryGestureRef.current.deltaX = event.clientX - galleryGestureRef.current.startX;
+    setGalleryDragOffset(galleryGestureRef.current.deltaX);
+  };
+
+  const handleGalleryPointerEnd = (event) => {
+    if (
+      !galleryGestureRef.current.dragging ||
+      galleryGestureRef.current.pointerId !== event.pointerId
+    ) {
+      return;
+    }
+
+    const deltaX = galleryGestureRef.current.deltaX;
+    event.currentTarget.releasePointerCapture?.(event.pointerId);
+    resetGallerySwipe();
+
+    if (Math.abs(deltaX) < 48) {
+      setIsGalleryTransitionEnabled(true);
+      return;
+    }
+
+    setIsGalleryTransitionEnabled(true);
+
+    if (deltaX < 0) {
+      goToNextPhoto();
+      return;
+    }
+
+    goToPreviousPhoto();
   };
 
   const goToPreviousRelated = () => {
@@ -603,9 +824,6 @@ function VehicleDetailPage({
           <div className="vehicles-empty__card">
             <h1>{content.notFoundMessage}</h1>
             <p>{errorMessage || content.detailErrorMessage}</p>
-            <button type="button" className="vehicle-detail__back" onClick={onBackClick}>
-              {content.backToListLabel}
-            </button>
           </div>
         </section>
       </main>
@@ -614,55 +832,70 @@ function VehicleDetailPage({
 
   return (
     <main className="rentzo-single-car-page">
-      <section className="rentzo-single-car__top-actions">
-        <div className="rentzo-single-car__container">
-          <button type="button" className="vehicle-detail__back" onClick={onBackClick}>
-            {content.backToListLabel}
-          </button>
-        </div>
-      </section>
-
       <section className="rentzo-single-car__gallery-section">
-        <div className="rentzo-single-car__container">
-          <div className={galleryClassName}>
-            <div className="vehica-swiper-container">
-              <div className="vehica-swiper-wrapper" style={galleryTrackStyle}>
-                {photoUrls.map((photoUrl, index) => (
+        <div className={galleryClassName}>
+          <div
+            ref={galleryTrackRef}
+            className="vehica-swiper-container"
+            onPointerDown={handleGalleryPointerDown}
+            onPointerMove={handleGalleryPointerMove}
+            onPointerUp={handleGalleryPointerEnd}
+            onPointerCancel={handleGalleryPointerEnd}
+          >
+            <div
+              className="vehica-swiper-wrapper"
+              style={galleryTrackStyle}
+              onTransitionEnd={handleGalleryTransitionEnd}
+            >
+              {gallerySlides.map((photoUrl, index) => {
+                const visualIndex =
+                  !isGalleryInteractive
+                    ? index + 1
+                    : index < gallerySlidesPerView
+                      ? photoUrls.length - gallerySlidesPerView + index + 1
+                      : index >= photoUrls.length + gallerySlidesPerView
+                        ? index - (photoUrls.length + gallerySlidesPerView) + 1
+                        : index - gallerySlidesPerView + 1;
+
+                return (
                   <div key={photoUrl + "-" + index} className="vehica-gallery-v3__slide">
                     <div className="vehica-gallery-v3__image-wrapper">
                       <img
                         className="vehica-gallery-v3__image"
                         src={photoUrl}
-                        alt={vehicleTitle + " " + (index + 1)}
+                        alt={vehicleTitle + " " + visualIndex}
+                        loading="eager"
+                        decoding="async"
+                        draggable={false}
                       />
                     </div>
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
-
-            {photoUrls.length > 2 ? (
-              <div className="vehica-gallery-v3__arrows">
-                <button
-                  type="button"
-                  className="vehica-gallery-v3__arrow vehica-gallery-v3__arrow--left"
-                  onClick={goToPreviousPhoto}
-                  aria-label="Photo precedente"
-                >
-                  <i className="fas fa-chevron-left"></i>
-                </button>
-
-                <button
-                  type="button"
-                  className="vehica-gallery-v3__arrow vehica-gallery-v3__arrow--right"
-                  onClick={goToNextPhoto}
-                  aria-label="Photo suivante"
-                >
-                  <i className="fas fa-chevron-right"></i>
-                </button>
-              </div>
-            ) : null}
           </div>
+
+          {isGalleryInteractive ? (
+            <div className="vehica-gallery-v3__arrows">
+              <button
+                type="button"
+                className="vehica-gallery-v3__arrow vehica-gallery-v3__arrow--left"
+                onClick={goToPreviousPhoto}
+                aria-label="Photo precedente"
+              >
+                <i className="fas fa-chevron-left"></i>
+              </button>
+
+              <button
+                type="button"
+                className="vehica-gallery-v3__arrow vehica-gallery-v3__arrow--right"
+                onClick={goToNextPhoto}
+                aria-label="Photo suivante"
+              >
+                <i className="fas fa-chevron-right"></i>
+              </button>
+            </div>
+          ) : null}
         </div>
       </section>
 
@@ -913,7 +1146,15 @@ function VehicleDetailPage({
               ) : (
                 <div className="rentzo-single-car__sidebar-panel rentzo-single-car__sidebar-panel--actions">
                   <div className="rentzo-single-car__admin-actions">
-                    <button type="button" className="login-form__submit" onClick={onEditClick}>
+                    <button
+                      type="button"
+                      className="login-form__submit"
+                      disabled={isActionLoading || vehicle.availabilityStatus === "maintenance"}
+                      onClick={onReserveClick}
+                    >
+                      {content.adminReserveLabel}
+                    </button>
+                    <button type="button" className="vehicle-detail__secondary-action" onClick={onEditClick}>
                       {content.adminEditLabel}
                     </button>
                     <button

@@ -22,6 +22,9 @@ function mapReservation(row) {
     returnLocationType: row.return_location_type,
     pickupDatetime: row.pickup_datetime,
     returnDatetime: row.return_datetime,
+    totalPrice: row.total_price === null ? null : Number(row.total_price),
+    priceRateType: row.price_rate_type,
+    priceManualOverride: Boolean(row.price_manual_override),
     status: row.status,
     privacyPolicyAccepted: Boolean(row.privacy_policy_accepted),
     createdAt: row.created_at,
@@ -49,10 +52,13 @@ async function createReservation(reservation) {
         return_location_type,
         pickup_datetime,
         return_datetime,
+        total_price,
+        price_rate_type,
+        price_manual_override,
         status,
         privacy_policy_accepted
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `,
     [
       reservation.vehicleId,
@@ -70,6 +76,9 @@ async function createReservation(reservation) {
       reservation.returnLocationType,
       reservation.pickupDatetime,
       reservation.returnDatetime,
+      reservation.totalPrice,
+      reservation.priceRateType || "daily",
+      reservation.priceManualOverride ? 1 : 0,
       reservation.status || "pending",
       reservation.privacyPolicyAccepted ? 1 : 0
     ]
@@ -99,6 +108,9 @@ async function findReservationById(id) {
         return_location_type,
         pickup_datetime,
         return_datetime,
+        total_price,
+        price_rate_type,
+        price_manual_override,
         status,
         privacy_policy_accepted,
         created_at,
@@ -146,6 +158,9 @@ async function listReservations({ status, futureOnly = false } = {}) {
         return_location_type,
         pickup_datetime,
         return_datetime,
+        total_price,
+        price_rate_type,
+        price_manual_override,
         status,
         privacy_policy_accepted,
         created_at,
@@ -195,6 +210,9 @@ async function updateReservation(id, reservation) {
         return_location_type = ?,
         pickup_datetime = ?,
         return_datetime = ?,
+        total_price = ?,
+        price_rate_type = ?,
+        price_manual_override = ?,
         status = ?,
         privacy_policy_accepted = ?
       WHERE id = ?
@@ -215,6 +233,9 @@ async function updateReservation(id, reservation) {
       reservation.returnLocationType,
       reservation.pickupDatetime,
       reservation.returnDatetime,
+      reservation.totalPrice,
+      reservation.priceRateType || "daily",
+      reservation.priceManualOverride ? 1 : 0,
       reservation.status,
       reservation.privacyPolicyAccepted ? 1 : 0,
       id

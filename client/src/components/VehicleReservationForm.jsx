@@ -3,10 +3,13 @@ import {
   createVehicleReservation,
   getVehicleReservationAvailability
 } from "../services/reservationService";
-import { formatVehicleName } from "../utils/vehicleFormatters";
+import { calculateReservationPricing, getReservationRateLabel } from "../utils/reservationPricing";
+import { formatVehicleName, formatVehiclePrice } from "../utils/vehicleFormatters";
+import { formatReservationDateTime } from "../utils/reservationFormatters";
 
-const SLOT_INTERVAL_MINUTES = 30;
-const MIN_RESERVATION_DURATION_MINUTES = 30;
+const MAX_DRIVING_LICENSE_FILES = 2;
+const RESERVATION_DAY_START_TIME = "00:00";
+const RESERVATION_DAY_END_TIME = "23:59";
 const WEEKDAY_FORMATTER = new Intl.DateTimeFormat("fr-FR", {
   weekday: "short"
 });
@@ -14,23 +17,11 @@ const MONTH_FORMATTER = new Intl.DateTimeFormat("fr-FR", {
   month: "long",
   year: "numeric"
 });
-const TIME_OPTIONS = Array.from({ length: 48 }, (_, index) => {
-  const totalMinutes = index * SLOT_INTERVAL_MINUTES;
-  const hours = String(Math.floor(totalMinutes / 60)).padStart(2, "0");
-  const minutes = String(totalMinutes % 60).padStart(2, "0");
-
-  return {
-    value: `${hours}:${minutes}`,
-    label: `${hours}:${minutes}`
-  };
-});
-
 function getInitialFormValues() {
   return {
     fullName: "",
     email: "",
     phone: "",
-    birthDate: "",
     comment: "",
     pickupLocationType: "bureau",
     returnLocationType: "bureau",
@@ -91,32 +82,29 @@ function formatDateValue(date) {
   return `${year}-${month}-${day}`;
 }
 
-function splitDateTimeValue(value) {
-  if (!value) {
-    return {
-      date: "",
-      time: ""
-    };
-  }
-
-  const [datePart, timePart = ""] = String(value).split("T");
-
-  return {
-    date: datePart,
-    time: timePart.slice(0, 5)
-  };
+function buildReservationStartDateTime(dateValue) {
+  return dateValue ? `${dateValue}T${RESERVATION_DAY_START_TIME}` : "";
 }
 
-function combineDateAndTime(dateValue, timeValue) {
-  return dateValue && timeValue ? `${dateValue}T${timeValue}` : "";
+function buildReservationEndDateTime(dateValue) {
+  return dateValue ? `${dateValue}T${RESERVATION_DAY_END_TIME}` : "";
 }
 
-function createDateTime(dateValue, timeValue) {
-  if (!dateValue || !timeValue) {
-    return null;
-  }
+function createDayStartDate(dateValue) {
+  return new Date(buildReservationStartDateTime(dateValue));
+}
 
-  return new Date(`${dateValue}T${timeValue}:00`);
+function createDayEndDate(dateValue) {
+  return new Date(buildReservationEndDateTime(dateValue));
+}
+
+function dayTouchesReservation(day, reservationRanges) {
+  const dayStart = new Date(day.getFullYear(), day.getMonth(), day.getDate(), 0, 0, 0, 0);
+  const dayEnd = new Date(day.getFullYear(), day.getMonth(), day.getDate(), 23, 59, 59, 999);
+
+  return reservationRanges.some(
+    (range) => range.start.getTime() <= dayEnd.getTime() && range.end.getTime() >= dayStart.getTime()
+  );
 }
 
 function isSameMonth(date, monthDate) {
@@ -130,26 +118,22 @@ function ReservationCalendar({
   content,
   monthDate,
   onMonthChange,
-  selectedDateValue,
-  selectedTimeValue = "",
+  selectedStartDateValue,
+  selectedEndDateValue,
   isDayAvailable,
+  isDayReserved,
+  isDayInRange,
   onDateSelect,
-  isDisabled,
-  getTimeOptions,
-  onTimeSelect
+  isDisabled
 }) {
   const calendarDays = useMemo(() => createCalendarDays(monthDate), [monthDate]);
+  const firstAvailableMonth = useMemo(() => createMonthReference(new Date()), []);
   const weekdayLabels = useMemo(
     () => calendarDays.slice(0, 7).map((day) => WEEKDAY_FORMATTER.format(day)),
     [calendarDays]
   );
-  const availableTimeOptions = useMemo(() => {
-    if (!selectedDateValue || typeof getTimeOptions !== "function") {
-      return [];
-    }
-
-    return getTimeOptions(selectedDateValue);
-  }, [getTimeOptions, selectedDateValue]);
+  const isPreviousMonthDisabled =
+    isDisabled || createMonthReference(monthDate).getTime() <= firstAvailableMonth.getTime();
 
   return (
     <div className={`reservation-calendar${isDisabled ? " reservation-calendar--disabled" : ""}`}>
@@ -157,12 +141,16 @@ function ReservationCalendar({
         <button
           type="button"
           className="reservation-calendar__nav"
-          onClick={() =>
+          onClick={() => {
+            if (isPreviousMonthDisabled) {
+              return;
+            }
+
             onMonthChange(
               new Date(monthDate.getFullYear(), monthDate.getMonth() - 1, 1)
-            )
-          }
-          disabled={isDisabled}
+            );
+          }}
+          disabled={isPreviousMonthDisabled}
         >
           {content.reservationMonthPreviousLabel}
         </button>
@@ -193,7 +181,10 @@ function ReservationCalendar({
         {calendarDays.map((day) => {
           const dateValue = formatDateValue(day);
           const isAvailable = !isDisabled && isDayAvailable(day);
-          const isSelected = selectedDateValue === dateValue;
+          const isReserved = typeof isDayReserved === "function" ? isDayReserved(day) : false;
+          const isStart = selectedStartDateValue === dateValue;
+          const isEnd = selectedEndDateValue === dateValue;
+          const isInRange = typeof isDayInRange === "function" ? isDayInRange(day) : false;
 
           return (
             <button
@@ -201,53 +192,31 @@ function ReservationCalendar({
               type="button"
               className={`reservation-calendar__day${
                 isSameMonth(day, monthDate) ? "" : " reservation-calendar__day--muted"
-              }${isSelected ? " reservation-calendar__day--selected" : ""}${
-                !isAvailable ? " reservation-calendar__day--unavailable" : ""
-              }`}
+              }${isInRange ? " reservation-calendar__day--range" : ""}${
+                isStart ? " reservation-calendar__day--range-start reservation-calendar__day--selected" : ""
+              }${isEnd ? " reservation-calendar__day--range-end reservation-calendar__day--selected" : ""}${
+                isReserved ? " reservation-calendar__day--reserved" : ""
+              }${!isAvailable ? " reservation-calendar__day--unavailable" : ""}`}
               onClick={() => onDateSelect(dateValue)}
               disabled={!isAvailable}
             >
-              {day.getDate()}
+              <span>{day.getDate()}</span>
+              {isReserved ? <span className="reservation-calendar__marker" aria-hidden="true" /> : null}
             </button>
           );
         })}
       </div>
-
-      {selectedDateValue && typeof getTimeOptions === "function" ? (
-        <div className="reservation-calendar__times">
-          {availableTimeOptions.length ? (
-            availableTimeOptions.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                className={`reservation-calendar__time${
-                  selectedTimeValue === option.value
-                    ? " reservation-calendar__time--selected"
-                    : ""
-                }`}
-                onClick={() => onTimeSelect?.(option.value)}
-                disabled={isDisabled}
-              >
-                {option.label}
-              </button>
-            ))
-          ) : (
-            <p className="reservation-calendar__times-empty">
-              {content.reservationNoAvailabilityLabel}
-            </p>
-          )}
-        </div>
-      ) : null}
     </div>
   );
 }
 
 function VehicleReservationForm({ content, vehicle, hideActionButtons = false, hideIntro = false }) {
   const sectionRef = useRef(null);
-  const currentDateRef = useRef(new Date());
+  const drivingLicenseInputRef = useRef(null);
   const [formValues, setFormValues] = useState(getInitialFormValues);
-  const [drivingLicensePhoto, setDrivingLicensePhoto] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState("");
+  const [drivingLicensePhotos, setDrivingLicensePhotos] = useState([]);
+  const [previewUrls, setPreviewUrls] = useState([]);
+  const [isLicenseDragActive, setIsLicenseDragActive] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -255,24 +224,20 @@ function VehicleReservationForm({ content, vehicle, hideActionButtons = false, h
   const [isAvailabilityLoading, setIsAvailabilityLoading] = useState(true);
   const [reservedSlots, setReservedSlots] = useState([]);
   const [pickupDate, setPickupDate] = useState("");
-  const [pickupTime, setPickupTime] = useState("");
   const [returnDate, setReturnDate] = useState("");
-  const [returnTime, setReturnTime] = useState("");
-  const [pickupMonthDate, setPickupMonthDate] = useState(() =>
+  const [calendarMonthDate, setCalendarMonthDate] = useState(() =>
     createMonthReference(new Date())
   );
-  const [returnMonthDate, setReturnMonthDate] = useState(() =>
-    createMonthReference(new Date())
-  );
-  const [openDatePanel, setOpenDatePanel] = useState(null);
 
   useEffect(() => {
     return () => {
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-      }
+      previewUrls.forEach((previewUrl) => {
+        if (previewUrl?.startsWith("blob:")) {
+          URL.revokeObjectURL(previewUrl);
+        }
+      });
     };
-  }, [previewUrl]);
+  }, [previewUrls]);
 
   useEffect(() => {
     let isActive = true;
@@ -307,11 +272,8 @@ function VehicleReservationForm({ content, vehicle, hideActionButtons = false, h
 
     loadAvailability();
     setPickupDate("");
-    setPickupTime("");
     setReturnDate("");
-    setReturnTime("");
-    setPickupMonthDate(createMonthReference(new Date()));
-    setReturnMonthDate(createMonthReference(new Date()));
+    setCalendarMonthDate(createMonthReference(new Date()));
 
     return () => {
       isActive = false;
@@ -341,24 +303,107 @@ function VehicleReservationForm({ content, vehicle, hideActionButtons = false, h
     [reservedSlots]
   );
 
+  const todayStartDate = useMemo(() => {
+    const nextDate = new Date();
+    nextDate.setHours(0, 0, 0, 0);
+    return nextDate;
+  }, []);
   const pickupDateTime = useMemo(
-    () => createDateTime(pickupDate, pickupTime),
-    [pickupDate, pickupTime]
+    () => (pickupDate ? new Date(buildReservationStartDateTime(pickupDate)) : null),
+    [pickupDate]
   );
   const returnDateTime = useMemo(
-    () => createDateTime(returnDate, returnTime),
-    [returnDate, returnTime]
+    () => (returnDate ? new Date(buildReservationEndDateTime(returnDate)) : null),
+    [returnDate]
   );
   const pickupSummaryText =
-    pickupDate && pickupTime
-      ? pickupDate + " " + pickupTime
+    pickupDate
+      ? formatReservationDateTime(buildReservationStartDateTime(pickupDate))
       : content.reservationPickupDatetimeLabel;
   const returnSummaryText =
-    returnDate && returnTime
-      ? returnDate + " " + returnTime
+    returnDate
+      ? formatReservationDateTime(buildReservationEndDateTime(returnDate))
       : content.reservationReturnDatetimeLabel;
   const drivingLicenseSelectedLabel =
-    drivingLicensePhoto?.name || content.reservationDrivingLicenseEmptyLabel;
+    drivingLicensePhotos.length > 0
+      ? drivingLicensePhotos.map((file) => file.name).join(" • ")
+      : content.reservationDrivingLicenseEmptyLabel;
+  const livePricing = useMemo(
+    () => calculateReservationPricing(vehicle, pickupDateTime, returnDateTime),
+    [pickupDateTime, returnDateTime, vehicle]
+  );
+  const hasLivePricing = livePricing.billingDays > 0;
+  const livePricingRateLabel = hasLivePricing
+    ? getReservationRateLabel(livePricing.rateType, content)
+    : "-";
+
+  const isDateRangeAvailable = (startDateValue, endDateValue) => {
+    if (!startDateValue || !endDateValue) {
+      return false;
+    }
+
+    const rangeStart = createDayStartDate(startDateValue);
+    const rangeEnd = createDayEndDate(endDateValue);
+
+    if (Number.isNaN(rangeStart.getTime()) || Number.isNaN(rangeEnd.getTime())) {
+      return false;
+    }
+
+    return !reservationRanges.some(
+      (range) => range.start.getTime() <= rangeEnd.getTime() && range.end.getTime() >= rangeStart.getTime()
+    );
+  };
+
+  const isPickupDayAvailable = (day) => {
+    const dateValue = formatDateValue(day);
+    const dayStart = createDayStartDate(dateValue);
+
+    if (dayStart.getTime() < todayStartDate.getTime()) {
+      return false;
+    }
+
+    return isDateRangeAvailable(dateValue, dateValue);
+  };
+
+  const isReturnDayAvailable = (day) => {
+    if (!pickupDate) {
+      return false;
+    }
+
+    const dateValue = formatDateValue(day);
+    const pickupStart = createDayStartDate(pickupDate);
+    const candidateStart = createDayStartDate(dateValue);
+
+    if (candidateStart.getTime() < pickupStart.getTime()) {
+      return false;
+    }
+
+    return isDateRangeAvailable(pickupDate, dateValue);
+  };
+
+  const isReservedDay = (day) => dayTouchesReservation(day, reservationRanges);
+  const isRangeDay = (day) => {
+    if (!pickupDate || !returnDate) {
+      return false;
+    }
+
+    const dateValue = formatDateValue(day);
+    return dateValue >= pickupDate && dateValue <= returnDate;
+  };
+
+  const isCalendarDayAvailable = (day) => {
+    const dateValue = formatDateValue(day);
+
+    if (!pickupDate || returnDate) {
+      return isPickupDayAvailable(day);
+    }
+
+    if (dateValue < pickupDate) {
+      return isPickupDayAvailable(day);
+    }
+
+    return isDateRangeAvailable(pickupDate, dateValue);
+  };
 
   const updateField = (event) => {
     const { name, value, type, checked } = event.target;
@@ -369,24 +414,59 @@ function VehicleReservationForm({ content, vehicle, hideActionButtons = false, h
     }));
   };
 
-  const handleDrivingLicensePhoto = (event) => {
-    const nextFile = event.target.files?.[0] || null;
-    setDrivingLicensePhoto(nextFile);
+  const applyDrivingLicensePhotos = (nextFiles) => {
+    const selectedFiles = Array.from(nextFiles || []).filter(Boolean);
+    const validFiles = selectedFiles
+      .filter((file) => String(file.type || "").startsWith("image/"))
+      .slice(0, MAX_DRIVING_LICENSE_FILES);
+
     setSuccessMessage("");
 
-    if (!nextFile) {
-      setPreviewUrl("");
+    if (selectedFiles.length > 0 && validFiles.length === 0) {
+      setErrorMessage(content.reservationDrivingLicenseInvalidMessage);
       return;
     }
 
-    const objectUrl = URL.createObjectURL(nextFile);
-    setPreviewUrl((currentUrl) => {
-      if (currentUrl) {
-        URL.revokeObjectURL(currentUrl);
-      }
+    setErrorMessage("");
+    setDrivingLicensePhotos(validFiles);
+    setPreviewUrls((currentUrls) => {
+      currentUrls.forEach((previewUrl) => {
+        if (previewUrl?.startsWith("blob:")) {
+          URL.revokeObjectURL(previewUrl);
+        }
+      });
 
-      return objectUrl;
+      return validFiles.map((file) => URL.createObjectURL(file));
     });
+  };
+
+  const handleDrivingLicensePhoto = (event) => {
+    applyDrivingLicensePhotos(event.target.files);
+    event.target.value = "";
+  };
+
+  const openDrivingLicensePicker = () => {
+    drivingLicenseInputRef.current?.click();
+  };
+
+  const handleDrivingLicenseDragOver = (event) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "copy";
+    setIsLicenseDragActive(true);
+  };
+
+  const handleDrivingLicenseDragLeave = (event) => {
+    if (event.currentTarget.contains(event.relatedTarget)) {
+      return;
+    }
+
+    setIsLicenseDragActive(false);
+  };
+
+  const handleDrivingLicenseDrop = (event) => {
+    event.preventDefault();
+    setIsLicenseDragActive(false);
+    applyDrivingLicensePhotos(event.dataTransfer.files);
   };
 
   const scrollToForm = (event) => {
@@ -413,136 +493,55 @@ function VehicleReservationForm({ content, vehicle, hideActionButtons = false, h
     });
   };
 
-  const isPickupSlotAvailable = (candidateDateTime) => {
-    if (!candidateDateTime) {
-      return false;
+  useEffect(() => {
+    if (pickupDate && !isPickupDayAvailable(new Date(`${pickupDate}T00:00:00`))) {
+      setPickupDate("");
+      setReturnDate("");
+      return;
     }
 
-    if (candidateDateTime.getTime() < currentDateRef.current.getTime()) {
-      return false;
+    if (returnDate && !isDateRangeAvailable(pickupDate, returnDate)) {
+      setReturnDate("");
     }
-
-    const isInsideReservedPeriod = reservationRanges.some(
-      (range) =>
-        candidateDateTime.getTime() >= range.start.getTime() &&
-        candidateDateTime.getTime() < range.end.getTime()
-    );
-
-    if (isInsideReservedPeriod) {
-      return false;
-    }
-
-    const nextReservedRange = reservationRanges.find(
-      (range) => range.start.getTime() > candidateDateTime.getTime()
-    );
-
-    if (!nextReservedRange) {
-      return true;
-    }
-
-    return (
-      nextReservedRange.start.getTime() - candidateDateTime.getTime() >=
-      MIN_RESERVATION_DURATION_MINUTES * 60 * 1000
-    );
-  };
-
-  const isReturnSlotAvailable = (candidateDateTime, selectedPickupDateTime) => {
-    if (!candidateDateTime || !selectedPickupDateTime) {
-      return false;
-    }
-
-    if (candidateDateTime.getTime() <= selectedPickupDateTime.getTime()) {
-      return false;
-    }
-
-    return !reservationRanges.some(
-      (range) =>
-        range.start.getTime() < candidateDateTime.getTime() &&
-        range.end.getTime() > selectedPickupDateTime.getTime()
-    );
-  };
-
-  const hasAvailablePickupSlotForDay = (day) =>
-    TIME_OPTIONS.some((option) =>
-      isPickupSlotAvailable(createDateTime(formatDateValue(day), option.value))
-    );
-
-  const hasAvailableReturnSlotForDay = (day) =>
-    TIME_OPTIONS.some((option) =>
-      isReturnSlotAvailable(
-        createDateTime(formatDateValue(day), option.value),
-        pickupDateTime
-      )
-    );
+  }, [pickupDate, returnDate, reservationRanges]);
 
   useEffect(() => {
-    if (pickupDateTime && !isPickupSlotAvailable(pickupDateTime)) {
-      setPickupTime("");
+    if (pickupDate) {
+      setCalendarMonthDate(createMonthReference(new Date(`${pickupDate}T00:00:00`)));
     }
-  }, [pickupDateTime, reservationRanges]);
+  }, [pickupDate]);
 
-  useEffect(() => {
-    if (!pickupDateTime) {
-      if (returnDate || returnTime) {
+  const handleCalendarDateSelect = (dateValue) => {
+    if (!pickupDate || returnDate) {
+      setPickupDate(dateValue);
+      setReturnDate("");
+      setSuccessMessage("");
+      return;
+    }
+
+    if (dateValue < pickupDate) {
+      setPickupDate(dateValue);
+      setReturnDate("");
+      setSuccessMessage("");
+      return;
+    }
+
+    if (!isDateRangeAvailable(pickupDate, dateValue)) {
+      if (isDateRangeAvailable(dateValue, dateValue)) {
+        setPickupDate(dateValue);
         setReturnDate("");
-        setReturnTime("");
+        setSuccessMessage("");
       }
       return;
     }
 
-    if (returnDate && !hasAvailableReturnSlotForDay(new Date(`${returnDate}T00:00:00`))) {
-      setReturnDate("");
-      setReturnTime("");
-      return;
-    }
-
-    if (returnDateTime && !isReturnSlotAvailable(returnDateTime, pickupDateTime)) {
-      setReturnTime("");
-    }
-  }, [pickupDateTime, reservationRanges, returnDate, returnDateTime, returnTime]);
-
-  useEffect(() => {
-    if (!pickupDate) {
-      return;
-    }
-
-    const nextMonth = createMonthReference(new Date(`${pickupDate}T00:00:00`));
-
-    if (returnMonthDate.getTime() < nextMonth.getTime()) {
-      setReturnMonthDate(nextMonth);
-    }
-  }, [pickupDate, returnMonthDate]);
-
-  const getPickupTimeOptions = (dateValue) =>
-    TIME_OPTIONS.filter((option) =>
-      isPickupSlotAvailable(createDateTime(dateValue, option.value))
-    );
-
-  const getReturnTimeOptions = (dateValue) => {
-    if (!pickupDateTime) {
-      return [];
-    }
-
-    return TIME_OPTIONS.filter((option) =>
-      isReturnSlotAvailable(createDateTime(dateValue, option.value), pickupDateTime)
-    );
-  };
-
-  const handlePickupDateSelect = (dateValue) => {
-    setPickupDate(dateValue);
-    setPickupTime("");
-    setSuccessMessage("");
-  };
-
-  const handleReturnDateSelect = (dateValue) => {
-    if (!pickupDateTime) {
-      return;
-    }
-
     setReturnDate(dateValue);
-    setReturnTime("");
     setSuccessMessage("");
   };
+
+  const isCommentRequired =
+    formValues.pickupLocationType === "commentaire" ||
+    formValues.returnLocationType === "commentaire";
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -551,18 +550,17 @@ function VehicleReservationForm({ content, vehicle, hideActionButtons = false, h
     setIsSubmitting(true);
 
     try {
-      const pickupDatetime = combineDateAndTime(pickupDate, pickupTime);
-      const returnDatetime = combineDateAndTime(returnDate, returnTime);
+      const pickupDatetime = buildReservationStartDateTime(pickupDate);
+      const returnDatetime = buildReservationEndDateTime(returnDate);
 
       if (!pickupDatetime || !returnDatetime) {
-        throw new Error("Selectionnez une date et une heure disponibles.");
+        throw new Error("Selectionnez une periode disponible.");
       }
 
       const parsedFullName = splitFullName(formValues.fullName);
-      const commentParts = [formValues.comment];
 
-      if (formValues.birthDate) {
-        commentParts.unshift("Date de naissance : " + formValues.birthDate);
+      if (drivingLicensePhotos.length === 0) {
+        throw new Error(content.reservationDrivingLicenseInvalidMessage);
       }
 
       await createVehicleReservation(vehicle.id, {
@@ -570,27 +568,28 @@ function VehicleReservationForm({ content, vehicle, hideActionButtons = false, h
         lastName: parsedFullName.lastName,
         email: formValues.email,
         phone: formValues.phone,
-        comment: commentParts.filter(Boolean).join("\n\n"),
+        comment: formValues.comment,
         pickupLocationType: formValues.pickupLocationType,
         returnLocationType: formValues.returnLocationType,
         privacyPolicyAccepted: formValues.privacyPolicyAccepted,
         pickupDatetime,
         returnDatetime,
-        drivingLicensePhoto
+        drivingLicensePhotos
       });
 
       setFormValues(getInitialFormValues());
-      setDrivingLicensePhoto(null);
+      setDrivingLicensePhotos([]);
       setPickupDate("");
-      setPickupTime("");
       setReturnDate("");
-      setReturnTime("");
-      setPreviewUrl((currentUrl) => {
-        if (currentUrl) {
-          URL.revokeObjectURL(currentUrl);
-        }
+      setCalendarMonthDate(createMonthReference(new Date()));
+      setPreviewUrls((currentUrls) => {
+        currentUrls.forEach((previewUrl) => {
+          if (previewUrl?.startsWith("blob:")) {
+            URL.revokeObjectURL(previewUrl);
+          }
+        });
 
-        return "";
+        return [];
       });
       setSuccessMessage(content.reservationSuccessMessage);
     } catch (error) {
@@ -651,140 +650,124 @@ function VehicleReservationForm({ content, vehicle, hideActionButtons = false, h
 
         <form className="reservation-form vehica-contact-form rentzo-detail-form rentzo-detail-form--source" onSubmit={handleSubmit}>
           <div className="clearfix">
-            <div className="rentzo-detail-form__group">
-              <div className="vehica-3-fields">
-                <p>
-                  <label>{content.reservationPickupGroupLabel}</label>
-                </p>
-
-                <div className="vehica-3-fields__left">
-                  <p>
-                    <span className="wpcf7-form-control-wrap">
-                      <select
-                        name="pickupLocationType"
-                        value={formValues.pickupLocationType}
-                        onChange={updateField}
-                      >
-                        {content.reservationPickupLocationOptions.map((option) => (
-                          <option key={`pickup-location-${option.value}`} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                    </span>
-                  </p>
+            <div className="rentzo-detail-form__calendar-shell">
+              <div className="rentzo-detail-form__calendar-summary">
+                <div className="rentzo-detail-form__calendar-card">
+                  <span>{content.reservationPickupGroupLabel}</span>
+                  <strong>{pickupSummaryText}</strong>
                 </div>
 
-                <div className="vehica-3-fields__right">
-                  <p>
-                    <button
-                      type="button"
-                      className="rentzo-detail-form__datetime-trigger"
-                      onClick={() =>
-                        setOpenDatePanel((currentPanel) =>
-                          currentPanel === "pickup" ? null : "pickup"
-                        )
-                      }
-                      disabled={isAvailabilityLoading}
-                    >
-                      {pickupSummaryText}
-                    </button>
-                  </p>
+                <div className="rentzo-detail-form__calendar-card">
+                  <span>{content.reservationReturnGroupLabel}</span>
+                  <strong>
+                    {pickupDateTime
+                      ? returnSummaryText
+                      : content.reservationSelectPickupFirstLabel}
+                  </strong>
                 </div>
               </div>
 
-              {openDatePanel === "pickup" ? (
-                <div className="rentzo-detail-form__datetime-panel">
-                  <ReservationCalendar
-                    content={content}
-                    monthDate={pickupMonthDate}
-                    onMonthChange={setPickupMonthDate}
-                    selectedDateValue={pickupDate}
-                    selectedTimeValue={pickupTime}
-                    onDateSelect={handlePickupDateSelect}
-                    isDayAvailable={hasAvailablePickupSlotForDay}
-                    isDisabled={false}
-                    getTimeOptions={getPickupTimeOptions}
-                    onTimeSelect={(timeValue) => {
-                      setPickupTime(timeValue);
-                      setOpenDatePanel(null);
-                    }}
-                  />
+              <div className="rentzo-detail-form__calendar-fields">
+                <div className="rentzo-detail-form__calendar-field">
+                  <label>{content.pickupLabel}</label>
+                  <span className="wpcf7-form-control-wrap">
+                    <select
+                      name="pickupLocationType"
+                      value={formValues.pickupLocationType}
+                      onChange={updateField}
+                    >
+                      {content.reservationPickupLocationOptions.map((option) => (
+                        <option key={`pickup-location-${option.value}`} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </span>
                 </div>
-              ) : null}
+
+                <div className="rentzo-detail-form__calendar-field">
+                  <label>{content.returnLabel}</label>
+                  <span className="wpcf7-form-control-wrap">
+                    <select
+                      name="returnLocationType"
+                      value={formValues.returnLocationType}
+                      onChange={updateField}
+                    >
+                      {content.reservationPickupLocationOptions.map((option) => (
+                        <option key={`return-location-${option.value}`} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </span>
+                </div>
+              </div>
+
+              <div className="rentzo-detail-form__datetime-panel rentzo-detail-form__datetime-panel--single">
+                <ReservationCalendar
+                  content={content}
+                  monthDate={calendarMonthDate}
+                  onMonthChange={setCalendarMonthDate}
+                  selectedStartDateValue={pickupDate}
+                  selectedEndDateValue={returnDate}
+                  onDateSelect={handleCalendarDateSelect}
+                  isDayAvailable={isCalendarDayAvailable}
+                  isDayReserved={isReservedDay}
+                  isDayInRange={isRangeDay}
+                  isDisabled={isAvailabilityLoading}
+                />
+              </div>
             </div>
 
-            <div className="rentzo-detail-form__group">
-              <div className="vehica-3-fields">
-                <p>
-                  <label>{content.reservationReturnGroupLabel}</label>
-                </p>
-
-                <div className="vehica-3-fields__left">
-                  <p>
-                    <span className="wpcf7-form-control-wrap">
-                      <select
-                        name="returnLocationType"
-                        value={formValues.returnLocationType}
-                        onChange={updateField}
-                      >
-                        {content.reservationPickupLocationOptions.map((option) => (
-                          <option key={`return-location-${option.value}`} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
+            <div
+              className={
+                "rentzo-detail-form__price-summary" +
+                (hasLivePricing ? "" : " rentzo-detail-form__price-summary--pending")
+              }
+            >
+              {hasLivePricing ? (
+                <>
+                  <div className="rentzo-detail-form__price-hero">
+                    <span className="rentzo-detail-form__price-hero-label">
+                      {content.reservationEstimatedTotalLabel}
                     </span>
-                  </p>
-                </div>
-
-                <div className="vehica-3-fields__right">
-                  <p>
-                    <button
-                      type="button"
-                      className="rentzo-detail-form__datetime-trigger"
-                      onClick={() => {
-                        if (!pickupDateTime) {
-                          return;
-                        }
-
-                        setOpenDatePanel((currentPanel) =>
-                          currentPanel === "return" ? null : "return"
-                        );
-                      }}
-                      disabled={!pickupDateTime || isAvailabilityLoading}
-                    >
-                      {returnSummaryText}
-                    </button>
-                  </p>
-                </div>
-              </div>
-
-              {openDatePanel === "return" ? (
-                <div className="rentzo-detail-form__datetime-panel">
-                  {!pickupDateTime ? (
-                    <p className="rentzo-detail-form__helper">
-                      {content.reservationSelectPickupFirstLabel}
+                    <strong className="rentzo-detail-form__price-hero-value">
+                      {formatVehiclePrice(livePricing.totalPrice)}
+                    </strong>
+                    <p className="rentzo-detail-form__price-hero-meta">
+                      {livePricing.billingDays} jour{livePricing.billingDays > 1 ? "s" : ""} · {livePricingRateLabel} · {formatVehiclePrice(livePricing.ratePerDay)}{content.pricePerDaySuffix}
                     </p>
-                  ) : null}
+                  </div>
 
-                  <ReservationCalendar
-                    content={content}
-                    monthDate={returnMonthDate}
-                    onMonthChange={setReturnMonthDate}
-                    selectedDateValue={returnDate}
-                    selectedTimeValue={returnTime}
-                    onDateSelect={handleReturnDateSelect}
-                    isDayAvailable={hasAvailableReturnSlotForDay}
-                    isDisabled={!pickupDateTime}
-                    getTimeOptions={getReturnTimeOptions}
-                    onTimeSelect={(timeValue) => {
-                      setReturnTime(timeValue);
-                      setOpenDatePanel(null);
-                    }}
-                  />
+                  <div className="rentzo-detail-form__price-meta">
+                    <div className="rentzo-detail-form__price-card">
+                      <span>{content.reservationAppliedRateLabel}</span>
+                      <strong>{livePricingRateLabel}</strong>
+                      <small>
+                        {formatVehiclePrice(livePricing.ratePerDay)}
+                        {content.pricePerDaySuffix}
+                      </small>
+                    </div>
+
+                    <div className="rentzo-detail-form__price-card">
+                      <span>{content.reservationBilledDaysLabel}</span>
+                      <strong>
+                        {livePricing.billingDays} jour{livePricing.billingDays > 1 ? "s" : ""}
+                      </strong>
+                      <small>{content.reservationPricingTitle}</small>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="rentzo-detail-form__price-hero rentzo-detail-form__price-hero--pending">
+                  <span className="rentzo-detail-form__price-hero-label">
+                    {content.reservationPricingTitle}
+                  </span>
+                  <strong className="rentzo-detail-form__price-hero-value">
+                    {content.reservationPricePendingLabel}
+                  </strong>
                 </div>
-              ) : null}
+              )}
             </div>
 
             <p className="rentzo-detail-form__section-label">
@@ -818,7 +801,6 @@ function VehicleReservationForm({ content, vehicle, hideActionButtons = false, h
                       value={formValues.email}
                       onChange={updateField}
                       placeholder={content.reservationEmailPlaceholder}
-                      required
                     />
                   </span>
                 </p>
@@ -839,20 +821,6 @@ function VehicleReservationForm({ content, vehicle, hideActionButtons = false, h
                 </p>
               </div>
 
-              <div className="vehica-1-fields__middle">
-                <p>
-                  <span className="wpcf7-form-control-wrap">
-                    <input
-                      type="text"
-                      name="birthDate"
-                      value={formValues.birthDate}
-                      onChange={updateField}
-                      placeholder={content.reservationBirthDatePlaceholder}
-                      required
-                    />
-                  </span>
-                </p>
-              </div>
             </div>
 
             <p className="rentzo-detail-form__section-label rentzo-detail-form__section-label--license">
@@ -864,35 +832,54 @@ function VehicleReservationForm({ content, vehicle, hideActionButtons = false, h
 
             <div className="vehica-1-fields rentzo-detail-form__license-fields">
               <div className="vehica-1-fields__middle vehica-1-fields__middle--full">
-                <div className="rentzo-detail-form__license-upload">
+                <div
+                  className="rentzo-detail-form__license-upload"
+                  onDragOver={handleDrivingLicenseDragOver}
+                  onDragLeave={handleDrivingLicenseDragLeave}
+                  onDrop={handleDrivingLicenseDrop}
+                >
                   <p className="rentzo-detail-form__license-selected">
                     {drivingLicenseSelectedLabel}
                   </p>
 
                   <input
                     id={drivingLicenseInputId}
+                    ref={drivingLicenseInputRef}
                     className="rentzo-detail-form__license-input"
                     type="file"
                     accept="image/*"
+                    multiple
                     onChange={handleDrivingLicensePhoto}
-                    required
                   />
 
-                  <label
-                    className="rentzo-detail-form__license-trigger"
-                    htmlFor={drivingLicenseInputId}
+                  <button
+                    type="button"
+                    className={
+                      "rentzo-detail-form__license-trigger" +
+                      (isLicenseDragActive
+                        ? " rentzo-detail-form__license-trigger--active"
+                        : "")
+                    }
+                    onClick={openDrivingLicensePicker}
                   >
                     <span className="rentzo-detail-form__license-trigger-text">
                       {content.reservationDrivingLicensePlaceholder}
                     </span>
-                  </label>
+                    <span className="rentzo-detail-form__license-trigger-action">
+                      {content.mediaSelectLabel}
+                    </span>
+                  </button>
                 </div>
               </div>
             </div>
 
-            {previewUrl ? (
-              <div className="reservation-form__license-preview">
-                <img src={previewUrl} alt={content.reservationDrivingLicenseLabel} />
+            {previewUrls.length > 0 ? (
+              <div className="reservation-form__license-preview-grid">
+                {previewUrls.map((previewUrl, index) => (
+                  <div key={previewUrl + "-" + index} className="reservation-form__license-preview">
+                    <img src={previewUrl} alt={`${content.reservationDrivingLicenseLabel} ${index + 1}`} />
+                  </div>
+                ))}
               </div>
             ) : null}
 
@@ -908,7 +895,7 @@ function VehicleReservationForm({ content, vehicle, hideActionButtons = false, h
                   onChange={updateField}
                   rows="4"
                   placeholder={content.reservationCommentPlaceholder}
-                  required
+                  required={isCommentRequired}
                 />
               </span>
             </p>
@@ -920,9 +907,18 @@ function VehicleReservationForm({ content, vehicle, hideActionButtons = false, h
             ) : null}
 
             {successMessage ? (
-              <p className="login-form__message login-form__message--success">
-                {successMessage}
-              </p>
+              <div className="reservation-form__success-card" role="status" aria-live="polite">
+                <div className="reservation-form__success-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 7L10.75 16.25L6 11.5" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+
+                <div className="reservation-form__success-copy">
+                  <strong>{successMessage}</strong>
+                  <span>{content.reservationSuccessDetailMessage}</span>
+                </div>
+              </div>
             ) : null}
 
             <div className="detail-reservation-form__actions">

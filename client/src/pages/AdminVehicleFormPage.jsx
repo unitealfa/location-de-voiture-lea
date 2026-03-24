@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import VehicleVideo from "../components/VehicleVideo";
 import {
   createVehicle,
@@ -33,7 +33,7 @@ function mapVehicleToFormValues(vehicle) {
     model: vehicle.model,
     version: vehicle.version,
     vehicleRanges: Array.isArray(vehicle.vehicleRanges)
-      ? vehicle.vehicleRanges
+      ? vehicle.vehicleRanges.filter((vehicleRange) => vehicleRange !== "Cabriolet")
       : [],
     fuelType: vehicle.fuelType,
     transmission: vehicle.transmission,
@@ -48,6 +48,29 @@ function mapVehicleToFormValues(vehicle) {
     extraKmPrice: String(vehicle.extraKmPrice),
     availabilityStatus: vehicle.availabilityStatus
   };
+}
+
+
+function getFileFingerprint(file) {
+  return [file.name, file.size, file.lastModified].join(":");
+}
+
+function mergeUniqueFiles(currentFiles, nextFiles) {
+  const fingerprints = new Set(currentFiles.map(getFileFingerprint));
+  const mergedFiles = [...currentFiles];
+
+  nextFiles.forEach((file) => {
+    const fingerprint = getFileFingerprint(file);
+
+    if (fingerprints.has(fingerprint)) {
+      return;
+    }
+
+    fingerprints.add(fingerprint);
+    mergedFiles.push(file);
+  });
+
+  return mergedFiles;
 }
 
 function AdminVehicleFormPage({
@@ -67,6 +90,11 @@ function AdminVehicleFormPage({
   const [existingVideoUrl, setExistingVideoUrl] = useState("");
   const [photoPreviewUrls, setPhotoPreviewUrls] = useState([]);
   const [videoPreviewUrl, setVideoPreviewUrl] = useState("");
+  const [activeDropZone, setActiveDropZone] = useState("");
+  const videoInputRef = useRef(null);
+  const photoInputRef = useRef(null);
+  const videoInputId = useId();
+  const photoInputId = useId();
 
   useEffect(() => {
     if (mode !== "edit" || !vehicleId) {
@@ -182,8 +210,35 @@ function AdminVehicleFormPage({
     );
   };
 
+  const applyPhotoFiles = (files) => {
+    const nextPhotoFiles = Array.from(files || []);
+
+    if (nextPhotoFiles.length === 0) {
+      return;
+    }
+
+    const hasInvalidFile = nextPhotoFiles.some(
+      (file) => !String(file.type || "").startsWith("image/")
+    );
+
+    if (hasInvalidFile) {
+      setErrorMessage(content.invalidPhotoDropMessage);
+      return;
+    }
+
+    setErrorMessage("");
+    setPhotoFiles((currentPhotoFiles) =>
+      mergeUniqueFiles(currentPhotoFiles, nextPhotoFiles)
+    );
+  };
+
   const handlePhotoSelection = (event) => {
-    setPhotoFiles(Array.from(event.target.files || []));
+    applyPhotoFiles(event.target.files);
+    event.target.value = "";
+  };
+
+  const openPhotoPicker = () => {
+    photoInputRef.current?.click();
   };
 
   const handleNewPhotoRemove = (photoIndexToRemove) => {
@@ -192,8 +247,54 @@ function AdminVehicleFormPage({
     );
   };
 
+  const applyVideoFile = (file) => {
+    if (!file) {
+      setVideoFile(null);
+      return;
+    }
+
+    if (!String(file.type || "").startsWith("video/")) {
+      setErrorMessage(content.invalidVideoDropMessage);
+      return;
+    }
+
+    setErrorMessage("");
+    setVideoFile(file);
+  };
+
   const handleVideoSelection = (event) => {
-    setVideoFile(event.target.files?.[0] || null);
+    applyVideoFile(event.target.files?.[0] || null);
+    event.target.value = "";
+  };
+
+  const openVideoPicker = () => {
+    videoInputRef.current?.click();
+  };
+
+  const handleDropZoneDragOver = (event, dropZone) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "copy";
+    setActiveDropZone(dropZone);
+  };
+
+  const handleDropZoneDragLeave = (event) => {
+    if (event.currentTarget.contains(event.relatedTarget)) {
+      return;
+    }
+
+    setActiveDropZone("");
+  };
+
+  const handlePhotoDrop = (event) => {
+    event.preventDefault();
+    setActiveDropZone("");
+    applyPhotoFiles(event.dataTransfer.files);
+  };
+
+  const handleVideoDrop = (event) => {
+    event.preventDefault();
+    setActiveDropZone("");
+    applyVideoFile(event.dataTransfer.files?.[0] || null);
   };
 
   const handleSubmit = async (event) => {
@@ -240,326 +341,484 @@ function AdminVehicleFormPage({
   }
 
   const isVehicleRangeLimitReached = formValues.vehicleRanges.length >= 2;
+  const totalPhotoCount = existingPhotoUrls.length + photoPreviewUrls.length;
+  const availabilitySummaryLabel =
+    formValues.availabilityStatus === "maintenance"
+      ? content.availabilityMaintenanceLabel
+      : formValues.availabilityStatus === "reserved"
+        ? content.availabilityReservedLabel
+        : content.availabilityAvailableLabel;
+  const pageTitle = mode === "edit" ? content.editTitle : content.createTitle;
+  const pageDescription =
+    mode === "edit" ? content.editDescription : content.createDescription;
+  const videoDropDescription =
+    activeDropZone === "video"
+      ? content.mediaDropActiveLabel
+      : videoFile
+        ? content.mediaSelectedVideoLabel
+        : content.videoDropHint;
+  const photoDropDescription =
+    activeDropZone === "photo"
+      ? content.mediaDropActiveLabel
+      : photoFiles.length > 0
+        ? `${photoFiles.length} ${
+            photoFiles.length > 1
+              ? content.mediaSelectedPhotoPluralLabel
+              : content.mediaSelectedPhotoSingularLabel
+          }`
+        : content.photoDropHint;
 
   return (
     <main className="vehicle-form-page">
       <section className="vehicle-form-page__hero">
-        <button
-          type="button"
-          className="vehicle-detail__back"
-          onClick={onBackClick}
-        >
-          {mode === "edit" ? content.backToVehicleLabel : content.backToListLabel}
-        </button>
+        <div className="vehicle-form-page__container">
+          <button
+            type="button"
+            className="vehicle-form-page__back"
+            onClick={onBackClick}
+            aria-label={mode === "edit" ? content.backToVehicleLabel : content.backToListLabel}
+          >
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
 
-        <div>
-          <p className="hero-card__eyebrow">{content.eyebrow}</p>
-          <h1>{mode === "edit" ? content.editTitle : content.createTitle}</h1>
-          <p className="hero-card__text">
-            {mode === "edit" ? content.editDescription : content.createDescription}
-          </p>
+          <div className="vehicle-form-page__hero-copy">
+            <h1>{pageTitle}</h1>
+            <p className="hero-card__text">{pageDescription}</p>
+          </div>
         </div>
       </section>
 
-      <form className="vehicle-form" onSubmit={handleSubmit}>
-        <section className="vehicle-form__grid">
-          <label className="login-form__field">
-            <span>{content.brandLabel}</span>
-            <input
-              type="text"
-              name="brand"
-              value={formValues.brand}
-              onChange={handleChange}
-            />
-          </label>
+      <section className="vehicle-form-page__body">
+        <div className="vehicle-form-page__container">
+          <form
+            className="vehicle-form vehicle-form--rentzo vehica-contact-form"
+            onSubmit={handleSubmit}
+          >
+            <div className="vehicle-form-page__layout">
+              <div className="vehicle-form-page__main">
+                <section className="vehicle-form-page__panel">
+                  <div className="vehicle-form-page__panel-header">
+                    <h2>{content.informationSectionTitle}</h2>
+                  </div>
 
-          <label className="login-form__field">
-            <span>{content.modelLabel}</span>
-            <input
-              type="text"
-              name="model"
-              value={formValues.model}
-              onChange={handleChange}
-            />
-          </label>
+                  <div className="reservation-form__grid vehicle-form__grid">
+                    <label className="login-form__field">
+                      <span>{content.brandLabel}</span>
+                      <input
+                        type="text"
+                        name="brand"
+                        value={formValues.brand}
+                        onChange={handleChange}
+                      />
+                    </label>
 
-          <label className="login-form__field">
-            <span>{content.versionLabel}</span>
-            <input
-              type="text"
-              name="version"
-              value={formValues.version}
-              onChange={handleChange}
-            />
-          </label>
+                    <label className="login-form__field">
+                      <span>{content.modelLabel}</span>
+                      <input
+                        type="text"
+                        name="model"
+                        value={formValues.model}
+                        onChange={handleChange}
+                      />
+                    </label>
 
-          <div className="vehicle-form__option-group">
-            <span className="vehicle-form__option-group-title">
-              {content.vehicleRangesLabel}
-            </span>
+                    <label className="login-form__field">
+                      <span>{content.versionLabel}</span>
+                      <input
+                        type="text"
+                        name="version"
+                        value={formValues.version}
+                        onChange={handleChange}
+                      />
+                    </label>
 
-            <div className="vehicle-form__option-group-grid">
-              {content.vehicleRangeOptions.map((option) => {
-                const isSelected = formValues.vehicleRanges.includes(option);
+                    <div className="vehicle-form__option-group">
+                      <span className="vehicle-form__option-group-title">
+                        {content.vehicleRangesLabel}
+                      </span>
 
-                return (
-                  <label key={option} className="vehicle-form__option-item">
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => handleVehicleRangeToggle(option)}
-                      disabled={!isSelected && isVehicleRangeLimitReached}
-                    />
-                    <span>{option}</span>
-                  </label>
-                );
-              })}
+                      <div className="vehicle-form__option-group-grid">
+                        {content.vehicleRangeOptions.map((option) => {
+                          const isSelected = formValues.vehicleRanges.includes(option);
+
+                          return (
+                            <label key={option} className="vehicle-form__option-item">
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => handleVehicleRangeToggle(option)}
+                                disabled={!isSelected && isVehicleRangeLimitReached}
+                              />
+                              <span>{option}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+
+                      <small className="vehicle-form__option-group-hint">
+                        {content.vehicleRangesHint}
+                      </small>
+                    </div>
+
+                    <label className="login-form__field">
+                      <span>{content.fuelTypeLabel}</span>
+                      <select
+                        name="fuelType"
+                        value={formValues.fuelType}
+                        onChange={handleChange}
+                      >
+                        <option value="">Selectionner</option>
+                        {content.fuelTypeOptions.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <label className="login-form__field">
+                      <span>{content.transmissionLabel}</span>
+                      <select
+                        name="transmission"
+                        value={formValues.transmission}
+                        onChange={handleChange}
+                      >
+                        <option value="">Selectionner</option>
+                        {content.transmissionOptions.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <label className="login-form__field">
+                      <span>{content.seatsLabel}</span>
+                      <input
+                        type="number"
+                        min="1"
+                        name="seats"
+                        value={formValues.seats}
+                        onChange={handleChange}
+                      />
+                    </label>
+
+                    <label className="login-form__field">
+                      <span>{content.horsepowerLabel}</span>
+                      <input
+                        type="number"
+                        min="0"
+                        name="horsepower"
+                        value={formValues.horsepower}
+                        onChange={handleChange}
+                      />
+                    </label>
+
+                    <label className="vehicle-form__checkbox">
+                      <input
+                        type="checkbox"
+                        name="isConvertible"
+                        checked={formValues.isConvertible}
+                        onChange={handleChange}
+                      />
+                      <span>{content.convertibleLabel}</span>
+                    </label>
+
+                    {mode === "edit" ? (
+                      <label className="login-form__field">
+                        <span>{content.adminAvailabilityLabel}</span>
+                        <select
+                          name="availabilityStatus"
+                          value={formValues.availabilityStatus}
+                          onChange={handleChange}
+                        >
+                          <option value="available">
+                            {content.availabilityAvailableLabel}
+                          </option>
+                          <option value="reserved">
+                            {content.availabilityReservedLabel}
+                          </option>
+                          <option value="maintenance">
+                            {content.availabilityMaintenanceLabel}
+                          </option>
+                        </select>
+                      </label>
+                    ) : null}
+                  </div>
+                </section>
+
+                <section className="vehicle-form-page__panel">
+                  <div className="vehicle-form-page__panel-header">
+                    <h2>{content.pricingSectionTitle}</h2>
+                  </div>
+
+                  <div className="reservation-form__grid vehicle-form__grid">
+                    <label className="login-form__field">
+                      <span>{content.dailyPriceLabel}</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        name="dailyPrice"
+                        value={formValues.dailyPrice}
+                        onChange={handleChange}
+                      />
+                    </label>
+
+                    <label className="login-form__field">
+                      <span>{content.weeklyPriceLabel}</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        name="weeklyPrice"
+                        value={formValues.weeklyPrice}
+                        onChange={handleChange}
+                      />
+                    </label>
+
+                    <label className="login-form__field">
+                      <span>{content.monthlyPriceLabel}</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        name="monthlyPrice"
+                        value={formValues.monthlyPrice}
+                        onChange={handleChange}
+                      />
+                    </label>
+
+                    <label className="login-form__field">
+                      <span>{content.securityDepositLabel}</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        name="securityDeposit"
+                        value={formValues.securityDeposit}
+                        onChange={handleChange}
+                      />
+                    </label>
+
+                    <label className="login-form__field">
+                      <span>{content.includedKmPerDayLabel}</span>
+                      <input
+                        type="number"
+                        min="0"
+                        name="includedKmPerDay"
+                        value={formValues.includedKmPerDay}
+                        onChange={handleChange}
+                      />
+                    </label>
+
+                    <label className="login-form__field">
+                      <span>{content.extraKmPriceLabel}</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        name="extraKmPrice"
+                        value={formValues.extraKmPrice}
+                        onChange={handleChange}
+                      />
+                    </label>
+                  </div>
+                </section>
+
+                <div className="vehicle-form-page__media-grid">
+                  <section className="vehicle-form-page__panel">
+                    <div className="vehicle-form-page__panel-header">
+                      <h2>{content.videoSectionTitle}</h2>
+                    </div>
+
+                    <div className="login-form__field vehicle-form__media-field">
+                      <span>{content.videoUrlLabel}</span>
+                      <div
+                        className={`vehicle-form__dropzone${
+                          activeDropZone === "video" ? " vehicle-form__dropzone--active" : ""
+                        }`}
+                        onDragOver={(event) => handleDropZoneDragOver(event, "video")}
+                        onDragLeave={handleDropZoneDragLeave}
+                        onDrop={handleVideoDrop}
+                      >
+                        <div className="vehicle-form__dropzone-copy">
+                          <strong>{content.videoUrlLabel}</strong>
+                          <span>{videoDropDescription}</span>
+                        </div>
+                        <button
+                          type="button"
+                          className="vehicle-form__dropzone-cta"
+                          onClick={openVideoPicker}
+                        >
+                          {content.mediaSelectLabel}
+                        </button>
+                      </div>
+                      <input
+                        id={videoInputId}
+                        ref={videoInputRef}
+                        className="vehicle-form__media-input"
+                        type="file"
+                        accept="video/*"
+                        onChange={handleVideoSelection}
+                      />
+                    </div>
+
+                    {videoPreviewUrl ? (
+                      <div className="vehicle-form__media">
+                        <div className="vehica-car-embed-wrapper">
+                          <div className="vehica-car-embed">
+                            <VehicleVideo
+                              src={videoPreviewUrl}
+                              title={content.videoSectionTitle}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ) : null}
+                  </section>
+
+                  <section className="vehicle-form-page__panel">
+                    <div className="vehicle-form-page__panel-header">
+                      <h2>{content.photosSectionTitle}</h2>
+                    </div>
+
+                    <div className="login-form__field vehicle-form__media-field">
+                      <span>{content.photoUrlsLabel}</span>
+                      <div
+                        className={`vehicle-form__dropzone${
+                          activeDropZone === "photo" ? " vehicle-form__dropzone--active" : ""
+                        }`}
+                        onDragOver={(event) => handleDropZoneDragOver(event, "photo")}
+                        onDragLeave={handleDropZoneDragLeave}
+                        onDrop={handlePhotoDrop}
+                      >
+                        <div className="vehicle-form__dropzone-copy">
+                          <strong>{content.photoUrlsLabel}</strong>
+                          <span>{photoDropDescription}</span>
+                        </div>
+                        <button
+                          type="button"
+                          className="vehicle-form__dropzone-cta"
+                          onClick={openPhotoPicker}
+                        >
+                          {content.mediaSelectLabel}
+                        </button>
+                      </div>
+                      <input
+                        id={photoInputId}
+                        ref={photoInputRef}
+                        className="vehicle-form__media-input"
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handlePhotoSelection}
+                      />
+                    </div>
+
+                    {existingPhotoUrls.length > 0 || photoPreviewUrls.length > 0 ? (
+                      <div className="vehicle-form__gallery">
+                        {existingPhotoUrls.map((photoUrl, index) => (
+                          <div
+                            key={`${photoUrl}-${index}`}
+                            className="vehicle-form__gallery-item"
+                          >
+                            <button
+                              type="button"
+                              className="vehicle-form__remove-media"
+                              aria-label={`Supprimer l'image ${index + 1}`}
+                              onClick={() => handleExistingPhotoRemove(photoUrl)}
+                            >
+                              x
+                            </button>
+
+                            <img
+                              src={photoUrl}
+                              alt={`${content.photoUrlsLabel} ${index + 1}`}
+                            />
+                          </div>
+                        ))}
+
+                        {photoPreviewUrls.map((photoUrl, index) => (
+                          <div
+                            key={`${photoUrl}-${index}`}
+                            className="vehicle-form__gallery-item"
+                          >
+                            <button
+                              type="button"
+                              className="vehicle-form__remove-media"
+                              aria-label={`Supprimer la nouvelle image ${index + 1}`}
+                              onClick={() => handleNewPhotoRemove(index)}
+                            >
+                              x
+                            </button>
+
+                            <img
+                              src={photoUrl}
+                              alt={`${content.photoUrlsLabel} ${
+                                existingPhotoUrls.length + index + 1
+                              }`}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+                  </section>
+                </div>
+
+                {errorMessage ? (
+                  <p className="login-form__message login-form__message--error">
+                    {errorMessage}
+                  </p>
+                ) : null}
+
+                <div className="vehicle-form-page__submit-row">
+                  <button
+                    type="submit"
+                    className="login-form__submit vehicle-form-page__submit"
+                    disabled={isSubmitting}
+                  >
+                    {mode === "edit"
+                      ? content.editSubmitLabel
+                      : content.createSubmitLabel}
+                  </button>
+                </div>
+              </div>
+
+              <aside className="vehicle-form-page__sidebar">
+                <div className="vehicle-form-page__summary-card">
+                  <h2>{pageTitle}</h2>
+                  <p className="hero-card__text">{pageDescription}</p>
+
+                  <div className="vehicle-form-page__summary-grid">
+                    <div className="vehicle-form-page__summary-item">
+                      <span>{content.vehicleRangesLabel}</span>
+                      <strong>{formValues.vehicleRanges.length}/2</strong>
+                    </div>
+
+                    <div className="vehicle-form-page__summary-item">
+                      <span>{content.photosSectionTitle}</span>
+                      <strong>{totalPhotoCount}</strong>
+                    </div>
+
+                    <div className="vehicle-form-page__summary-item">
+                      <span>{content.videoSectionTitle}</span>
+                      <strong>{videoPreviewUrl ? "1" : "0"}</strong>
+                    </div>
+
+                    <div className="vehicle-form-page__summary-item">
+                      <span>{content.adminAvailabilityLabel}</span>
+                      <strong>{availabilitySummaryLabel}</strong>
+                    </div>
+                  </div>
+                </div>
+              </aside>
             </div>
-
-            <small className="vehicle-form__option-group-hint">
-              {content.vehicleRangesHint}
-            </small>
-          </div>
-
-          <label className="login-form__field">
-            <span>{content.fuelTypeLabel}</span>
-            <select
-              name="fuelType"
-              value={formValues.fuelType}
-              onChange={handleChange}
-            >
-              <option value="">Selectionner</option>
-              {content.fuelTypeOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="login-form__field">
-            <span>{content.transmissionLabel}</span>
-            <select
-              name="transmission"
-              value={formValues.transmission}
-              onChange={handleChange}
-            >
-              <option value="">Selectionner</option>
-              {content.transmissionOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="login-form__field">
-            <span>{content.seatsLabel}</span>
-            <input
-              type="number"
-              min="1"
-              name="seats"
-              value={formValues.seats}
-              onChange={handleChange}
-            />
-          </label>
-
-          <label className="login-form__field">
-            <span>{content.horsepowerLabel}</span>
-            <input
-              type="number"
-              min="0"
-              name="horsepower"
-              value={formValues.horsepower}
-              onChange={handleChange}
-            />
-          </label>
-
-          <label className="login-form__field">
-            <span>{content.dailyPriceLabel}</span>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              name="dailyPrice"
-              value={formValues.dailyPrice}
-              onChange={handleChange}
-            />
-          </label>
-
-          <label className="login-form__field">
-            <span>{content.weeklyPriceLabel}</span>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              name="weeklyPrice"
-              value={formValues.weeklyPrice}
-              onChange={handleChange}
-            />
-          </label>
-
-          <label className="login-form__field">
-            <span>{content.monthlyPriceLabel}</span>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              name="monthlyPrice"
-              value={formValues.monthlyPrice}
-              onChange={handleChange}
-            />
-          </label>
-
-          <label className="login-form__field">
-            <span>{content.securityDepositLabel}</span>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              name="securityDeposit"
-              value={formValues.securityDeposit}
-              onChange={handleChange}
-            />
-          </label>
-
-          <label className="login-form__field">
-            <span>{content.includedKmPerDayLabel}</span>
-            <input
-              type="number"
-              min="0"
-              name="includedKmPerDay"
-              value={formValues.includedKmPerDay}
-              onChange={handleChange}
-            />
-          </label>
-
-          <label className="login-form__field">
-            <span>{content.extraKmPriceLabel}</span>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              name="extraKmPrice"
-              value={formValues.extraKmPrice}
-              onChange={handleChange}
-            />
-          </label>
-
-          <label className="vehicle-form__checkbox">
-            <input
-              type="checkbox"
-              name="isConvertible"
-              checked={formValues.isConvertible}
-              onChange={handleChange}
-            />
-            <span>{content.convertibleLabel}</span>
-          </label>
-
-          {mode === "edit" ? (
-            <label className="login-form__field">
-              <span>{content.adminAvailabilityLabel}</span>
-              <select
-                name="availabilityStatus"
-                value={formValues.availabilityStatus}
-                onChange={handleChange}
-              >
-                <option value="available">
-                  {content.availabilityAvailableLabel}
-                </option>
-                <option value="reserved">
-                  {content.availabilityReservedLabel}
-                </option>
-                <option value="maintenance">
-                  {content.availabilityMaintenanceLabel}
-                </option>
-              </select>
-            </label>
-          ) : null}
-        </section>
-
-        <label className="login-form__field">
-          <span>{content.videoUrlLabel}</span>
-          <input
-            type="file"
-            accept="video/*"
-            onChange={handleVideoSelection}
-          />
-        </label>
-
-        {videoPreviewUrl ? (
-          <div className="vehicle-form__media">
-            <VehicleVideo src={videoPreviewUrl} title={content.videoSectionTitle} />
-          </div>
-        ) : null}
-
-        <label className="login-form__field">
-          <span>{content.photoUrlsLabel}</span>
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handlePhotoSelection}
-          />
-        </label>
-
-        {existingPhotoUrls.length > 0 || photoPreviewUrls.length > 0 ? (
-          <div className="vehicle-form__gallery">
-            {existingPhotoUrls.map((photoUrl, index) => (
-              <div key={`${photoUrl}-${index}`} className="vehicle-form__gallery-item">
-                <button
-                  type="button"
-                  className="vehicle-form__remove-media"
-                  aria-label={`Supprimer l'image ${index + 1}`}
-                  onClick={() => handleExistingPhotoRemove(photoUrl)}
-                >
-                  x
-                </button>
-
-                <img
-                  src={photoUrl}
-                  alt={`${content.photoUrlsLabel} ${index + 1}`}
-                />
-              </div>
-            ))}
-
-            {photoPreviewUrls.map((photoUrl, index) => (
-              <div
-                key={`${photoUrl}-${index}`}
-                className="vehicle-form__gallery-item"
-              >
-                <button
-                  type="button"
-                  className="vehicle-form__remove-media"
-                  aria-label={`Supprimer la nouvelle image ${index + 1}`}
-                  onClick={() => handleNewPhotoRemove(index)}
-                >
-                  x
-                </button>
-
-                <img
-                  src={photoUrl}
-                  alt={`${content.photoUrlsLabel} ${existingPhotoUrls.length + index + 1}`}
-                />
-              </div>
-            ))}
-          </div>
-        ) : null}
-
-        {errorMessage ? (
-          <p className="login-form__message login-form__message--error">
-            {errorMessage}
-          </p>
-        ) : null}
-
-        <button
-          type="submit"
-          className="login-form__submit"
-          disabled={isSubmitting}
-        >
-          {mode === "edit" ? content.editSubmitLabel : content.createSubmitLabel}
-        </button>
-      </form>
+          </form>
+        </div>
+      </section>
     </main>
   );
 }

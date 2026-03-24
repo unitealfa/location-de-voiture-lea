@@ -1,3 +1,12 @@
+import {
+  readCachedValue,
+  removeCachedValue,
+  writeCachedValue
+} from "./cacheService";
+
+const PUBLIC_VEHICLE_LIST_CACHE_KEY = "vehicles:public:list";
+const ADMIN_VEHICLE_LIST_CACHE_KEY = "vehicles:admin:list";
+
 async function parseJsonResponse(response, fallbackMessage) {
   const payload = await response.json().catch(() => ({
     message: "Reponse serveur invalide."
@@ -62,40 +71,157 @@ function buildVehicleFormData(payload) {
   return formData;
 }
 
-export async function listVehicles({ adminView = false } = {}) {
-  const response = await fetch(
-    adminView ? "/api/admin/vehicles" : "/api/vehicles",
-    {
-      credentials: "same-origin"
-    }
-  );
+function getVehicleListCacheKey(adminView) {
+  return adminView ? ADMIN_VEHICLE_LIST_CACHE_KEY : PUBLIC_VEHICLE_LIST_CACHE_KEY;
+}
 
-  if (!adminView && response.status === 503) {
-    return [];
+function getVehicleDetailCacheKey(id, adminView) {
+  return `vehicle:${adminView ? "admin" : "public"}:${id}`;
+}
+
+export function readCachedVehicleList({ adminView = false } = {}) {
+  const vehicles = readCachedValue(getVehicleListCacheKey(adminView));
+  return Array.isArray(vehicles) ? vehicles : [];
+}
+
+export function readCachedVehicleById(id, { adminView = false } = {}) {
+  if (!Number.isInteger(Number(id))) {
+    return null;
   }
 
-  const payload = await parseJsonResponse(
-    response,
-    "Impossible de charger les vehicules."
+  const cachedVehicle = readCachedValue(
+    getVehicleDetailCacheKey(Number(id), adminView)
   );
 
-  return payload.vehicles || [];
+  if (cachedVehicle) {
+    return cachedVehicle;
+  }
+
+  return (
+    readCachedVehicleList({ adminView }).find(
+      (vehicle) => Number(vehicle.id) === Number(id)
+    ) || null
+  );
+}
+
+function writeVehicleDetailCache(vehicle, { adminView = false } = {}) {
+  if (!vehicle || !vehicle.id) {
+    return;
+  }
+
+  writeCachedValue(getVehicleDetailCacheKey(vehicle.id, adminView), vehicle);
+}
+
+function writeVehicleListCache(vehicles, { adminView = false } = {}) {
+  if (!Array.isArray(vehicles)) {
+    return;
+  }
+
+  writeCachedValue(getVehicleListCacheKey(adminView), vehicles);
+  vehicles.forEach((vehicle) => {
+    writeVehicleDetailCache(vehicle, { adminView });
+  });
+}
+
+function removeVehicleCaches(id) {
+  const numericId = Number(id);
+
+  [true, false].forEach((adminView) => {
+    removeCachedValue(getVehicleDetailCacheKey(numericId, adminView));
+
+    const cachedList = readCachedVehicleList({ adminView });
+
+    if (!cachedList.length) {
+      return;
+    }
+
+    writeVehicleListCache(
+      cachedList.filter((vehicle) => Number(vehicle.id) !== numericId),
+      { adminView }
+    );
+  });
+}
+
+function refreshCachedVehicle(vehicle) {
+  if (!vehicle?.id) {
+    return;
+  }
+
+  const adminList = readCachedVehicleList({ adminView: true });
+  const nextAdminList = adminList.length
+    ? adminList.some((entry) => Number(entry.id) === Number(vehicle.id))
+      ? adminList.map((entry) =>
+          Number(entry.id) === Number(vehicle.id) ? vehicle : entry
+        )
+      : [vehicle, ...adminList]
+    : [vehicle];
+
+  writeVehicleDetailCache(vehicle, { adminView: true });
+  writeVehicleListCache(nextAdminList, { adminView: true });
+
+  removeCachedValue(getVehicleDetailCacheKey(vehicle.id, false));
+  removeCachedValue(PUBLIC_VEHICLE_LIST_CACHE_KEY);
+}
+
+export async function listVehicles({ adminView = false } = {}) {
+  const cachedVehicles = readCachedVehicleList({ adminView });
+
+  try {
+    const response = await fetch(
+      adminView ? "/api/admin/vehicles" : "/api/vehicles",
+      {
+        credentials: "same-origin"
+      }
+    );
+
+    if (!adminView && response.status === 503) {
+      return cachedVehicles;
+    }
+
+    const payload = await parseJsonResponse(
+      response,
+      "Impossible de charger les vehicules."
+    );
+    const vehicles = payload.vehicles || [];
+
+    writeVehicleListCache(vehicles, { adminView });
+
+    return vehicles;
+  } catch (error) {
+    if (cachedVehicles.length > 0) {
+      return cachedVehicles;
+    }
+
+    throw error;
+  }
 }
 
 export async function getVehicleById(id, { adminView = false } = {}) {
-  const response = await fetch(
-    adminView ? `/api/admin/vehicles/${id}` : `/api/vehicles/${id}`,
-    {
-      credentials: "same-origin"
+  const cachedVehicle = readCachedVehicleById(id, { adminView });
+
+  try {
+    const response = await fetch(
+      adminView ? `/api/admin/vehicles/${id}` : `/api/vehicles/${id}`,
+      {
+        credentials: "same-origin"
+      }
+    );
+
+    const payload = await parseJsonResponse(
+      response,
+      "Impossible de charger ce vehicule."
+    );
+
+    writeVehicleDetailCache(payload.vehicle, { adminView });
+
+    return payload.vehicle;
+  } catch (error) {
+    if (cachedVehicle) {
+      return cachedVehicle;
     }
-  );
 
-  const payload = await parseJsonResponse(
-    response,
-    "Impossible de charger ce vehicule."
-  );
-
-  return payload.vehicle;
+    throw error;
+  }
 }
 
 export async function createVehicle(payload) {
@@ -105,7 +231,16 @@ export async function createVehicle(payload) {
     body: buildVehicleFormData(payload)
   });
 
-  return parseJsonResponse(response, "Creation du vehicule impossible.");
+  const parsedResponse = await parseJsonResponse(
+    response,
+    "Creation du vehicule impossible."
+  );
+
+  if (parsedResponse.vehicle) {
+    refreshCachedVehicle(parsedResponse.vehicle);
+  }
+
+  return parsedResponse;
 }
 
 export async function updateVehicle(id, payload) {
@@ -115,7 +250,16 @@ export async function updateVehicle(id, payload) {
     body: buildVehicleFormData(payload)
   });
 
-  return parseJsonResponse(response, "Modification du vehicule impossible.");
+  const parsedResponse = await parseJsonResponse(
+    response,
+    "Modification du vehicule impossible."
+  );
+
+  if (parsedResponse.vehicle) {
+    refreshCachedVehicle(parsedResponse.vehicle);
+  }
+
+  return parsedResponse;
 }
 
 export async function deleteVehicle(id) {
@@ -124,7 +268,13 @@ export async function deleteVehicle(id) {
     credentials: "same-origin"
   });
 
-  return parseJsonResponse(response, "Suppression du vehicule impossible.");
+  const parsedResponse = await parseJsonResponse(
+    response,
+    "Suppression du vehicule impossible."
+  );
+
+  removeVehicleCaches(id);
+  return parsedResponse;
 }
 
 export async function markVehicleAsMaintenance(id) {
@@ -133,10 +283,16 @@ export async function markVehicleAsMaintenance(id) {
     credentials: "same-origin"
   });
 
-  return parseJsonResponse(
+  const parsedResponse = await parseJsonResponse(
     response,
     "Passage du vehicule en maintenance impossible."
   );
+
+  if (parsedResponse.vehicle) {
+    refreshCachedVehicle(parsedResponse.vehicle);
+  }
+
+  return parsedResponse;
 }
 
 export async function markVehicleAsAvailable(id) {
@@ -145,8 +301,14 @@ export async function markVehicleAsAvailable(id) {
     credentials: "same-origin"
   });
 
-  return parseJsonResponse(
+  const parsedResponse = await parseJsonResponse(
     response,
     "Remise du vehicule en disponibilite impossible."
   );
+
+  if (parsedResponse.vehicle) {
+    refreshCachedVehicle(parsedResponse.vehicle);
+  }
+
+  return parsedResponse;
 }

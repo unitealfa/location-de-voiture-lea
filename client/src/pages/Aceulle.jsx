@@ -495,12 +495,12 @@ function Aceulle({ content, onNavigate }) {
 
           <div className="vehica-features">
             <RentzoFeature
-              icon={<CalendarIcon />}
+              icon={<i className="far fa-calendar-alt" aria-hidden="true"></i>}
               label="LOCATION : à la journée, à la semaine ou au mois"
               text="Nous vous offrons la possibilité de louer nos véhicules pour la durée de votre choix."
             />
             <RentzoFeature
-              icon={<ContactIcon />}
+              icon={<i className="fas fa-hotel" aria-hidden="true"></i>}
               label="CONTACT ET RÉSERVATION RAPIDES"
               text="Téléphone, WhatsApp ou formulaire selon le véhicule choisi, avec un affichage optimisé même sur connexion lente."
             />

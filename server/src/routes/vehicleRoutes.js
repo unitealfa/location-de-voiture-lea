@@ -1,7 +1,7 @@
 const express = require("express");
 const {
   handleReservationUpload,
-  optimizeReservationLicensePhoto,
+  optimizeReservationLicensePhotos,
   removeStoredReservationFile,
   removeUploadedReservationFile
 } = require("../middleware/reservationUploadMiddleware");
@@ -40,13 +40,13 @@ router.post("/:id/reservations", handleReservationUpload, async (request, respon
     const vehicleId = parseVehicleId(request.params.id);
 
     if (!vehicleId) {
-      await removeUploadedReservationFile(request.file);
+      await removeUploadedReservationFile(request.files);
       return response.status(400).json({
         message: "Vehicule invalide."
       });
     }
 
-    drivingLicensePhotoUrl = await optimizeReservationLicensePhoto(request.file);
+    drivingLicensePhotoUrl = await optimizeReservationLicensePhotos(request.files);
 
     const reservation = await createVehicleReservation(vehicleId, {
       ...(request.body || {}),
@@ -58,7 +58,7 @@ router.post("/:id/reservations", handleReservationUpload, async (request, respon
       reservation
     });
   } catch (error) {
-    await removeUploadedReservationFile(request.file);
+    await removeUploadedReservationFile(request.files);
     await removeStoredReservationFile(drivingLicensePhotoUrl);
     return response.status(400).json({
       message: error.message || "Reservation impossible."

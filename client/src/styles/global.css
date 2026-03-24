@@ -704,13 +704,19 @@ a {
   flex-wrap: wrap;
 }
 
-.vehica-features .vehica-features__feature {
-  width: 50%;
+.rentzo-home__intro .vehica-features .vehica-features__feature {
+  width: 100%;
   display: flex;
   margin-bottom: 40px;
 }
 
-.vehica-features .vehica-features__icon {
+@media (min-width: 900px) {
+  .rentzo-home__intro .vehica-features .vehica-features__feature {
+    width: 50%;
+  }
+}
+
+.rentzo-home__intro .vehica-features .vehica-features__icon {
   width: 73px;
   height: 73px;
   color: var(--primary);
@@ -724,28 +730,56 @@ a {
   flex-shrink: 0;
 }
 
+.rentzo-home__intro .vehica-features .vehica-features__icon i {
+  display: block;
+  line-height: 1;
+}
+
 .rentzo-home__feature-icon {
   font-size: 18px;
   font-weight: 800;
 }
 
-.vehica-features .vehica-features__content {
-  padding-left: 33px;
-  padding-right: 80px;
+.rentzo-home__intro .vehica-features .vehica-features__content {
+  padding-top: 20px;
 }
 
-.vehica-features .vehica-features__label {
+@media (min-width: 900px) {
+  .rentzo-home__intro .vehica-features .vehica-features__content {
+    padding-top: 0;
+    padding-left: 33px;
+    padding-right: 105px;
+  }
+}
+
+.rentzo-home__intro .vehica-features .vehica-features__label {
   font-size: 21px;
   font-weight: 700;
   line-height: 1.48;
   color: #ffffff;
 }
 
-.vehica-features .vehica-features__text {
+.rentzo-home__intro .vehica-features .vehica-features__text {
   font-size: 17px;
   line-height: 1.82;
   color: #ffffff;
   margin-top: 24px;
+}
+
+@media (max-width: 899px) {
+  .rentzo-home__intro .vehica-features .vehica-features__feature {
+    flex-direction: column;
+  }
+
+  .rentzo-home__intro .vehica-features .vehica-features__icon {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .rentzo-home__intro .vehica-features .vehica-features__label,
+  .rentzo-home__intro .vehica-features .vehica-features__text {
+    text-align: center;
+  }
 }
 
 .rentzo-home__catalog {
@@ -3214,7 +3248,7 @@ a {
   }
 
   .rentzo-contact-hours .elementor-custom-embed iframe {
-    height: 420px;
+    height: 305px;
   }
 }
 
@@ -3457,6 +3491,1340 @@ a {
   font-size: 13px;
   line-height: 18px;
   color: #6f7784;
+}
+
+
+.vehicle-form-page {
+  background: #f2f5fb;
+  min-height: calc(100vh - 140px);
+}
+
+.vehicle-form-page__container {
+  width: 100%;
+  max-width: 1468px;
+  margin: 0 auto;
+  padding: 0 30px;
+}
+
+.vehicle-form-page__hero {
+  position: relative;
+  overflow: hidden;
+  padding: 44px 0 54px;
+  background: #000000;
+}
+
+.vehicle-form-page__hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.82) 100%);
+}
+
+.vehicle-form-page__hero .vehicle-form-page__container {
+  position: relative;
+  z-index: 1;
+}
+
+.vehicle-form-page__back {
+  display: inline-grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  margin-bottom: 24px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #ffffff;
+  line-height: 1;
+  box-sizing: border-box;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.vehicle-form-page__back:hover {
+  border-color: rgba(255, 70, 5, 0.9);
+  background: rgba(255, 70, 5, 0.14);
+  box-shadow: 0 10px 24px rgba(255, 70, 5, 0.18);
+  transform: translateY(-1px);
+}
+
+.vehicle-form-page__back:focus-visible {
+  outline: 2px solid rgba(255, 70, 5, 0.95);
+  outline-offset: 4px;
+}
+
+.vehicle-form-page__back svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+.vehicle-form-page__hero-copy {
+  max-width: 720px;
+}
+
+.vehicle-form-page__hero-copy h1 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 46px;
+  line-height: 1.1;
+  font-weight: 900;
+}
+
+.vehicle-form-page__hero-copy .hero-card__text {
+  max-width: 620px;
+  margin-top: 18px;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.vehicle-form-page__body {
+  padding: 34px 0 80px;
+}
+
+.vehicle-form-page__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 30px;
+  align-items: start;
+}
+
+.vehicle-form-page__main {
+  min-width: 0;
+}
+
+.vehicle-form-page__panel {
+  margin-bottom: 24px;
+  padding: 30px;
+  border-radius: 10px;
+  border: 1px solid #e7edf3;
+  background: #ffffff;
+  box-shadow: 1px 1px 0 0 rgba(196, 196, 196, 0.24);
+}
+
+.vehicle-form-page__panel-header {
+  margin-bottom: 22px;
+}
+
+.vehicle-form-page__panel-header h2 {
+  margin: 0;
+  color: #222732;
+  font-size: 27px;
+  line-height: 1.2;
+  font-weight: 900;
+}
+
+.vehicle-form-page .vehicle-form__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.vehicle-form-page .vehicle-form__checkbox {
+  min-height: 53px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-radius: 10px;
+  border: 1px solid #e7edf3;
+  background: #ffffff;
+  box-shadow: 1px 1px 0 0 rgba(196, 196, 196, 0.24);
+}
+
+.vehicle-form-page .vehicle-form__checkbox input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+}
+
+.vehicle-form-page .vehicle-form__checkbox span {
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 700;
+  color: #2f3b48;
+}
+
+.vehicle-form-page__media-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.vehicle-form-page .vehicle-form__media {
+  margin-top: 18px;
+  padding: 18px;
+  border-radius: 10px;
+  border: 1px solid #e7edf3;
+  background: #f7f9fc;
+}
+
+.vehicle-form-page .vehica-car-embed-wrapper {
+  margin: 0;
+}
+
+.vehicle-form-page .vehica-car-embed {
+  position: relative;
+  height: 0;
+  padding-bottom: 56.25%;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #000000;
+}
+
+.vehicle-form-page .vehica-car-embed iframe,
+.vehicle-form-page .vehica-car-embed .vehica-car-embed__video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.vehicle-form-page .vehica-car-embed .vehica-car-embed__video {
+  object-fit: contain;
+  background: #000000;
+}
+
+.vehicle-form-page .vehicle-form__gallery {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.vehicle-form-page .vehicle-form__gallery-item {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  border-radius: 10px;
+  border: 1px solid #e7edf3;
+  background: #eef2f6;
+}
+
+.vehicle-form-page .vehicle-form__gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #eef2f6;
+  display: block;
+}
+
+.vehicle-form-page .vehicle-form__remove-media {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(15, 20, 30, 0.85);
+  color: #ffffff;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.vehicle-form-page .vehicle-form__dropzone {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 72px;
+  padding: 16px 18px;
+  border: 1px dashed #d7e1ea;
+  border-radius: 10px;
+  background: #fbfcfe;
+  color: #2f3b48;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.vehicle-form-page .vehicle-form__dropzone-copy {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.vehicle-form-page .vehicle-form__dropzone-copy strong {
+  color: #222732;
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 800;
+}
+
+.vehicle-form-page .vehicle-form__dropzone-copy span {
+  color: #6f7784;
+  font-size: 13px;
+  line-height: 19px;
+  font-weight: 600;
+}
+
+.vehicle-form-page .vehicle-form__dropzone-cta {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 118px;
+  min-height: 40px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid #e7edf3;
+  background: #ffffff;
+  color: #222732;
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.vehicle-form-page .vehicle-form__dropzone:hover,
+.vehicle-form-page .vehicle-form__dropzone--active {
+  border-color: rgba(255, 70, 5, 0.45);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(255, 70, 5, 0.06);
+}
+
+.vehicle-form-page .vehicle-form__media-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+
+@media (max-width: 767px) {
+  .vehicle-form-page .vehicle-form__dropzone {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .vehicle-form-page .vehicle-form__dropzone-cta {
+    min-width: 0;
+    width: fit-content;
+  }
+}
+
+.vehicle-form-page__submit-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.vehicle-form-page__submit {
+  min-width: 250px;
+}
+
+.vehicle-form-page .vehicle-form__help {
+  padding: 16px 18px;
+  border-radius: 10px;
+  border: 1px solid #e7edf3;
+  background: #f7f9fc;
+  color: #2f3b48;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.reservation-admin-page .reservation-admin-form {
+  margin: 0;
+}
+
+.reservation-admin-page .reservation-admin-form__meta-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 16px;
+  align-items: start;
+}
+
+.reservation-admin-page .reservation-admin-form__helper {
+  min-height: 53px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 18px;
+  border-radius: 10px;
+  border: 1px solid #e7edf3;
+  background: #f7f9fc;
+  box-shadow: 1px 1px 0 0 rgba(196, 196, 196, 0.16);
+}
+
+.reservation-admin-page .reservation-admin-form__helper span {
+  color: #6f7784;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 700;
+}
+
+.reservation-admin-page .reservation-admin-form__helper strong {
+  color: #222732;
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 800;
+}
+
+.reservation-admin-page .reservation-admin-form__helper--secondary {
+  margin-top: 18px;
+}
+
+.reservation-admin-page .reservation-admin-form__helper--pricing {
+  margin-top: 0;
+}
+
+.reservation-admin-page .reservation-admin-form__pricing-shell {
+  display: grid;
+  gap: 18px;
+}
+
+.reservation-admin-page .reservation-admin-form__pricing-hero {
+  padding: 22px 24px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #101722 0%, #1c2737 100%);
+  box-shadow: 0 22px 50px rgba(15, 23, 42, 0.16);
+  display: grid;
+  gap: 8px;
+}
+
+.reservation-admin-page .reservation-admin-form__pricing-hero-label {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.reservation-admin-page .reservation-admin-form__pricing-hero-value {
+  color: #ffffff;
+  font-size: 34px;
+  line-height: 1.05;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+
+.reservation-admin-page .reservation-admin-form__pricing-hero-meta {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  line-height: 21px;
+  font-weight: 700;
+}
+
+.reservation-admin-page .reservation-admin-form__pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.reservation-admin-page .reservation-admin-form__pricing-card {
+  padding: 18px;
+  border-radius: 14px;
+  border: 1px solid #e7edf3;
+  background: #f7f9fc;
+  display: grid;
+  gap: 6px;
+}
+
+.reservation-admin-page .reservation-admin-form__pricing-card--secondary {
+  background: #ffffff;
+}
+
+.reservation-admin-page .reservation-admin-form__pricing-card span {
+  color: #6f7784;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.reservation-admin-page .reservation-admin-form__pricing-card strong {
+  color: #222732;
+  font-size: 20px;
+  line-height: 26px;
+  font-weight: 900;
+}
+
+.reservation-admin-page .reservation-admin-form__pricing-card small {
+  color: #6f7784;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 700;
+}
+
+.reservation-admin-page .reservation-admin-form__pricing-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.8fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.reservation-admin-page .reservation-admin-form__pricing-side {
+  display: grid;
+  gap: 12px;
+}
+
+.reservation-admin-page .reservation-admin-form__price-field {
+  margin-bottom: 0;
+}
+
+.reservation-admin-page .reservation-admin-form__summary-item--price {
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #fff4ef 0%, #ffe8dd 100%);
+  border: 1px solid rgba(255, 70, 5, 0.14);
+}
+
+.reservation-admin-page .reservation-admin-form__summary-item--price span {
+  color: #b14a1f;
+}
+
+.reservation-admin-page .reservation-admin-form__summary-item--price strong {
+  color: #111111;
+  font-size: 24px;
+  line-height: 1.15;
+}
+
+.reservation-admin-page .reservation-admin-form__recalculate {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--primary);
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.reservation-admin-page .reservation-admin-form__recalculate:hover {
+  text-decoration: underline;
+}
+
+.reservation-admin-page .reservation-admin-form__datetime-layout {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.reservation-admin-page .reservation-admin-form__datetime-layout--single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.reservation-admin-page .reservation-admin-form__calendar-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.reservation-admin-page .reservation-admin-form__calendar-summary-card {
+  padding: 16px 18px;
+  border-radius: 12px;
+  border: 1px solid #e7edf3;
+  background: #ffffff;
+}
+
+.reservation-admin-page .reservation-admin-form__calendar-summary-card span {
+  display: block;
+  margin-bottom: 8px;
+  color: #6f7784;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.reservation-admin-page .reservation-admin-form__calendar-summary-card strong {
+  display: block;
+  color: #222732;
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 900;
+}
+
+.reservation-admin-page .reservation-admin-form__datetime-card {
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid #e7edf3;
+  background: #f7f9fc;
+}
+
+.reservation-admin-page .reservation-admin-form__datetime-title {
+  margin: 0;
+  color: #222732;
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 900;
+}
+
+.reservation-admin-page .reservation-admin-form__availability-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.reservation-admin-page .reservation-admin-form__availability-header h3 {
+  margin: 0 0 8px;
+  color: #222732;
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 900;
+}
+
+.reservation-admin-page .reservation-admin-form__availability-header p {
+  margin: 0;
+  max-width: 720px;
+  color: #6f6f6f;
+  font-size: 15px;
+  line-height: 24px;
+}
+
+.reservation-admin-page .reservation-admin-form__datetime-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 280px);
+  gap: 16px;
+  align-items: start;
+  margin-bottom: 18px;
+}
+
+.reservation-admin-page .reservation-admin-form__datetime-head--stack {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.reservation-admin-page .reservation-admin-form__calendar-current {
+  margin: 8px 0 0;
+  color: #2f3b48;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 700;
+}
+
+.reservation-admin-page .reservation-admin-form__datetime-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.reservation-admin-page .reservation-admin-form__datetime-grid--locations {
+  margin-top: 18px;
+}
+
+.reservation-admin-page .reservation-admin-form__datetime-grid .login-form__field:first-child {
+  grid-column: 1 / -1;
+}
+
+.reservation-admin-page .reservation-admin-form__picker-field,
+.reservation-admin-page .reservation-admin-form__picker-field span,
+.reservation-admin-page .reservation-admin-form__picker-field input[type="date"] {
+  cursor: pointer;
+}
+
+.reservation-admin-page .reservation-admin-form__picker-field input[type="date"] {
+  position: relative;
+}
+
+.reservation-admin-page .reservation-admin-form__datetime-grid input[type="time"]:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #eef2f6;
+}
+
+.reservation-admin-page .reservation-calendar--admin {
+  padding: 22px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+}
+
+.reservation-admin-page .reservation-calendar--admin .reservation-calendar__toolbar {
+  margin-bottom: 18px;
+}
+
+.reservation-admin-page .reservation-calendar--admin .reservation-calendar__toolbar strong {
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 900;
+}
+
+.reservation-admin-page .reservation-calendar--admin .reservation-calendar__grid {
+  gap: 10px;
+}
+
+.reservation-admin-page .reservation-calendar--admin .reservation-calendar__weekday {
+  font-size: 11px;
+  line-height: 15px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.reservation-admin-page .reservation-calendar--admin .reservation-calendar__day {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 58px;
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 800;
+}
+
+.reservation-admin-page .reservation-calendar--admin .reservation-calendar__day--reserved {
+  background: #f5f7fa;
+  border-color: #dde3ea;
+}
+
+.reservation-admin-page .reservation-calendar--admin .reservation-calendar__day--reserved .reservation-calendar__marker {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #7f8a99;
+}
+
+.reservation-admin-page .reservation-calendar--admin .reservation-calendar__day--unavailable {
+  background: #eceff3;
+  border-color: #dde3ea;
+  color: #98a2b3;
+}
+
+.reservation-admin-page .reservation-calendar--admin .reservation-calendar__day--range {
+  background: rgba(255, 70, 5, 0.12);
+  border-color: rgba(255, 70, 5, 0.22);
+}
+
+.reservation-admin-page .reservation-calendar--admin .reservation-calendar__day--selected {
+  box-shadow: 0 14px 28px rgba(255, 70, 5, 0.22);
+}
+
+
+
+.reservation-admin-page .reservation-admin-form__license-upload {
+  margin-top: 18px;
+}
+
+.reservation-admin-page .reservation-admin-form__license-selected {
+  margin: 0 0 8px;
+  color: #6f7784;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 700;
+}
+
+.reservation-admin-page .reservation-admin-form__license-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.reservation-admin-page .reservation-admin-form__license-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  min-height: 53px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: 1px dashed #d7e1ea;
+  background: #fbfcfe;
+  color: #2f3b48;
+  appearance: none;
+  -webkit-appearance: none;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.reservation-admin-page .reservation-admin-form__license-trigger span {
+  min-width: 0;
+  color: #2f3b48;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 700;
+}
+
+.reservation-admin-page .reservation-admin-form__license-trigger strong {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid #e7edf3;
+  background: #ffffff;
+  color: #222732;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.reservation-admin-page .reservation-admin-form__license-trigger:hover,
+.reservation-admin-page .reservation-admin-form__license-trigger--active,
+.reservation-admin-page .reservation-admin-form__license-input:focus + .reservation-admin-form__license-trigger,
+.reservation-admin-page .reservation-admin-form__license-input:focus-visible + .reservation-admin-form__license-trigger {
+  border-color: rgba(255, 70, 5, 0.45);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(255, 70, 5, 0.06);
+}
+
+.reservation-admin-page .reservation-admin-form__license-card {
+  margin-top: 18px;
+  padding: 18px;
+  border-radius: 10px;
+  border: 1px solid #e7edf3;
+  background: #f7f9fc;
+}
+
+.reservation-admin-page .reservation-admin-form__license-card strong {
+  display: block;
+  margin-bottom: 14px;
+  color: #222732;
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 800;
+}
+
+.reservation-admin-page .reservation-admin-form__license-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.reservation-admin-page .reservation-admin-form__license-card img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  border: 1px solid #e7edf3;
+}
+
+.reservation-admin-page .reservation-admin-form__checkbox {
+  margin: 20px 0 0;
+}
+
+.reservation-admin-page .reservation-admin-form__submit-row {
+  margin-top: 20px;
+}
+
+.reservation-admin-page .reservation-admin-form__submit {
+  min-width: 320px;
+}
+
+.reservation-detail-theme .reservation-detail-theme__alert-panel {
+  margin-bottom: 24px;
+}
+
+.reservation-detail-theme .reservation-detail-theme__price-hero {
+  margin: 4px 0 18px;
+  padding: 20px 22px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #101722 0%, #1d2939 100%);
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.15);
+  display: grid;
+  gap: 10px;
+}
+
+.reservation-detail-theme .reservation-detail-theme__price-hero-label {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.reservation-detail-theme .reservation-detail-theme__price-hero-value {
+  color: #ffffff;
+  font-size: 34px;
+  line-height: 1.05;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+
+.reservation-detail-theme .reservation-detail-theme__price-hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.reservation-detail-theme .reservation-detail-theme__price-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 800;
+}
+
+.reservation-detail-theme .reservation-detail-theme__info-list {
+  margin: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.reservation-detail-theme .reservation-detail-theme__info-row {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid #edf1f5;
+}
+
+.reservation-detail-theme .reservation-detail-theme__info-row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.reservation-detail-theme .reservation-detail-theme__info-row dt {
+  color: #6f7784;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 700;
+}
+
+.reservation-detail-theme .reservation-detail-theme__info-row dd {
+  margin: 0;
+  color: #222732;
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 700;
+}
+
+.reservation-detail-theme .reservation-detail-theme__status {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 800;
+}
+
+.reservation-detail-theme .reservation-detail-theme__status--accepted {
+  background: rgba(22, 163, 74, 0.12);
+  color: #15803d;
+}
+
+.reservation-detail-theme .reservation-detail-theme__status--pending {
+  background: rgba(255, 70, 5, 0.12);
+  color: #ff4605;
+}
+
+.reservation-detail-theme .reservation-detail-theme__actions {
+  display: grid;
+  gap: 12px;
+}
+
+.reservation-detail-theme .reservation-detail-theme__calendar-panel,
+.reservation-detail-theme .reservation-detail-theme__media-panel {
+  overflow: hidden;
+}
+
+.reservation-detail-theme .reservation-detail-theme__calendar-stack {
+  display: grid;
+  gap: 14px;
+}
+
+.reservation-detail-theme .reservation-detail-theme__mini-calendar {
+  border-radius: 14px;
+  border: 1px solid #e7edf3;
+  background: #f8fafc;
+  padding: 14px;
+}
+
+.reservation-detail-theme .reservation-detail-theme__mini-calendar-month {
+  margin-bottom: 10px;
+  color: #111111;
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 900;
+  text-transform: capitalize;
+}
+
+.reservation-detail-theme .reservation-detail-theme__mini-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.reservation-detail-theme .reservation-detail-theme__mini-calendar-weekday {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  color: #8a94a3;
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.reservation-detail-theme .reservation-detail-theme__mini-calendar-day {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  border-radius: 10px;
+  border: 1px solid #e7edf3;
+  background: #ffffff;
+  color: #2b3340;
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 800;
+}
+
+.reservation-detail-theme .reservation-detail-theme__mini-calendar-day--muted {
+  color: #a4acb8;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.reservation-detail-theme .reservation-detail-theme__mini-calendar-day--active {
+  border-color: rgba(255, 70, 5, 0.18);
+  background: rgba(255, 70, 5, 0.1);
+  color: #bf3600;
+}
+
+.reservation-detail-theme .reservation-detail-theme__mini-calendar-day--start,
+.reservation-detail-theme .reservation-detail-theme__mini-calendar-day--end {
+  background: linear-gradient(135deg, #ff6b35 0%, #ff4605 100%);
+  border-color: transparent;
+  color: #ffffff;
+  box-shadow: 0 10px 20px rgba(255, 70, 5, 0.24);
+}
+
+.reservation-detail-theme .reservation-detail-theme__image-frame {
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid #e7edf3;
+  background: #f7f9fc;
+}
+
+.reservation-detail-theme .reservation-detail-theme__image-frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.reservation-detail-theme .reservation-detail-theme__image-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  border-radius: 10px;
+  border: 1px solid #e7edf3;
+  background: #f7f9fc;
+  color: #98a2b3;
+  font-size: 36px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.reservation-detail-theme .reservation-detail-theme__image-button {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: zoom-in;
+}
+
+.reservation-detail-theme .reservation-detail-theme__image-button .reservation-detail-theme__image-frame {
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+.reservation-detail-theme .reservation-detail-theme__image-button:hover .reservation-detail-theme__image-frame,
+.reservation-detail-theme .reservation-detail-theme__image-button:focus-visible .reservation-detail-theme__image-frame {
+  border-color: rgba(255, 70, 5, 0.26);
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.12);
+  transform: translateY(-2px);
+}
+
+.reservation-detail-theme .reservation-detail-theme__image-button:focus-visible {
+  outline: none;
+}
+
+.reservation-detail-theme .reservation-detail-theme__lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 4000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  background: rgba(8, 12, 20, 0.84);
+  backdrop-filter: blur(8px);
+}
+
+.reservation-detail-theme .reservation-detail-theme__lightbox-dialog {
+  position: relative;
+  width: min(100%, 1080px);
+  padding: 28px;
+  border-radius: 26px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, #101722 0%, #0b111a 100%);
+  box-shadow: 0 34px 80px rgba(0, 0, 0, 0.42);
+}
+
+.reservation-detail-theme .reservation-detail-theme__lightbox-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: min(72vh, 760px);
+  padding: 24px 72px;
+}
+
+.reservation-detail-theme .reservation-detail-theme__lightbox-image {
+  display: block;
+  max-width: 100%;
+  max-height: min(72vh, 760px);
+  border-radius: 18px;
+  box-shadow: 0 26px 60px rgba(0, 0, 0, 0.35);
+  object-fit: contain;
+  background: #0f141e;
+}
+
+.reservation-detail-theme .reservation-detail-theme__lightbox-close,
+.reservation-detail-theme .reservation-detail-theme__lightbox-nav {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  color: #ffffff;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.reservation-detail-theme .reservation-detail-theme__lightbox-close {
+  top: 18px;
+  right: 18px;
+  width: 50px;
+  height: 50px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 34px;
+  line-height: 1;
+}
+
+.reservation-detail-theme .reservation-detail-theme__lightbox-close:hover,
+.reservation-detail-theme .reservation-detail-theme__lightbox-close:focus-visible,
+.reservation-detail-theme .reservation-detail-theme__lightbox-nav:hover,
+.reservation-detail-theme .reservation-detail-theme__lightbox-nav:focus-visible {
+  background: rgba(255, 70, 5, 0.92);
+  color: #ffffff;
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.reservation-detail-theme .reservation-detail-theme__lightbox-nav {
+  top: 50%;
+  width: 58px;
+  height: 58px;
+  margin-top: -29px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.reservation-detail-theme .reservation-detail-theme__lightbox-nav svg {
+  width: 22px;
+  height: 22px;
+}
+
+.reservation-detail-theme .reservation-detail-theme__lightbox-nav--previous {
+  left: 18px;
+}
+
+.reservation-detail-theme .reservation-detail-theme__lightbox-nav--next {
+  right: 18px;
+}
+
+.reservation-detail-theme .reservation-detail-theme__lightbox-count {
+  margin-top: 4px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 13px;
+  line-height: 1.5;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.reservation-detail-theme .reservation-detail-theme__summary-card .vehicle-form-page__summary-item strong {
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.reservation-admin-page .reservation-admin-form__summary-card .vehicle-form-page__summary-item strong {
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.vehicle-form-page__sidebar {
+  min-width: 0;
+}
+
+.vehicle-form-page__summary-card {
+  position: sticky;
+  top: 126px;
+  padding: 30px;
+  border-radius: 10px;
+  background: #0f141e;
+  color: #ffffff;
+  box-shadow: 1px 1px 0 0 rgba(15, 20, 30, 0.18);
+}
+
+.vehicle-form-page__summary-card h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 31px;
+  line-height: 1.1;
+  font-weight: 900;
+}
+
+.vehicle-form-page__summary-card .hero-card__text {
+  margin-top: 16px;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.vehicle-form-page__summary-grid {
+  margin-top: 26px;
+  display: grid;
+  gap: 12px;
+}
+
+.vehicle-form-page__summary-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.vehicle-form-page__summary-item span {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 600;
+}
+
+.vehicle-form-page__summary-item strong {
+  color: #ffffff;
+  font-size: 18px;
+  line-height: 22px;
+  font-weight: 800;
+}
+
+@media (max-width: 1199px) {
+  .vehicle-form-page__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .vehicle-form-page__sidebar {
+    order: -1;
+  }
+
+  .vehicle-form-page__summary-card {
+    position: static;
+  }
+}
+
+@media (max-width: 899px) {
+  .reservation-admin-page .reservation-admin-form__meta-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .reservation-admin-page .reservation-admin-form__datetime-layout,
+  .reservation-admin-page .reservation-admin-form__datetime-grid,
+  .reservation-admin-page .reservation-admin-form__datetime-head {
+    grid-template-columns: 1fr;
+  }
+
+  .reservation-admin-page .reservation-admin-form__datetime-card {
+    padding: 18px;
+  }
+
+  .reservation-admin-page .reservation-admin-form__availability-header h3 {
+    font-size: 20px;
+    line-height: 26px;
+  }
+
+  .reservation-admin-page .reservation-calendar--admin {
+    padding: 18px;
+  }
+
+  .reservation-admin-page .reservation-calendar--admin .reservation-calendar__day {
+    min-height: 52px;
+  }
+
+  .reservation-admin-page .reservation-admin-form__submit {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .reservation-detail-theme .reservation-detail-theme__info-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .vehicle-form-page__container {
+    padding: 0 15px;
+  }
+
+  .vehicle-form-page__hero {
+    padding: 34px 0 44px;
+  }
+
+  .vehicle-form-page__hero-copy h1 {
+    font-size: 32px;
+  }
+
+  .vehicle-form-page .vehicle-form__grid,
+  .vehicle-form-page__media-grid,
+  .vehicle-form-page .vehicle-form__gallery {
+    grid-template-columns: 1fr;
+  }
+
+  .vehicle-form-page__panel,
+  .vehicle-form-page__summary-card {
+    padding: 22px;
+  }
+
+  .vehicle-form-page__submit-row {
+    justify-content: stretch;
+  }
+
+  .vehicle-form-page__submit {
+    width: 100%;
+    min-width: 0;
+  }
 }
 
 .rentzo-catalog-page {
@@ -4285,7 +5653,7 @@ a {
 }
 
 @font-face {
-  font-family: "Font Awesome 5 Free Regular";
+  font-family: "Font Awesome 5 Free";
   font-style: normal;
   font-weight: 400;
   font-display: block;
@@ -4311,13 +5679,22 @@ a {
 }
 
 .far {
-  font-family: "Font Awesome 5 Free Regular";
+  font-family: "Font Awesome 5 Free";
   font-weight: 400;
 }
 
 .fa-exchange-alt:before {
   content: "\f362";
 }
+
+.fa-calendar-alt:before {
+  content: "\f073";
+}
+
+.fa-hotel:before {
+  content: "\f594";
+}
+
 
 .fa-video:before {
   content: "\f03d";
@@ -5376,24 +6753,16 @@ a {
   padding: 0 15px;
 }
 
-.rentzo-single-car__top-actions {
-  padding: 34px 0 18px;
-}
-
-.vehicle-detail__back {
-  border: 0;
-  background: transparent;
-  padding: 0;
-  cursor: pointer;
-  font-size: 15px;
-  line-height: 19px;
-  font-weight: 600;
-  color: #222732;
-  text-decoration: underline;
-}
-
 .rentzo-single-car__gallery-section {
+  width: 100%;
+  margin: 0;
+  padding: 0;
   overflow: hidden;
+}
+
+.rentzo-single-car-page .rentzo-single-car__gallery-section {
+  width: 100%;
+  max-width: none;
 }
 
 .rentzo-single-car__gallery {
@@ -5405,13 +6774,28 @@ a {
 }
 
 .vehica-gallery-v3 .vehica-swiper-container {
+  width: 100%;
   overflow: hidden;
+  touch-action: pan-y;
+  user-select: none;
+  overscroll-behavior-x: contain;
+  transform: translateZ(0);
+}
+
+.vehica-gallery-v3--interactive .vehica-swiper-container {
+  cursor: grab;
+}
+
+.vehica-gallery-v3.is-dragging .vehica-swiper-container {
+  cursor: grabbing;
 }
 
 .vehica-gallery-v3 .vehica-swiper-wrapper {
   display: flex;
-  transition: transform 0.45s ease;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: transform;
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 .vehica-gallery-v3 img {
@@ -5432,6 +6816,9 @@ a {
   width: 50%;
   min-width: 50%;
   position: relative;
+  flex: 0 0 50%;
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 .vehica-gallery-v3__slide img {
@@ -5446,31 +6833,36 @@ a {
 .vehica-gallery-v3--count-1 .vehica-gallery-v3__slide {
   width: 100% !important;
   min-width: 100% !important;
+  flex-basis: 100% !important;
 }
 
 .vehica-gallery-v3--count-2 .vehica-gallery-v3__slide {
   width: 50% !important;
   min-width: 50% !important;
+  flex-basis: 50% !important;
 }
 
 .vehica-gallery-v3__image-wrapper {
   display: block;
   width: 100%;
   position: relative;
-  max-height: 60vh;
-  cursor: default;
-  height: 220px;
+  max-height: none;
+  cursor: pointer;
+  height: 205px;
+  overflow: hidden;
+  background: #eef2f6;
+  contain: paint;
 }
 
 @media (min-width: 768px) and (max-width: 1199px) {
   .vehica-gallery-v3__image-wrapper {
-    height: 331px;
+    height: 305px;
   }
 }
 
 @media (min-width: 1200px) {
   .vehica-gallery-v3__image-wrapper {
-    height: 620px;
+    height: 575px;
   }
 }
 
@@ -5481,6 +6873,10 @@ a {
   width: 100%;
   height: 100% !important;
   object-fit: cover;
+  pointer-events: none;
+  -webkit-user-drag: none;
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 @media (min-width: 1023px) {
@@ -5529,6 +6925,7 @@ a {
   .vehica-gallery-v3--count-2 .vehica-gallery-v3__slide {
     width: 100% !important;
     min-width: 100% !important;
+    flex-basis: 100% !important;
   }
 
   .vehica-gallery-v3__arrow {
@@ -6040,6 +7437,10 @@ a {
   background: var(--primary);
 }
 
+.reservation-availability__dot--reserved {
+  background: #98a2b3;
+}
+
 .reservation-availability__dot--unavailable {
   background: #d0d5dd;
 }
@@ -6141,6 +7542,35 @@ a {
   color: #ffffff;
 }
 
+
+.reservation-calendar__day {
+  position: relative;
+  overflow: hidden;
+}
+
+.reservation-calendar__day--range {
+  background: rgba(255, 70, 5, 0.1);
+  border-color: rgba(255, 70, 5, 0.18);
+  color: #222732;
+}
+
+.reservation-calendar__day--range-start,
+.reservation-calendar__day--range-end {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #ffffff;
+}
+
+.reservation-calendar__marker {
+  position: absolute;
+  right: 7px;
+  bottom: 7px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #7f8a99;
+}
+
 .reservation-calendar__day--unavailable {
   background: #f2f4f7;
   border-color: #eaecf0;
@@ -6213,9 +7643,16 @@ a {
   display: block;
 }
 
-.reservation-form__license-preview {
+.reservation-form__license-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  max-width: 600px;
   margin: 0 0 15px;
-  max-width: 290px;
+}
+
+.reservation-form__license-preview {
+  margin: 0;
   border-radius: 10px;
   box-shadow: 1px 1px 0 0 rgba(196, 196, 196, 0.24);
   border: 1px solid #e7edf3;
@@ -6241,6 +7678,56 @@ a {
 .reservation-form__checkbox input {
   margin-top: 2px;
   accent-color: var(--primary);
+}
+
+.reservation-form__success-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin: 16px 0 20px;
+  padding: 18px 20px;
+  border-radius: 14px;
+  border: 1px solid rgba(10, 126, 71, 0.14);
+  background: linear-gradient(180deg, #f7fdf9 0%, #eef9f2 100%);
+  box-shadow: 0 14px 32px rgba(8, 96, 54, 0.08);
+}
+
+.reservation-form__success-icon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  background: #0f8b57;
+  color: #ffffff;
+}
+
+.reservation-form__success-icon svg {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+
+.reservation-form__success-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.reservation-form__success-copy strong {
+  color: #163020;
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 800;
+}
+
+.reservation-form__success-copy span {
+  color: #486056;
+  font-size: 14px;
+  line-height: 22px;
 }
 
 .rentzo-single-car__related-section {
@@ -6286,11 +7773,7 @@ a {
     padding-bottom: 80px;
   }
 
-  .rentzo-single-car__top-actions {
-    padding-top: 24px;
-  }
-
-  .rentzo-single-car__overview-section {
+    .rentzo-single-car__overview-section {
     padding-top: 24px;
   }
 
@@ -7560,7 +9043,7 @@ a {
 
 .rentzo-single-car-page .vehica-car-embed .vehica-car-embed__video {
   display: block;
-  object-fit: cover;
+  object-fit: contain;
   background: #000000;
 }
 
@@ -7724,6 +9207,115 @@ a {
   color: #6f6f6f;
 }
 
+.rentzo-single-car-page .rentzo-detail-form__price-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: 12px;
+  margin: 0 0 20px;
+  align-items: stretch;
+}
+
+.rentzo-single-car-page .rentzo-detail-form__price-summary--pending {
+  grid-template-columns: 1fr;
+}
+
+.rentzo-single-car-page .rentzo-detail-form__price-hero {
+  padding: 18px 22px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #101722 0%, #1d2939 100%);
+  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.14);
+  display: grid;
+  gap: 8px;
+}
+
+.rentzo-single-car-page .rentzo-detail-form__price-hero--pending {
+  background: linear-gradient(135deg, #f7f9fc 0%, #ffffff 100%);
+  border: 1px solid #e7edf3;
+  box-shadow: 1px 1px 0 0 rgba(196, 196, 196, 0.24);
+}
+
+.rentzo-single-car-page .rentzo-detail-form__price-hero-label {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.rentzo-single-car-page .rentzo-detail-form__price-hero--pending .rentzo-detail-form__price-hero-label {
+  color: #6f7784;
+}
+
+.rentzo-single-car-page .rentzo-detail-form__price-hero-value {
+  color: #ffffff;
+  font-size: 34px;
+  line-height: 1.05;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+
+.rentzo-single-car-page .rentzo-detail-form__price-hero--pending .rentzo-detail-form__price-hero-value {
+  color: #111111;
+  font-size: 22px;
+  line-height: 1.4;
+  letter-spacing: normal;
+}
+
+.rentzo-single-car-page .rentzo-detail-form__price-hero-meta {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 14px;
+  line-height: 21px;
+  font-weight: 700;
+}
+
+.rentzo-single-car-page .rentzo-detail-form__price-meta {
+  display: grid;
+  gap: 12px;
+}
+
+.rentzo-single-car-page .rentzo-detail-form__price-card {
+  padding: 16px 18px;
+  border-radius: 12px;
+  border: 1px solid #e7edf3;
+  background: #ffffff;
+  box-shadow: 1px 1px 0 0 rgba(196, 196, 196, 0.24);
+  display: grid;
+  gap: 6px;
+}
+
+.rentzo-single-car-page .rentzo-detail-form__price-card--accent {
+  background: #f7f9fc;
+}
+
+.rentzo-single-car-page .rentzo-detail-form__price-card--pending {
+  text-align: left;
+}
+
+.rentzo-single-car-page .rentzo-detail-form__price-card span {
+  color: #6f7784;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.rentzo-single-car-page .rentzo-detail-form__price-card strong {
+  color: #222732;
+  font-size: 20px;
+  line-height: 26px;
+  font-weight: 900;
+}
+
+.rentzo-single-car-page .rentzo-detail-form__price-card small {
+  color: #6f7784;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 700;
+}
+
 .rentzo-single-car-page .rentzo-detail-form__group,
 .rentzo-single-car-page .rentzo-detail-form__group-heading {
   margin: 0;
@@ -7804,6 +9396,69 @@ a {
   margin: -4px 0 15px;
 }
 
+
+.rentzo-single-car-page .rentzo-detail-form__calendar-shell {
+  margin: 0 0 18px;
+}
+
+.rentzo-single-car-page .rentzo-detail-form__calendar-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.rentzo-single-car-page .rentzo-detail-form__calendar-card {
+  padding: 16px 18px;
+  border: 1px solid #e7edf3;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.rentzo-single-car-page .rentzo-detail-form__calendar-card span {
+  display: block;
+  margin-bottom: 8px;
+  color: #6f7784;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.rentzo-single-car-page .rentzo-detail-form__calendar-card strong {
+  display: block;
+  color: #222732;
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 900;
+}
+
+.rentzo-single-car-page .rentzo-detail-form__calendar-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.rentzo-single-car-page .rentzo-detail-form__calendar-field > label {
+  display: block;
+  margin: 0 0 6px;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 700;
+  color: #222732;
+}
+
+.rentzo-single-car-page .rentzo-detail-form__datetime-panel--single {
+  margin-top: 0;
+}
+
+.rentzo-single-car-page .rentzo-detail-form__datetime-panel--single .reservation-calendar__day--range {
+  background: rgba(255, 70, 5, 0.08);
+  border-color: rgba(255, 70, 5, 0.2);
+}
+
 .rentzo-single-car-page .rentzo-detail-form__panel-label,
 .rentzo-single-car-page .rentzo-detail-form__helper {
   margin: 0 0 8px !important;
@@ -7867,10 +9522,46 @@ a {
 }
 
 @media (max-width: 899px) {
+  .rentzo-single-car-page .rentzo-detail-form__calendar-summary,
+  .rentzo-single-car-page .rentzo-detail-form__calendar-fields,
+  .reservation-admin-page .reservation-admin-form__calendar-summary,
+  .reservation-admin-page .reservation-admin-form__datetime-grid {
+    grid-template-columns: 1fr;
+  }
   .rentzo-single-car-page .rentzo-detail-form__datetime-trigger {
     padding-left: 15px;
     padding-right: 15px;
     font-size: 16px;
+  }
+
+  .rentzo-single-car-page .rentzo-detail-form__price-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .rentzo-single-car-page .rentzo-detail-form__price-hero {
+    padding: 16px 18px;
+  }
+
+  .rentzo-single-car-page .rentzo-detail-form__price-hero-value {
+    font-size: 28px;
+  }
+
+  .reservation-admin-page .reservation-admin-form__pricing-grid,
+  .reservation-admin-page .reservation-admin-form__pricing-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .reservation-admin-page .reservation-admin-form__pricing-hero {
+    padding: 18px;
+  }
+
+  .reservation-admin-page .reservation-admin-form__pricing-hero-value,
+  .reservation-detail-theme .reservation-detail-theme__price-hero-value {
+    font-size: 28px;
+  }
+
+  .reservation-detail-theme .reservation-detail-theme__price-hero {
+    padding: 18px;
   }
 }
 
@@ -7920,37 +9611,58 @@ a {
 .rentzo-single-car-page .rentzo-detail-form--source .rentzo-detail-form__license-trigger {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   width: 100%;
   min-height: 53px;
   border-radius: 10px;
-  padding: 10px 27px;
-  font-size: 14px;
-  line-height: 16px;
+  padding: 10px 18px;
   margin: 0;
-  box-shadow: 1px 1px 0 0 rgba(196, 196, 196, 0.24);
-  border: 1px solid #e7edf3;
-  background: #ffffff;
+  border: 1px dashed #d7e1ea;
+  background: #fbfcfe;
   color: #2f3b48;
+  appearance: none;
+  -webkit-appearance: none;
+  font-family: inherit;
+  text-align: left;
   cursor: pointer;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.rentzo-single-car-page .rentzo-detail-form--source .rentzo-detail-form__license-trigger:hover {
-  border-color: #cfd8e3;
-}
-
+.rentzo-single-car-page .rentzo-detail-form--source .rentzo-detail-form__license-trigger:hover,
+.rentzo-single-car-page .rentzo-detail-form--source .rentzo-detail-form__license-trigger--active,
 .rentzo-single-car-page .rentzo-detail-form--source .rentzo-detail-form__license-input:focus + .rentzo-detail-form__license-trigger,
 .rentzo-single-car-page .rentzo-detail-form--source .rentzo-detail-form__license-input:focus-visible + .rentzo-detail-form__license-trigger {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(255, 70, 5, 0.12);
+  border-color: rgba(255, 70, 5, 0.45);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(255, 70, 5, 0.06);
 }
 
 .rentzo-single-car-page .rentzo-detail-form--source .rentzo-detail-form__license-trigger-text {
   display: block;
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.rentzo-single-car-page .rentzo-detail-form--source .rentzo-detail-form__license-trigger-action {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid #e7edf3;
+  background: #ffffff;
+  color: #222732;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .rentzo-single-car-page .rentzo-detail-form--source .reservation-form__license-preview {
@@ -7982,7 +9694,12 @@ a {
   .rentzo-single-car-page .rentzo-detail-form--source .rentzo-detail-form__license-trigger {
     padding-left: 15px;
     padding-right: 15px;
-    font-size: 16px;
+    font-size: 15px;
+  }
+
+  .rentzo-single-car-page .rentzo-detail-form--source .rentzo-detail-form__license-trigger-action {
+    min-height: 36px;
+    padding: 0 14px;
   }
 }
 
@@ -8524,3 +10241,1121 @@ a {
   }
 }
 /* End rebuilt isolated reservation headline and submit button */
+
+.reservations-calendar-page {
+  background: #f2f5fb;
+  min-height: calc(100vh - 140px);
+}
+
+.reservations-calendar-page__container {
+  width: 100%;
+  max-width: 1468px;
+  margin: 0 auto;
+  padding: 0 30px;
+}
+
+.reservations-calendar-page__hero {
+  position: relative;
+  overflow: hidden;
+  padding: 44px 0 54px;
+  background: #000000;
+}
+
+.reservations-calendar-page__hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.82) 100%);
+}
+
+.reservations-calendar-page__hero-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+.reservations-calendar-page__hero-copy {
+  max-width: 760px;
+}
+
+.reservations-calendar-page__hero-copy h1 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 48px;
+  line-height: 1.08;
+  font-weight: 900;
+}
+
+.reservations-calendar-page__hero-copy .hero-card__text {
+  max-width: 620px;
+  color: rgba(255, 255, 255, 0.76);
+}
+
+.reservations-calendar-page__create {
+  width: auto;
+  min-width: 280px;
+}
+
+.reservations-calendar-page__body {
+  padding: 34px 0 90px;
+}
+
+.reservations-calendar-page__summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.reservations-calendar-page__summary-card {
+  padding: 22px 24px;
+  border-radius: 18px;
+  border: 1px solid #e7edf3;
+  background: #ffffff;
+  box-shadow: 0 18px 42px rgba(15, 20, 30, 0.08);
+}
+
+.reservations-calendar-page__summary-card--pending {
+  border-color: rgba(255, 70, 5, 0.16);
+  background: linear-gradient(180deg, rgba(255, 70, 5, 0.06) 0%, #ffffff 100%);
+}
+
+.reservations-calendar-page__summary-card--accepted {
+  border-color: rgba(15, 139, 87, 0.14);
+  background: linear-gradient(180deg, rgba(15, 139, 87, 0.05) 0%, #ffffff 100%);
+}
+
+.reservations-calendar-page__summary-card--visible {
+  border-color: rgba(15, 20, 30, 0.1);
+}
+
+.reservations-calendar-page__summary-label {
+  display: block;
+  color: #6b7280;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.reservations-calendar-page__summary-value {
+  display: block;
+  margin-top: 10px;
+  color: #111111;
+  font-size: 36px;
+  line-height: 1;
+  font-weight: 900;
+}
+
+.reservations-calendar-page__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(340px, 0.85fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.reservations-calendar-page__panel {
+  border-radius: 18px;
+  border: 1px solid #e7edf3;
+  background: #ffffff;
+  box-shadow: 0 24px 60px rgba(15, 20, 30, 0.08);
+}
+
+.reservations-calendar-page__panel-text {
+  margin: 8px 0 0;
+  max-width: 720px;
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 600;
+}
+
+.reservations-calendar-page__panel--pending {
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.reservations-calendar-page__count--pending {
+  background: rgba(255, 70, 5, 0.1);
+}
+
+.reservations-calendar-page__status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.reservations-calendar-page__status--pending {
+  background: rgba(255, 70, 5, 0.1);
+  color: var(--primary);
+}
+
+.reservations-calendar-page__status--accepted {
+  background: rgba(15, 139, 87, 0.12);
+  color: #0f8b57;
+}
+
+.reservations-calendar-page__pending-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.reservations-calendar-page__pending-card {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 18px;
+  width: 100%;
+  padding: 16px;
+  border: 1px solid rgba(255, 70, 5, 0.14);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255, 70, 5, 0.04) 0%, #ffffff 100%);
+  text-align: left;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.reservations-calendar-page__pending-card:hover {
+  border-color: rgba(255, 70, 5, 0.28);
+  box-shadow: 0 20px 34px rgba(255, 70, 5, 0.08);
+  transform: translateY(-2px);
+}
+
+.reservations-calendar-page__pending-card img {
+  width: 100%;
+  height: 100%;
+  min-height: 150px;
+  border-radius: 14px;
+  object-fit: cover;
+  background: #eff3fa;
+}
+
+.reservations-calendar-page__pending-body {
+  min-width: 0;
+}
+
+.reservations-calendar-page__pending-top,
+.reservations-calendar-page__card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.reservations-calendar-page__pending-date {
+  color: #6b7280;
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 700;
+}
+
+.reservations-calendar-page__pending-body h3 {
+  margin: 0 0 8px;
+  color: #111111;
+  font-size: 20px;
+  line-height: 1.2;
+  font-weight: 900;
+}
+
+.reservations-calendar-page__pending-client {
+  margin: 0;
+  color: #202634;
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 800;
+}
+
+.reservations-calendar-page__pending-meta {
+  display: grid;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.reservations-calendar-page__pending-meta span {
+  color: #5c6470;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+}
+
+.reservations-calendar-page__pending-cta {
+  display: inline-flex;
+  margin-top: 14px;
+  color: var(--primary);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.reservations-calendar-page__empty-box {
+  padding: 28px 24px;
+  border-radius: 16px;
+  border: 1px dashed #d9e1ec;
+  background: #f8fafc;
+}
+
+.reservations-calendar-page__empty-box h3,
+.reservations-calendar-page__empty-box p {
+  margin: 0;
+}
+
+.reservations-calendar-page__empty-box p {
+  margin-top: 8px;
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 600;
+}
+
+.reservations-calendar-page__empty-box--calendar,
+.reservations-calendar-page__empty-box--sidebar {
+  margin-top: 6px;
+}
+
+.reservations-calendar-page__panel--calendar {
+  padding: 28px;
+  overflow: hidden;
+}
+
+.reservations-calendar-page__panel--sidebar {
+  padding: 24px;
+  position: sticky;
+  top: 110px;
+}
+
+.reservations-calendar-page__panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 22px;
+}
+
+.reservations-calendar-page__panel-head-copy {
+  min-width: 0;
+}
+
+.reservations-calendar-page__panel-head h2 {
+  margin: 8px 0 0;
+  color: #111111;
+  font-size: 32px;
+  line-height: 1.15;
+  font-weight: 900;
+  text-transform: capitalize;
+}
+
+.reservations-calendar-page__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: rgba(255, 70, 5, 0.08);
+  color: var(--primary);
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.reservations-calendar-page__toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.reservations-calendar-page__nav {
+  width: auto;
+  min-width: 0;
+  padding: 0 18px;
+}
+
+.reservations-calendar-page__grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  align-items: start;
+}
+
+.reservations-calendar-page__weekday {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  border-radius: 10px;
+  background: #f7f9fc;
+  color: #6f7784;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.reservations-calendar-page__day {
+  min-height: 146px;
+  padding: 10px 8px 8px;
+  border-radius: 14px;
+  border: 1px solid #e7edf3;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.reservations-calendar-page__day--muted {
+  background: #f8fafc;
+  opacity: 0.7;
+}
+
+.reservations-calendar-page__day--today {
+  border-color: rgba(15, 20, 30, 0.18);
+  box-shadow: inset 0 0 0 1px rgba(15, 20, 30, 0.08);
+}
+
+.reservations-calendar-page__day--has-events {
+  border-color: rgba(255, 70, 5, 0.16);
+}
+
+.reservations-calendar-page__day--busy {
+  background: linear-gradient(180deg, rgba(255, 70, 5, 0.045) 0%, #ffffff 48%);
+}
+
+.reservations-calendar-page__day-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.reservations-calendar-page__day-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background: #0f141e;
+  color: #ffffff;
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.reservations-calendar-page__day-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: rgba(255, 70, 5, 0.12);
+  color: var(--primary);
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 800;
+}
+
+.reservations-calendar-page__events {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+}
+
+.reservations-calendar-page__event {
+  width: 100%;
+  padding: 8px 8px 7px;
+  border: 1px solid rgba(255, 70, 5, 0.14);
+  border-radius: 10px;
+  background: rgba(255, 70, 5, 0.06);
+  color: #222732;
+  text-align: left;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.reservations-calendar-page__event-name,
+.reservations-calendar-page__event-vehicle {
+  display: block;
+}
+
+.reservations-calendar-page__event-name {
+  font-size: 12px;
+  line-height: 15px;
+  font-weight: 800;
+  color: #202634;
+}
+
+.reservations-calendar-page__event-vehicle {
+  margin-top: 3px;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 700;
+  color: #67707d;
+}
+
+.reservations-calendar-page__event:hover {
+  border-color: rgba(255, 70, 5, 0.3);
+  box-shadow: 0 12px 20px rgba(255, 70, 5, 0.08);
+  transform: translateY(-1px);
+}
+
+.reservations-calendar-page__list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.reservations-calendar-page__card {
+  display: grid;
+  grid-template-columns: 118px minmax(0, 1fr);
+  gap: 16px;
+  width: 100%;
+  padding: 14px;
+  border: 1px solid #e7edf3;
+  border-radius: 16px;
+  background: #ffffff;
+  text-align: left;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.reservations-calendar-page__card:hover {
+  border-color: rgba(255, 70, 5, 0.24);
+  box-shadow: 0 18px 32px rgba(15, 20, 30, 0.1);
+  transform: translateY(-2px);
+}
+
+.reservations-calendar-page__card img {
+  width: 100%;
+  height: 100%;
+  min-height: 118px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: #eff3fa;
+}
+
+.reservations-calendar-page__card-body h3 {
+  margin: 0 0 8px;
+  color: #111111;
+  font-size: 18px;
+  line-height: 1.25;
+  font-weight: 900;
+}
+
+.reservations-calendar-page__card-body p {
+  margin: 6px 0 0;
+  color: #5c6470;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+}
+
+@media (max-width: 1199px) {
+  .reservations-calendar-page__summary-grid,
+  .reservations-calendar-page__pending-list,
+  .reservations-calendar-page__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .reservations-calendar-page__panel--sidebar {
+    position: static;
+  }
+}
+
+@media (max-width: 899px) {
+  .reservations-calendar-page__hero {
+    padding: 34px 0 42px;
+  }
+
+  .reservations-calendar-page__hero-inner,
+  .reservations-calendar-page__panel-head,
+  .reservations-calendar-page__toolbar,
+  .reservations-calendar-page__pending-top,
+  .reservations-calendar-page__card-top {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .reservations-calendar-page__hero-copy h1 {
+    font-size: 34px;
+  }
+
+  .reservations-calendar-page__container {
+    padding: 0 15px;
+  }
+
+  .reservations-calendar-page__panel--calendar,
+  .reservations-calendar-page__panel--sidebar,
+  .reservations-calendar-page__panel--pending {
+    padding: 18px;
+  }
+
+  .reservations-calendar-page__grid {
+    gap: 6px;
+  }
+
+  .reservations-calendar-page__weekday {
+    min-height: 28px;
+    border-radius: 8px;
+    font-size: 9px;
+    letter-spacing: 0.04em;
+  }
+
+  .reservations-calendar-page__day {
+    min-height: 108px;
+    padding: 6px 5px 5px;
+    border-radius: 10px;
+    gap: 5px;
+  }
+
+  .reservations-calendar-page__day-number {
+    width: 22px;
+    height: 22px;
+    font-size: 10px;
+  }
+
+  .reservations-calendar-page__day-count {
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    font-size: 9px;
+  }
+
+  .reservations-calendar-page__events {
+    gap: 4px;
+  }
+
+  .reservations-calendar-page__event {
+    padding: 5px 5px 4px;
+    border-radius: 8px;
+  }
+
+  .reservations-calendar-page__event-name {
+    font-size: 9px;
+    line-height: 11px;
+  }
+
+  .reservations-calendar-page__event-vehicle {
+    margin-top: 2px;
+    font-size: 8px;
+    line-height: 10px;
+  }
+}
+
+@media (max-width: 639px) {
+  .reservations-calendar-page__day {
+    min-height: 92px;
+  }
+
+  .reservations-calendar-page__pending-card,
+  .reservations-calendar-page__card {
+    grid-template-columns: 1fr;
+  }
+
+  .reservations-calendar-page__pending-card img,
+  .reservations-calendar-page__card img {
+    min-height: 180px;
+  }
+}
+
+.reservation-detail-theme__image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 767px) {
+  .reservation-detail-theme .reservation-detail-theme__lightbox {
+    padding: 16px;
+  }
+
+  .reservation-detail-theme .reservation-detail-theme__lightbox-dialog {
+    padding: 18px 14px 16px;
+    border-radius: 20px;
+  }
+
+  .reservation-detail-theme .reservation-detail-theme__lightbox-stage {
+    min-height: min(70vh, 560px);
+    padding: 26px 0 10px;
+  }
+
+  .reservation-detail-theme .reservation-detail-theme__lightbox-image {
+    max-height: min(70vh, 560px);
+    border-radius: 14px;
+  }
+
+  .reservation-detail-theme .reservation-detail-theme__lightbox-nav {
+    top: auto;
+    bottom: 18px;
+    margin-top: 0;
+    width: 48px;
+    height: 48px;
+  }
+
+  .reservation-detail-theme .reservation-detail-theme__lightbox-nav--previous {
+    left: 16px;
+  }
+
+  .reservation-detail-theme .reservation-detail-theme__lightbox-nav--next {
+    right: 16px;
+  }
+
+  .reservation-detail-theme .reservation-detail-theme__lightbox-close {
+    top: 12px;
+    right: 12px;
+    width: 44px;
+    height: 44px;
+  }
+}
+
+.admin-home {
+  background: #f5f7fb;
+  padding: 48px 0 80px;
+}
+
+.admin-home__hero,
+.admin-home__summary-grid,
+.admin-home__insights-grid,
+.admin-home__charts-grid {
+  width: min(1360px, calc(100% - 48px));
+  margin: 0 auto;
+}
+
+.admin-home__hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(280px, 0.8fr);
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+.admin-home__hero-copy,
+.admin-home__hero-side {
+  border-radius: 26px;
+  box-shadow: 0 20px 48px rgba(16, 24, 40, 0.08);
+}
+
+.admin-home__hero-copy {
+  padding: 38px 42px;
+  background: linear-gradient(135deg, #0e151f 0%, #172230 100%);
+  color: #ffffff;
+}
+
+.admin-home__eyebrow {
+  margin: 0 0 12px;
+  color: #ff6c2f;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.admin-home__hero-copy h1 {
+  margin: 0;
+  color: #ffffff;
+  font-size: clamp(32px, 4vw, 52px);
+  line-height: 1.02;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+.admin-home__hero-copy p:last-child {
+  margin: 16px 0 0;
+  max-width: 760px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 16px;
+  line-height: 28px;
+}
+
+.admin-home__hero-side {
+  padding: 28px 30px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
+  display: grid;
+  align-content: center;
+  gap: 10px;
+}
+
+.admin-home__hero-side span {
+  color: #8a94a6;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.admin-home__hero-side strong {
+  color: #111927;
+  font-size: clamp(34px, 4vw, 56px);
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+.admin-home__hero-side p {
+  margin: 0;
+  color: #667085;
+  font-size: 14px;
+  line-height: 24px;
+}
+
+.admin-home__summary-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.admin-home__summary-card,
+.admin-home__insight-card,
+.admin-home__chart-card {
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 18px 42px rgba(16, 24, 40, 0.07);
+}
+
+.admin-home__summary-card {
+  position: relative;
+  overflow: hidden;
+  padding: 22px 22px 20px;
+  display: grid;
+  gap: 8px;
+}
+
+.admin-home__summary-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: #ff6c2f;
+}
+
+.admin-home__summary-card--pending::before {
+  background: #ff6c2f;
+}
+
+.admin-home__summary-card--accepted::before {
+  background: #10b981;
+}
+
+.admin-home__summary-card--visible::before {
+  background: #111927;
+}
+
+.admin-home__summary-card--visits::before {
+  background: #0891b2;
+}
+
+.admin-home__summary-card--visitors::before {
+  background: #6366f1;
+}
+
+.admin-home__summary-label {
+  color: #6b7280;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-home__summary-value {
+  color: #111927;
+  font-size: clamp(28px, 3vw, 42px);
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+.admin-home__summary-helper {
+  margin: 0;
+  color: #667085;
+  font-size: 13px;
+  line-height: 22px;
+}
+
+.admin-home__summary-meta {
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #edf1f5;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-home__summary-meta span {
+  color: #98a2b3;
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-home__summary-meta strong {
+  color: #111927;
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 900;
+}
+
+.admin-home__insights-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.admin-home__insight-card {
+  padding: 24px 26px;
+  display: grid;
+  gap: 10px;
+}
+
+.admin-home__insight-card--orange {
+  background: linear-gradient(135deg, #fff4ef 0%, #ffffff 100%);
+}
+
+.admin-home__insight-card--dark {
+  background: linear-gradient(135deg, #111927 0%, #1c2b3f 100%);
+}
+
+.admin-home__insight-card--dark .admin-home__insight-title,
+.admin-home__insight-card--dark .admin-home__insight-label,
+.admin-home__insight-card--dark .admin-home__insight-metric,
+.admin-home__insight-card--dark .admin-home__insight-helper {
+  color: #ffffff;
+}
+
+.admin-home__insight-card--dark .admin-home__insight-title {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.admin-home__insight-card--dark .admin-home__insight-helper {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.admin-home__insight-card--light {
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+}
+
+.admin-home__insight-title {
+  color: #8a94a6;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-home__insight-label {
+  color: #111927;
+  font-size: 24px;
+  line-height: 30px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+
+.admin-home__insight-metric {
+  color: #ff6c2f;
+  font-size: 36px;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+.admin-home__insight-helper {
+  margin: 0;
+  color: #667085;
+  font-size: 14px;
+  line-height: 24px;
+}
+
+.admin-home__charts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.admin-home__charts-grid .admin-home__chart-card:last-child {
+  grid-column: 1 / -1;
+}
+
+.admin-home__chart-card {
+  padding: 24px 26px 26px;
+}
+
+.admin-home__chart-head {
+  margin-bottom: 18px;
+}
+
+.admin-home__chart-head h2 {
+  margin: 0;
+  color: #111927;
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+
+.admin-home__chart-empty {
+  margin: 0;
+  color: #98a2b3;
+  font-size: 14px;
+  line-height: 24px;
+}
+
+.admin-home__chart-list {
+  display: grid;
+  gap: 14px;
+}
+
+.admin-home__chart-row {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-home__chart-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.admin-home__chart-meta span {
+  color: #475467;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 700;
+}
+
+.admin-home__chart-meta strong {
+  flex-shrink: 0;
+  color: #111927;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 900;
+}
+
+.admin-home__chart-track {
+  height: 12px;
+  border-radius: 999px;
+  background: #eef2f6;
+  overflow: hidden;
+}
+
+.admin-home__chart-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #ff834c 0%, #ff5b18 100%);
+}
+
+.admin-home__chart-fill--orange {
+  background: linear-gradient(90deg, #ff834c 0%, #ff5b18 100%);
+}
+
+.admin-home__chart-fill--dark {
+  background: linear-gradient(90deg, #1f2937 0%, #111927 100%);
+}
+
+.admin-home__chart-fill--light {
+  background: linear-gradient(90deg, #f59e0b 0%, #f97316 100%);
+}
+
+.admin-home__chart-fill--cyan {
+  background: linear-gradient(90deg, #22d3ee 0%, #0891b2 100%);
+}
+
+.admin-home__chart-fill--available {
+  background: linear-gradient(90deg, #34d399 0%, #10b981 100%);
+}
+
+.admin-home__chart-fill--reserved {
+  background: linear-gradient(90deg, #fbbf24 0%, #f97316 100%);
+}
+
+.admin-home__chart-fill--maintenance {
+  background: linear-gradient(90deg, #94a3b8 0%, #64748b 100%);
+}
+
+@media (max-width: 1320px) {
+  .admin-home__summary-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1080px) {
+  .admin-home__hero,
+  .admin-home__insights-grid,
+  .admin-home__charts-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .admin-home__summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-home__charts-grid .admin-home__chart-card:last-child {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 767px) {
+  .admin-home {
+    padding: 28px 0 56px;
+  }
+
+  .admin-home__hero,
+  .admin-home__summary-grid,
+  .admin-home__insights-grid,
+  .admin-home__charts-grid {
+    width: min(100%, calc(100% - 24px));
+  }
+
+  .admin-home__hero-copy,
+  .admin-home__hero-side,
+  .admin-home__summary-card,
+  .admin-home__insight-card,
+  .admin-home__chart-card {
+    border-radius: 20px;
+  }
+
+  .admin-home__hero-copy {
+    padding: 28px 22px;
+  }
+
+  .admin-home__hero-side,
+  .admin-home__summary-card,
+  .admin-home__insight-card,
+  .admin-home__chart-card {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .admin-home__summary-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

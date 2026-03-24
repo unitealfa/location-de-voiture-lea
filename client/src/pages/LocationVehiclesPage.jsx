@@ -448,16 +448,6 @@ function LocationVehiclesPage(props) {
                 />
 
                 <div className="vehica-results__fields__clear-load-more">
-                  {currentAdmin ? (
-                    <button
-                      type="button"
-                      className="vehica-search-v1__button-clear rentzo-catalog-create"
-                      onClick={onCreateClick}
-                    >
-                      {content.createLabel}
-                    </button>
-                  ) : null}
-
                   {activeFilterCount > 0 ? (
                     <button
                       type="button"

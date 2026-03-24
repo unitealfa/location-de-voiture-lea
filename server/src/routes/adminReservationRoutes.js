@@ -1,7 +1,7 @@
 const express = require("express");
 const {
   handleReservationUpload,
-  optimizeReservationLicensePhoto,
+  optimizeReservationLicensePhotos,
   removeStoredReservationFile,
   removeUploadedReservationFile
 } = require("../middleware/reservationUploadMiddleware");
@@ -13,6 +13,7 @@ const {
   createAdminReservation,
   deleteAdminReservation,
   getAdminReservationById,
+  getAdminReservationDrivingLicenseFile,
   listAdminReservations,
   updateAdminReservation,
   rejectAdminReservation
@@ -45,7 +46,7 @@ router.post("/", handleReservationUpload, async (request, response) => {
   let drivingLicensePhotoUrl = "";
 
   try {
-    drivingLicensePhotoUrl = await optimizeReservationLicensePhoto(request.file);
+    drivingLicensePhotoUrl = await optimizeReservationLicensePhotos(request.files);
 
     const reservation = await createAdminReservation({
       ...(request.body || {}),
@@ -57,7 +58,7 @@ router.post("/", handleReservationUpload, async (request, response) => {
       reservation
     });
   } catch (error) {
-    await removeUploadedReservationFile(request.file);
+    await removeUploadedReservationFile(request.files);
     await removeStoredReservationFile(drivingLicensePhotoUrl);
     console.error("Admin reservation create failed", error);
     return response.status(400).json({
@@ -89,6 +90,83 @@ router.get("/:id", async (request, response) => {
     console.error("Admin reservation detail failed", error);
     return response.status(500).json({
       message: "Impossible de charger cette reservation."
+    });
+  }
+});
+
+router.get("/:id/driving-license/:index", async (request, response) => {
+  try {
+    const reservationId = parseReservationId(request.params.id);
+    const licenseIndex = Number(request.params.index);
+
+    if (!reservationId || !Number.isInteger(licenseIndex) || licenseIndex < 0) {
+      return response.status(400).json({
+        message: "Reservation invalide."
+      });
+    }
+
+    const licenseFile = await getAdminReservationDrivingLicenseFile(
+      reservationId,
+      licenseIndex
+    );
+
+    if (!licenseFile) {
+      return response.status(404).json({
+        message: "Permis introuvable."
+      });
+    }
+
+    response.set({
+      "Cache-Control": "private, no-store, max-age=0",
+      "Content-Disposition": `inline; filename="${licenseFile.filename}"`,
+      "Content-Security-Policy": "default-src 'none'",
+      "Cross-Origin-Resource-Policy": "same-origin",
+      "X-Content-Type-Options": "nosniff"
+    });
+    response.type(licenseFile.contentType);
+    return response.send(licenseFile.buffer);
+  } catch (error) {
+    console.error("Admin reservation driving license failed", error);
+    return response.status(500).json({
+      message: "Impossible de charger ce permis."
+    });
+  }
+});
+
+router.get("/:id/driving-license", async (request, response) => {
+  try {
+    const reservationId = parseReservationId(request.params.id);
+
+    if (!reservationId) {
+      return response.status(400).json({
+        message: "Reservation invalide."
+      });
+    }
+
+    const licenseFile = await getAdminReservationDrivingLicenseFile(
+      reservationId,
+      0
+    );
+
+    if (!licenseFile) {
+      return response.status(404).json({
+        message: "Permis introuvable."
+      });
+    }
+
+    response.set({
+      "Cache-Control": "private, no-store, max-age=0",
+      "Content-Disposition": `inline; filename="${licenseFile.filename}"`,
+      "Content-Security-Policy": "default-src 'none'",
+      "Cross-Origin-Resource-Policy": "same-origin",
+      "X-Content-Type-Options": "nosniff"
+    });
+    response.type(licenseFile.contentType);
+    return response.send(licenseFile.buffer);
+  } catch (error) {
+    console.error("Admin reservation driving license failed", error);
+    return response.status(500).json({
+      message: "Impossible de charger ce permis."
     });
   }
 });
@@ -159,13 +237,13 @@ router.put("/:id", handleReservationUpload, async (request, response) => {
     const reservationId = parseReservationId(request.params.id);
 
     if (!reservationId) {
-      await removeUploadedReservationFile(request.file);
+      await removeUploadedReservationFile(request.files);
       return response.status(400).json({
         message: "Reservation invalide."
       });
     }
 
-    drivingLicensePhotoUrl = await optimizeReservationLicensePhoto(request.file);
+    drivingLicensePhotoUrl = await optimizeReservationLicensePhotos(request.files);
 
     const reservation = await updateAdminReservation(reservationId, {
       ...(request.body || {}),
@@ -184,7 +262,7 @@ router.put("/:id", handleReservationUpload, async (request, response) => {
       reservation
     });
   } catch (error) {
-    await removeUploadedReservationFile(request.file);
+    await removeUploadedReservationFile(request.files);
     await removeStoredReservationFile(drivingLicensePhotoUrl);
     console.error("Admin reservation update failed", error);
     return response.status(400).json({

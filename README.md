@@ -131,3 +131,4 @@ Gestion des vehicules:
 - les demandes de reservation sont visibles par l'admin dans la page Commencer
 - le permis de conduire est uploadé en image et stocke localement dans /uploads/reservations
 ```
+codex resume 019d0d15-b77f-7303-b8f4-10a809e42bcf

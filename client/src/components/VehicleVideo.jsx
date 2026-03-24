@@ -42,9 +42,14 @@ function VehicleVideo({ src, title }) {
   }
 
   return (
-    <video className="vehica-car-embed__video" controls preload="metadata">
-      <source src={src} />
-    </video>
+    <video
+      key={src}
+      className="vehica-car-embed__video"
+      controls
+      preload="metadata"
+      playsInline
+      src={src}
+    />
   );
 }
 

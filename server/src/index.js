@@ -25,6 +25,7 @@ const {
 } = require("./db/pool");
 const { getTargetDatabaseName } = require("./config/databaseConfig");
 const { initializeAdminAuth } = require("./services/adminAuthService");
+const { trackPublicSiteVisit } = require("./services/siteVisitService");
 const {
   getRuntimeState,
   setAdminSeed,
@@ -48,13 +49,32 @@ let activeHttpServer = null;
 function matchesAdminOnlyClientPath(pathname) {
   return (
     pathname === "/clients" ||
+    pathname === "/reservations" ||
     pathname === "/clients/reservations/creer" ||
+    pathname === "/reservations/creer" ||
     /^\/clients\/reservations\/\d+$/.test(pathname) ||
+    /^\/reservations\/\d+$/.test(pathname) ||
     /^\/(commencer|clients)\/reservations\/\d+\/modifier$/.test(pathname) ||
+    /^\/reservations\/\d+\/modifier$/.test(pathname) ||
     /^\/commencer\/reservations\/\d+$/.test(pathname) ||
     pathname === "/location-de-voitures/creer" ||
+    /^\/location-de-voitures\/\d+\/reserver$/.test(pathname) ||
     /^\/location-de-voitures\/\d+\/modifier$/.test(pathname)
   );
+}
+
+function maybeTrackPublicSiteVisit(request, response) {
+  const runtimeState = getRuntimeState();
+
+  if (!runtimeState.database.ready) {
+    return;
+  }
+
+  if (request.path.startsWith("/admin") || matchesAdminOnlyClientPath(request.path)) {
+    return;
+  }
+
+  trackPublicSiteVisit(request, response);
 }
 
 async function createApp() {
@@ -71,6 +91,11 @@ async function createApp() {
 
   app.use(cors());
   app.use(express.json());
+  app.use("/uploads/reservations", (request, response) => {
+    response.status(404).json({
+      message: "Not found"
+    });
+  });
   app.use(
     "/uploads",
     express.static(uploadsRoot, {
@@ -143,10 +168,22 @@ async function createApp() {
     });
   });
 
+  app.use((error, request, response, next) => {
+    if (!request.path.startsWith("/api")) {
+      return next(error);
+    }
+
+    console.error("API request failed.", error);
+    response.status(500).json({
+      message: error.message || "Erreur serveur interne."
+    });
+  });
+
   if (isProduction) {
     app.use(express.static(clientDist));
 
     app.use("*", (request, response) => {
+      maybeTrackPublicSiteVisit(request, response);
       response.sendFile(path.resolve(clientDist, "index.html"));
     });
   } else {
@@ -174,6 +211,7 @@ async function createApp() {
 
         template = await vite.transformIndexHtml(url, template);
 
+        maybeTrackPublicSiteVisit(request, response);
         response
           .status(200)
           .set({ "Content-Type": "text/html" })

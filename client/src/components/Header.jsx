@@ -63,7 +63,7 @@ function Header({
         ...header.navigationItems,
         {
           label: header.clientsLabel,
-          path: "/clients"
+          path: "/reservations"
         }
       ]
     : header.navigationItems;
@@ -106,7 +106,7 @@ function Header({
     setIsMobileNavOpen(false);
     onMenuClose();
 
-    if (path === "/clients") {
+    if (path === "/reservations") {
       onClientsClick();
       return;
     }

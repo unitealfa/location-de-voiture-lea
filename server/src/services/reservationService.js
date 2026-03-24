@@ -9,6 +9,8 @@ const {
   updateReservationStatus
 } = require("../repositories/reservationRepository");
 const {
+  parseStoredReservationReferences,
+  readStoredReservationFile,
   removeStoredReservationFile
 } = require("../middleware/reservationUploadMiddleware");
 const {
@@ -16,6 +18,7 @@ const {
   getPublicVehicleById,
   syncVehicleAvailabilityForVehicle
 } = require("./vehicleService");
+const { calculateReservationPricing } = require("../utils/reservationPricing");
 
 const LOCATION_TYPES = new Set(["bureau", "aeroport", "commentaire"]);
 const RESERVATION_STATUSES = new Set(["pending", "accepted"]);
@@ -27,6 +30,20 @@ function normalizeString(value) {
 function normalizeOptionalEmail(value) {
   const normalizedValue = normalizeString(value);
   return normalizedValue || null;
+}
+
+function normalizeOptionalBirthDate(value) {
+  const normalizedValue = normalizeString(value);
+
+  if (!normalizedValue) {
+    return "";
+  }
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(normalizedValue)) {
+    throw new Error("Date de naissance invalide.");
+  }
+
+  return normalizedValue;
 }
 
 function normalizeLocationType(value, label) {
@@ -51,6 +68,22 @@ function normalizeDatetime(value, label) {
   return databaseValue.length === 16 ? `${databaseValue}:00` : databaseValue;
 }
 
+function normalizeOptionalTotalPrice(value) {
+  const normalizedValue = normalizeString(value).replace(/\s+/g, "").replace(",", ".");
+
+  if (!normalizedValue) {
+    return null;
+  }
+
+  const parsedValue = Number(normalizedValue);
+
+  if (!Number.isFinite(parsedValue) || parsedValue < 0) {
+    throw new Error("Prix total invalide.");
+  }
+
+  return Number(parsedValue.toFixed(2));
+}
+
 function formatDurationLabel(pickupDatetime, returnDatetime) {
   const pickupTime = new Date(pickupDatetime).getTime();
   const returnTime = new Date(returnDatetime).getTime();
@@ -71,13 +104,59 @@ function formatDurationLabel(pickupDatetime, returnDatetime) {
   return `${totalDays} jour${totalDays > 1 ? "s" : ""} ${remainingHours} heure${remainingHours > 1 ? "s" : ""}`;
 }
 
-function withReservationComputedFields(reservation) {
+function buildAdminDrivingLicenseUrls(reservation) {
+  if (!reservation?.id || !reservation.drivingLicensePhotoUrl) {
+    return [];
+  }
+
+  const references = parseStoredReservationReferences(
+    reservation.drivingLicensePhotoUrl
+  );
+
+  return references.map((reference, index) => {
+    void reference;
+    return index === 0
+      ? `/api/admin/reservations/${reservation.id}/driving-license`
+      : `/api/admin/reservations/${reservation.id}/driving-license/${index}`;
+  });
+}
+
+async function withReservationComputedFields(reservation) {
   if (!reservation) {
     return null;
   }
 
+  let totalPrice = reservation.totalPrice;
+  let priceRateType = reservation.priceRateType;
+  let priceManualOverride = reservation.priceManualOverride;
+
+  if ((totalPrice === null || totalPrice === undefined) && reservation.vehicleId) {
+    const vehicle = await getAdminVehicleById(reservation.vehicleId);
+
+    if (vehicle) {
+      const calculatedPricing = calculateReservationPricing(
+        vehicle,
+        reservation.pickupDatetime,
+        reservation.returnDatetime
+      );
+
+      if (calculatedPricing.billingDays > 0) {
+        totalPrice = calculatedPricing.totalPrice;
+        priceRateType = priceRateType || calculatedPricing.rateType;
+        priceManualOverride = false;
+      }
+    }
+  }
+
+  const drivingLicensePhotoUrls = buildAdminDrivingLicenseUrls(reservation);
+
   return {
     ...reservation,
+    totalPrice,
+    priceRateType,
+    priceManualOverride,
+    drivingLicensePhotoUrl: drivingLicensePhotoUrls[0] || "",
+    drivingLicensePhotoUrls,
     vehicleName: [
       reservation.vehicleBrand,
       reservation.vehicleModel
@@ -134,6 +213,7 @@ async function buildReservationPayload(vehicleId, payload, options = {}) {
   const lastName = normalizeString(payload.lastName);
   const phone = normalizeString(payload.phone);
   const comment = normalizeString(payload.comment);
+  const birthDate = normalizeOptionalBirthDate(payload.birthDate);
   const drivingLicensePhotoUrl =
     normalizeString(payload.drivingLicensePhotoUrl) ||
     normalizeString(fallbackLicensePhotoUrl);
@@ -162,10 +242,16 @@ async function buildReservationPayload(vehicleId, payload, options = {}) {
     !firstName ||
     !lastName ||
     !phone ||
-    !comment ||
     (requiredLicensePhoto && !drivingLicensePhotoUrl)
   ) {
     throw new Error("Tous les champs obligatoires de reservation doivent etre remplis.");
+  }
+
+  if (
+    (pickupLocationType === "commentaire" || returnLocationType === "commentaire") &&
+    !comment
+  ) {
+    throw new Error("Precisez le lieu dans le commentaire.");
   }
 
   if (!privacyPolicyAccepted) {
@@ -176,6 +262,28 @@ async function buildReservationPayload(vehicleId, payload, options = {}) {
     throw new Error("La date de retour doit etre apres la date de recuperation.");
   }
 
+  const calculatedPricing = calculateReservationPricing(
+    vehicle,
+    pickupDatetime,
+    returnDatetime
+  );
+  const adminTotalPrice = adminView ? normalizeOptionalTotalPrice(payload.totalPrice) : null;
+  const totalPrice =
+    adminView && adminTotalPrice !== null
+      ? adminTotalPrice
+      : calculatedPricing.totalPrice;
+  const priceManualOverride =
+    adminView &&
+    adminTotalPrice !== null &&
+    Math.abs(adminTotalPrice - calculatedPricing.totalPrice) > 0.009;
+
+  const storedComment = [
+    birthDate ? `Date de naissance : ${birthDate}` : "",
+    comment
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+
   return {
     ...mapVehicleToReservationSnapshot(vehicle),
     firstName,
@@ -183,11 +291,14 @@ async function buildReservationPayload(vehicleId, payload, options = {}) {
     drivingLicensePhotoUrl,
     email: normalizeOptionalEmail(payload.email),
     phone,
-    comment,
+    comment: storedComment,
     pickupLocationType,
     returnLocationType,
     pickupDatetime,
     returnDatetime,
+    totalPrice,
+    priceRateType: calculatedPricing.rateType,
+    priceManualOverride,
     status,
     privacyPolicyAccepted
   };
@@ -252,12 +363,22 @@ async function listAdminReservations(scope = "pending") {
     futureOnly: normalizedScope === "accepted"
   });
 
-  return reservations.map(withReservationComputedFields);
+  return Promise.all(reservations.map((reservation) => withReservationComputedFields(reservation)));
 }
 
 async function getAdminReservationById(id) {
   const reservation = await findReservationById(id);
   return withReservationComputedFields(reservation);
+}
+
+async function getAdminReservationDrivingLicenseFile(id, index = 0) {
+  const reservation = await findReservationById(id);
+
+  if (!reservation || !reservation.drivingLicensePhotoUrl) {
+    return null;
+  }
+
+  return readStoredReservationFile(reservation.drivingLicensePhotoUrl, index);
 }
 
 async function listVehicleAcceptedReservationSlots(vehicleId) {
@@ -322,7 +443,7 @@ async function createAdminReservation(payload) {
 
   const reservationPayload = await buildReservationPayload(vehicleId, payload, {
     adminView: true,
-    requiredLicensePhoto: true,
+    requiredLicensePhoto: false,
     status: "accepted"
   });
 
@@ -434,6 +555,7 @@ module.exports = {
   createVehicleReservation,
   deleteAdminReservation,
   getAdminReservationById,
+  getAdminReservationDrivingLicenseFile,
   listAdminReservations,
   listVehicleAcceptedReservationSlots,
   updateAdminReservation,
