@@ -4,15 +4,12 @@ const {
 } = require("../utils/sessionCookie");
 const {
   createSiteVisitEvent,
-  getSiteVisitOverview,
-  listDailySiteVisitTotals
+  getSiteVisitOverviewInRange,
+  listDailySiteVisitTotalsInRange
 } = require("../repositories/siteVisitRepository");
 
 const SITE_VISITOR_COOKIE_NAME = "lea_site_visitor";
 const SITE_VISITOR_COOKIE_MAX_AGE_MS = 1000 * 60 * 60 * 24 * 365 * 2;
-const DAY_LABEL_FORMATTER = new Intl.DateTimeFormat("fr-FR", {
-  weekday: "short"
-});
 
 function parseCookies(cookieHeader = "") {
   return cookieHeader
@@ -41,18 +38,39 @@ function hashVisitorToken(token) {
   return crypto.createHash("sha256").update(token).digest("hex");
 }
 
-function startOfDay(date) {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
+function toDate(value) {
+  if (value instanceof Date) {
+    return new Date(value.getTime());
+  }
+
+  if (typeof value === "string") {
+    return new Date(value.includes("T") ? value : value.replace(" ", "T"));
+  }
+
+  return new Date(value);
 }
 
-function startOfMonth(date) {
-  return new Date(date.getFullYear(), date.getMonth(), 1, 0, 0, 0, 0);
+function isValidDate(date) {
+  return date instanceof Date && !Number.isNaN(date.getTime());
 }
 
 function formatDateKey(date) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function createUtcDateKey(dateValue) {
+  const date = toDate(dateValue);
+
+  if (!isValidDate(date)) {
+    return "";
+  }
+
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 }
 
@@ -68,12 +86,7 @@ function setVisitorCookie(response, token) {
 
 function shouldSkipTracking(request) {
   const cookies = parseCookies(request.headers.cookie || "");
-
-  if (cookies[ADMIN_SESSION_COOKIE_NAME]) {
-    return true;
-  }
-
-  return false;
+  return Boolean(cookies[ADMIN_SESSION_COOKIE_NAME]);
 }
 
 function trackPublicSiteVisit(request, response) {
@@ -100,40 +113,30 @@ function trackPublicSiteVisit(request, response) {
   });
 }
 
-async function getSiteVisitDashboardStats() {
-  const now = new Date();
-  const monthStart = startOfMonth(now);
-  const recentStartDate = startOfDay(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6));
-  const [overview, recentDailyTotals] = await Promise.all([
-    getSiteVisitOverview(monthStart),
-    listDailySiteVisitTotals(recentStartDate)
+async function getSiteVisitDashboardStats({ startDate = null, endDate = null } = {}) {
+  const [overview, dailyTotals] = await Promise.all([
+    getSiteVisitOverviewInRange(startDate, endDate),
+    listDailySiteVisitTotalsInRange(startDate, endDate)
   ]);
 
-  const recentMap = new Map(
-    recentDailyTotals.map((item) => [formatDateKey(new Date(item.visitDate)), item])
+  const dailyMap = new Map(
+    dailyTotals
+      .map((item) => [createUtcDateKey(item.visitDate), item])
+      .filter(([key]) => Boolean(key))
   );
 
-  const recentVisits = Array.from({ length: 7 }, (_, index) => {
-    const day = new Date(recentStartDate);
-    day.setDate(recentStartDate.getDate() + index);
-    const key = formatDateKey(day);
-    const row = recentMap.get(key);
-
-    return {
-      label: DAY_LABEL_FORMATTER.format(day),
-      value: row ? row.totalVisits : 0,
-      visitors: row ? row.totalVisitors : 0
-    };
-  });
-
   return {
-    ...overview,
-    recentVisits
+    totalVisits: overview.totalVisits,
+    totalVisitors: overview.totalVisitors,
+    dailyMap
   };
 }
 
 module.exports = {
   SITE_VISITOR_COOKIE_NAME,
   trackPublicSiteVisit,
-  getSiteVisitDashboardStats
+  getSiteVisitDashboardStats,
+  formatDateKey,
+  toDate,
+  isValidDate
 };

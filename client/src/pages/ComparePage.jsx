@@ -275,7 +275,7 @@ function ComparePage(props) {
         {isLoading ? (
           <div className="vehica-compare__loader">
             <div className="vehica-compare__loader-inner">
-              <svg width="120" height="30" viewBox="0 0 120 30" xmlns="http://www.w3.org/2000/svg" fill="#ff4605" aria-hidden="true">
+              <svg width="120" height="30" viewBox="0 0 120 30" xmlns="http://www.w3.org/2000/svg" fill="#A7A7A7" aria-hidden="true">
                 <circle cx="15" cy="15" r="15">
                   <animate attributeName="r" from="15" to="15" begin="0s" dur="0.8s" values="15;9;15" calcMode="linear" repeatCount="indefinite" />
                   <animate attributeName="fill-opacity" from="1" to="1" begin="0s" dur="0.8s" values="1;.5;1" calcMode="linear" repeatCount="indefinite" />

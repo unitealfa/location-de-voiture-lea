@@ -15,32 +15,55 @@ async function createSiteVisitEvent({ visitorHash, requestPath }) {
   );
 }
 
-async function getSiteVisitOverview(monthStart) {
+async function getSiteVisitOverviewInRange(startDate, endDate) {
   const pool = getPool();
+  const conditions = [];
+  const parameters = [];
+
+  if (startDate) {
+    conditions.push("visited_at >= ?");
+    parameters.push(startDate);
+  }
+
+  if (endDate) {
+    conditions.push("visited_at < ?");
+    parameters.push(endDate);
+  }
+
   const [rows] = await pool.execute(
     `
       SELECT
         COUNT(*) AS total_visits,
-        COUNT(DISTINCT visitor_hash) AS total_visitors,
-        SUM(CASE WHEN visited_at >= ? THEN 1 ELSE 0 END) AS month_visits,
-        COUNT(DISTINCT CASE WHEN visited_at >= ? THEN visitor_hash END) AS month_visitors
+        COUNT(DISTINCT visitor_hash) AS total_visitors
       FROM site_visit_events
+      ${conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : ""}
     `,
-    [monthStart, monthStart]
+    parameters
   );
 
   const row = rows[0] || {};
 
   return {
     totalVisits: Number(row.total_visits || 0),
-    totalVisitors: Number(row.total_visitors || 0),
-    monthVisits: Number(row.month_visits || 0),
-    monthVisitors: Number(row.month_visitors || 0)
+    totalVisitors: Number(row.total_visitors || 0)
   };
 }
 
-async function listDailySiteVisitTotals(startDate) {
+async function listDailySiteVisitTotalsInRange(startDate, endDate) {
   const pool = getPool();
+  const conditions = [];
+  const parameters = [];
+
+  if (startDate) {
+    conditions.push("visited_at >= ?");
+    parameters.push(startDate);
+  }
+
+  if (endDate) {
+    conditions.push("visited_at < ?");
+    parameters.push(endDate);
+  }
+
   const [rows] = await pool.execute(
     `
       SELECT
@@ -48,11 +71,11 @@ async function listDailySiteVisitTotals(startDate) {
         COUNT(*) AS total_visits,
         COUNT(DISTINCT visitor_hash) AS total_visitors
       FROM site_visit_events
-      WHERE visited_at >= ?
+      ${conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : ""}
       GROUP BY DATE(visited_at)
       ORDER BY visit_date ASC
     `,
-    [startDate]
+    parameters
   );
 
   return rows.map((row) => ({
@@ -64,6 +87,6 @@ async function listDailySiteVisitTotals(startDate) {
 
 module.exports = {
   createSiteVisitEvent,
-  getSiteVisitOverview,
-  listDailySiteVisitTotals
+  getSiteVisitOverviewInRange,
+  listDailySiteVisitTotalsInRange
 };

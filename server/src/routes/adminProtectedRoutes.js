@@ -18,7 +18,7 @@ router.get("/me", (request, response) => {
 
 router.get("/dashboard", async (request, response, next) => {
   try {
-    const stats = await getAdminDashboardStats();
+    const stats = await getAdminDashboardStats(request.query || {});
 
     response.json({
       admin: request.admin,

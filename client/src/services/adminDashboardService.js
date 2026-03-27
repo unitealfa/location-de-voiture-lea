@@ -17,8 +17,16 @@ async function parseJsonResponse(response, fallbackMessage) {
   return payload;
 }
 
-export async function getAdminDashboardStats() {
-  const response = await fetch("/api/admin/protected/dashboard", {
+export async function getAdminDashboardStats(filters = {}) {
+  const query = new URLSearchParams();
+
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      query.set(key, String(value));
+    }
+  });
+
+  const response = await fetch(`/api/admin/protected/dashboard?${query.toString()}`, {
     credentials: "same-origin"
   });
 
