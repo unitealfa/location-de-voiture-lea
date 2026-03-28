@@ -46,6 +46,7 @@ dist/
 npm-debug.log*
 .env
 .env.local
+aaaa.txt
 
 
 dbinfo.txt
