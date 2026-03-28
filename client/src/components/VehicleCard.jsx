@@ -1,4 +1,5 @@
 import { getVehicleCardImageUrl, formatVehiclePrice } from "../utils/vehicleFormatters";
+import { handleImageFallback } from "../utils/imageFallback";
 
 function getVehicleTitle(vehicle) {
   return [vehicle.brand, vehicle.model, vehicle.version].filter(Boolean).join(" ");
@@ -73,6 +74,7 @@ function VehicleCard(props) {
               alt={vehicleTitle}
               loading="lazy"
               decoding="async"
+              onError={handleImageFallback}
               sizes={
                 viewMode === "list"
                   ? "(max-width: 1023px) 100vw, 520px"

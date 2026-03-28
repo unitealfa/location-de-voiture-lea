@@ -1,3 +1,5 @@
+import { handleImageFallback } from "../utils/imageFallback";
+
 function EmailIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -67,7 +69,7 @@ function Footer({ brand, content, header, onNavigate }) {
                 onClick={() => onNavigate("/")}
                 aria-label={brand.name}
               >
-                <img src={footerLogoPath} alt={brand.name} />
+                <img src={footerLogoPath} alt={brand.name} onError={handleImageFallback} />
               </button>
             </div>
 

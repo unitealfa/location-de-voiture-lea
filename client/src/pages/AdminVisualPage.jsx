@@ -16,6 +16,7 @@ import {
   getVehicleCardImageUrl
 } from "../utils/vehicleFormatters";
 import { extractAcceptedFilesFromDrop } from "../utils/dropFiles";
+import { handleImageFallback, IMAGE_FALLBACK_SRC } from "../utils/imageFallback";
 
 const DEFAULT_FORM = {
   browserTitle: "",
@@ -315,7 +316,7 @@ function BrowserTabPreview({ icon, title }) {
         </div>
         <div className="admin-visual-preview__browser-tab-wrap">
           <div className="admin-visual-preview__browser-tab">
-            <img src={icon} alt="Favicon" />
+            <img src={icon || IMAGE_FALLBACK_SRC} alt="Favicon" onError={handleImageFallback} />
             <span>{title}</span>
           </div>
         </div>
@@ -390,7 +391,7 @@ function HeaderPreview({ brand, header }) {
       <div className="admin-visual-preview__header-frame">
         <div className="admin-visual-preview__header-row">
           <div className="admin-visual-preview__header-brand">
-            <img src={brand.logoImagePath} alt={brand.name} />
+            <img src={brand.logoImagePath || IMAGE_FALLBACK_SRC} alt={brand.name} onError={handleImageFallback} />
           </div>
 
           <div className="admin-visual-preview__header-links">
@@ -823,7 +824,7 @@ function ImageDropField({
         }}
       >
         <div className="admin-visual-page__upload-preview">
-          <img src={previewSrc} alt={label} />
+          <img src={previewSrc || IMAGE_FALLBACK_SRC} alt={label} onError={handleImageFallback} />
         </div>
 
         <div className="admin-visual-page__upload-content">

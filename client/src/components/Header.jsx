@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { handleImageFallback } from "../utils/imageFallback";
 
 function MobilePhoneIcon() {
   return (
@@ -261,7 +262,7 @@ function Header({
                   aria-label={brand.name}
                   onClick={() => handleNavigate("/")}
                 >
-                  <img src={headerLogoPath} alt={brand.name} />
+                  <img src={headerLogoPath} alt={brand.name} onError={handleImageFallback} />
                 </button>
               </div>
 
@@ -272,7 +273,7 @@ function Header({
                   aria-label={brand.name}
                   onClick={() => handleNavigate("/")}
                 >
-                  <img src={headerLogoPath} alt={brand.name} />
+                  <img src={headerLogoPath} alt={brand.name} onError={handleImageFallback} />
                 </button>
               </div>
 
@@ -396,7 +397,7 @@ function Header({
                 aria-label={brand.name}
                 onClick={() => handleNavigate("/")}
               >
-                <img src={headerLogoPath} alt={brand.name} />
+                <img src={headerLogoPath} alt={brand.name} onError={handleImageFallback} />
               </button>
             </div>
           </div>

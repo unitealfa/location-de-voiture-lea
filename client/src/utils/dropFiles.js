@@ -48,7 +48,10 @@ async function fetchUrlAsFile(url, acceptPrefix, fallbackBasename) {
     const blob = await response.blob();
     const mimeType = String(blob.type || "");
 
-    if (!mimeType.startsWith(acceptPrefix + "/")) {
+    if (!mimeType.startsWith(acceptPrefix + "/") && !isAcceptedMediaFile({
+      name: url,
+      type: mimeType
+    }, acceptPrefix)) {
       return null;
     }
 
@@ -79,7 +82,7 @@ export async function extractAcceptedFilesFromDrop(event, {
   }
 
   const directFiles = Array.from(dataTransfer.files || []).filter((file) =>
-    String(file.type || "").startsWith(acceptPrefix + "/")
+    isAcceptedMediaFile(file, acceptPrefix)
   );
 
   if (directFiles.length > 0) {
@@ -90,7 +93,7 @@ export async function extractAcceptedFilesFromDrop(event, {
   const itemFiles = items
     .filter((item) => item.kind === "file")
     .map((item) => item.getAsFile())
-    .filter((file) => file && String(file.type || "").startsWith(acceptPrefix + "/"));
+    .filter((file) => file && isAcceptedMediaFile(file, acceptPrefix));
 
   if (itemFiles.length > 0) {
     return itemFiles.slice(0, maxFiles);
@@ -139,4 +142,53 @@ export async function extractAcceptedFilesFromDrop(event, {
   }
 
   return fetchedFiles.slice(0, maxFiles);
+}
+const IMAGE_EXTENSIONS = [
+  ".jpg",
+  ".jpeg",
+  ".png",
+  ".webp",
+  ".gif",
+  ".bmp",
+  ".svg",
+  ".avif",
+  ".heic",
+  ".heif",
+  ".jfif"
+];
+
+const VIDEO_EXTENSIONS = [
+  ".mp4",
+  ".webm",
+  ".mov",
+  ".m4v",
+  ".ogg",
+  ".ogv"
+];
+
+function matchesExtension(filename, extensions) {
+  const normalizedFilename = String(filename || "").toLowerCase();
+  return extensions.some((extension) => normalizedFilename.endsWith(extension));
+}
+
+export function isAcceptedMediaFile(file, acceptPrefix = "image") {
+  if (!file) {
+    return false;
+  }
+
+  const mimeType = String(file.type || "").toLowerCase();
+
+  if (mimeType.startsWith(acceptPrefix + "/")) {
+    return true;
+  }
+
+  if (acceptPrefix === "image") {
+    return matchesExtension(file.name, IMAGE_EXTENSIONS);
+  }
+
+  if (acceptPrefix === "video") {
+    return matchesExtension(file.name, VIDEO_EXTENSIONS);
+  }
+
+  return false;
 }

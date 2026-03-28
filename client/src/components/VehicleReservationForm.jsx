@@ -3,7 +3,8 @@ import {
   createVehicleReservation,
   getVehicleReservationAvailability
 } from "../services/reservationService";
-import { extractAcceptedFilesFromDrop } from "../utils/dropFiles";
+import { extractAcceptedFilesFromDrop, isAcceptedMediaFile } from "../utils/dropFiles";
+import { handleImageFallback } from "../utils/imageFallback";
 import { calculateReservationPricing, getReservationRateLabel } from "../utils/reservationPricing";
 import { formatVehicleName, formatVehiclePrice } from "../utils/vehicleFormatters";
 import { formatReservationDateTime } from "../utils/reservationFormatters";
@@ -418,7 +419,7 @@ function VehicleReservationForm({ content, vehicle, hideActionButtons = false, h
   const applyDrivingLicensePhotos = (nextFiles) => {
     const selectedFiles = Array.from(nextFiles || []).filter(Boolean);
     const validFiles = selectedFiles
-      .filter((file) => String(file.type || "").startsWith("image/"))
+      .filter((file) => isAcceptedMediaFile(file, "image"))
       .slice(0, MAX_DRIVING_LICENSE_FILES);
 
     setSuccessMessage("");
@@ -882,7 +883,11 @@ function VehicleReservationForm({ content, vehicle, hideActionButtons = false, h
               <div className="reservation-form__license-preview-grid">
                 {previewUrls.map((previewUrl, index) => (
                   <div key={previewUrl + "-" + index} className="reservation-form__license-preview">
-                    <img src={previewUrl} alt={`${content.reservationDrivingLicenseLabel} ${index + 1}`} />
+                    <img
+                      src={previewUrl}
+                      alt={`${content.reservationDrivingLicenseLabel} ${index + 1}`}
+                      onError={handleImageFallback}
+                    />
                   </div>
                 ))}
               </div>

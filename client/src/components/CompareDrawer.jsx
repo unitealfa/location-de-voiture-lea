@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getVehicleCardImageUrl } from "../utils/vehicleFormatters";
+import { handleImageFallback } from "../utils/imageFallback";
 
 function getVehicleName(vehicle) {
   return [vehicle.brand, vehicle.model, vehicle.version].filter(Boolean).join(" ");
@@ -109,6 +110,7 @@ function CompareDrawer(props) {
                           alt={getVehicleName(vehicle)}
                           loading="lazy"
                           decoding="async"
+                          onError={handleImageFallback}
                         />
                       ) : (
                         <div className="vehica-compare-area__icon"></div>

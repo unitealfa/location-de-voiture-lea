@@ -5,7 +5,8 @@ import {
   getVehicleById,
   updateVehicle
 } from "../services/vehicleService";
-import { extractAcceptedFilesFromDrop } from "../utils/dropFiles";
+import { extractAcceptedFilesFromDrop, isAcceptedMediaFile } from "../utils/dropFiles";
+import { handleImageFallback } from "../utils/imageFallback";
 
 function buildInitialFormValues() {
   return {
@@ -218,9 +219,7 @@ function AdminVehicleFormPage({
       return;
     }
 
-    const hasInvalidFile = nextPhotoFiles.some(
-      (file) => !String(file.type || "").startsWith("image/")
-    );
+    const hasInvalidFile = nextPhotoFiles.some((file) => !isAcceptedMediaFile(file, "image"));
 
     if (hasInvalidFile) {
       setErrorMessage(content.invalidPhotoDropMessage);
@@ -254,7 +253,7 @@ function AdminVehicleFormPage({
       return;
     }
 
-    if (!String(file.type || "").startsWith("video/")) {
+    if (!isAcceptedMediaFile(file, "video")) {
       setErrorMessage(content.invalidVideoDropMessage);
       return;
     }
@@ -746,6 +745,7 @@ function AdminVehicleFormPage({
                             <img
                               src={photoUrl}
                               alt={`${content.photoUrlsLabel} ${index + 1}`}
+                              onError={handleImageFallback}
                             />
                           </div>
                         ))}
@@ -769,6 +769,7 @@ function AdminVehicleFormPage({
                               alt={`${content.photoUrlsLabel} ${
                                 existingPhotoUrls.length + index + 1
                               }`}
+                              onError={handleImageFallback}
                             />
                           </div>
                         ))}

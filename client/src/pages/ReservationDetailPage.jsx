@@ -12,6 +12,7 @@ import {
 } from "../utils/reservationFormatters";
 import { getReservationRateLabel } from "../utils/reservationPricing";
 import { formatVehiclePrice } from "../utils/vehicleFormatters";
+import { handleImageFallback } from "../utils/imageFallback";
 
 const miniWeekdayFormatter = new Intl.DateTimeFormat("fr-FR", {
   weekday: "narrow"
@@ -625,7 +626,11 @@ function ReservationDetailPage({
                   <h2>{content.vehicleLabel}</h2>
                 </div>
                 <div className="reservation-detail-theme__image-frame">
-                  <img src={reservation.vehiclePhotoUrl} alt={reservation.vehicleName} />
+                  <img
+                    src={reservation.vehiclePhotoUrl}
+                    alt={reservation.vehicleName}
+                    onError={handleImageFallback}
+                  />
                 </div>
               </div>
 
@@ -647,6 +652,7 @@ function ReservationDetailPage({
                           <img
                             src={drivingLicensePhotoUrl}
                             alt={`${content.licenseLabel} ${index + 1}`}
+                            onError={handleImageFallback}
                           />
                         </span>
                       </button>

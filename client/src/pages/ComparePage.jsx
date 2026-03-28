@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { listVehicles, readCachedVehicleList } from "../services/vehicleService";
 import { formatVehiclePrice, getVehicleCardImageUrl } from "../utils/vehicleFormatters";
+import { handleImageFallback } from "../utils/imageFallback";
 
 function getVehicleName(vehicle) {
   return [vehicle.brand, vehicle.model, vehicle.version].filter(Boolean).join(" ");
@@ -353,6 +354,7 @@ function ComparePage(props) {
                             alt={getVehicleName(vehicle)}
                             loading="lazy"
                             decoding="async"
+                            onError={handleImageFallback}
                           />
                         ) : (
                           <div className="vehica-compare__image-wrapper__icon"></div>

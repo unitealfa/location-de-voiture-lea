@@ -6,10 +6,11 @@ import {
   listAdminReservations,
   updateAdminReservation
 } from "../services/reservationService";
-import { extractAcceptedFilesFromDrop } from "../utils/dropFiles";
+import { extractAcceptedFilesFromDrop, isAcceptedMediaFile } from "../utils/dropFiles";
 import { formatReservationDateTime } from "../utils/reservationFormatters";
 import { calculateReservationPricing, getReservationRateLabel } from "../utils/reservationPricing";
 import { formatVehicleName, formatVehiclePrice } from "../utils/vehicleFormatters";
+import { handleImageFallback } from "../utils/imageFallback";
 
 const RESERVATION_DAY_START_TIME = "00:00:00";
 const RESERVATION_DAY_END_TIME = "23:59:59";
@@ -372,7 +373,7 @@ function AdminReservationFormPage({
   const applyDrivingLicensePhotos = (nextFiles) => {
     const selectedFiles = Array.from(nextFiles || []).filter(Boolean);
     const validFiles = selectedFiles
-      .filter((file) => String(file.type || "").startsWith("image/"))
+      .filter((file) => isAcceptedMediaFile(file, "image"))
       .slice(0, 2);
 
     if (selectedFiles.length > 0 && validFiles.length === 0) {
@@ -1275,6 +1276,7 @@ function AdminReservationFormPage({
                             key={licensePreviewUrl + "-" + index}
                             src={licensePreviewUrl}
                             alt={`${content.licenseLabel} ${index + 1}`}
+                            onError={handleImageFallback}
                           />
                         ))}
                       </div>
