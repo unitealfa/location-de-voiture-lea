@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { listAdminReservations } from "../services/reservationService";
+import { getCachedAdminReservations, listAdminReservations } from "../services/reservationService";
 import { formatReservationDateTime } from "../utils/reservationFormatters";
 
 const weekdayFormatter = new Intl.DateTimeFormat("fr-FR", {
@@ -91,17 +91,17 @@ function ReservationStatusPill({ label, type }) {
 }
 
 function ClientsCalendarPage({ content, onCreateClick, onReservationClick }) {
-  const [pendingReservations, setPendingReservations] = useState([]);
-  const [acceptedReservations, setAcceptedReservations] = useState([]);
+  const [pendingReservations, setPendingReservations] = useState(() => getCachedAdminReservations("pending"));
+  const [acceptedReservations, setAcceptedReservations] = useState(() => getCachedAdminReservations("accepted"));
   const [monthDate, setMonthDate] = useState(() => createMonthReference(new Date()));
   const [errorMessage, setErrorMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(() => getCachedAdminReservations("pending").length === 0 && getCachedAdminReservations("accepted").length === 0);
 
   useEffect(() => {
     let isActive = true;
 
     const loadReservations = async () => {
-      setIsLoading(true);
+      setIsLoading(() => pendingReservations.length === 0 && acceptedReservations.length === 0);
       setErrorMessage("");
 
       try {

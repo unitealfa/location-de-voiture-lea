@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { listVehicles } from "../services/vehicleService";
+import { listVehicles, readCachedVehicleList } from "../services/vehicleService";
 import { formatVehiclePrice, getVehicleCardImageUrl } from "../utils/vehicleFormatters";
 
 function getVehicleName(vehicle) {
@@ -155,8 +155,14 @@ function ComparePage(props) {
   const onBackClick = props.onBackClick;
   const onRemove = props.onRemove;
   const onVehicleOpen = props.onVehicleOpen;
-  const [vehicles, setVehicles] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const getCachedComparedVehicles = () => {
+    const cachedVehicles = readCachedVehicleList();
+    return compareVehicleIds
+      .map((vehicleId) => cachedVehicles.find((vehicle) => vehicle.id === vehicleId))
+      .filter(Boolean);
+  };
+  const [vehicles, setVehicles] = useState(() => getCachedComparedVehicles());
+  const [isLoading, setIsLoading] = useState(() => getCachedComparedVehicles().length === 0 && compareVehicleIds.length > 0);
   const [errorMessage, setErrorMessage] = useState("");
   const [offset, setOffset] = useState(0);
   const [lockedVehicleId, setLockedVehicleId] = useState(null);
@@ -168,7 +174,7 @@ function ComparePage(props) {
     let isActive = true;
 
     const loadVehicles = async () => {
-      setIsLoading(true);
+      setIsLoading(() => vehicles.length === 0 && compareVehicleIds.length > 0);
       setErrorMessage("");
 
       try {

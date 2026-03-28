@@ -1,17 +1,17 @@
 import { useEffect, useState } from "react";
-import { listAdminReservations } from "../services/reservationService";
+import { getCachedAdminReservations, listAdminReservations } from "../services/reservationService";
 import { formatReservationDateTime } from "../utils/reservationFormatters";
 
 function CommencerReservationsPage({ content, onReservationClick }) {
-  const [reservations, setReservations] = useState([]);
+  const [reservations, setReservations] = useState(() => getCachedAdminReservations("pending"));
   const [errorMessage, setErrorMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(() => getCachedAdminReservations("pending").length === 0);
 
   useEffect(() => {
     let isActive = true;
 
     const loadReservations = async () => {
-      setIsLoading(true);
+      setIsLoading(() => reservations.length === 0);
       setErrorMessage("");
 
       try {

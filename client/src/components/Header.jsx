@@ -64,6 +64,10 @@ function Header({
         {
           label: header.clientsLabel,
           path: "/reservations"
+        },
+        {
+          label: header.visualLabel,
+          path: "/admin/visuelle"
         }
       ]
     : header.navigationItems;

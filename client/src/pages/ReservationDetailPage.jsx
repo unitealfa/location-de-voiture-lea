@@ -3,6 +3,7 @@ import {
   acceptAdminReservation,
   deleteAdminReservation,
   getAdminReservationById,
+  getCachedAdminReservationById,
   rejectAdminReservation
 } from "../services/reservationService";
 import {
@@ -111,9 +112,9 @@ function ReservationDetailPage({
   onDeleted,
   onBackClick
 }) {
-  const [reservation, setReservation] = useState(null);
+  const [reservation, setReservation] = useState(() => getCachedAdminReservationById(reservationId));
   const [errorMessage, setErrorMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(() => !getCachedAdminReservationById(reservationId));
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [activeLicenseIndex, setActiveLicenseIndex] = useState(-1);
 
@@ -121,7 +122,7 @@ function ReservationDetailPage({
     let isActive = true;
 
     const loadReservation = async () => {
-      setIsLoading(true);
+      setIsLoading(() => !reservation);
       setErrorMessage("");
 
       try {

@@ -13,6 +13,7 @@ const defaultContent = {
     logoutLabel: "Se deconnecter",
     dashboardLabel: "Dashboard",
     clientsLabel: "Reservations",
+    visualLabel: "Visuelle",
     navigationItems: [
       {
         label: "ACCUEIL",

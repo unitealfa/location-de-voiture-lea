@@ -5,6 +5,7 @@ import Aceulle from "./pages/Aceulle";
 import AdminLogin from "./pages/AdminLogin";
 import AdminAceulle from "./pages/AdminAceulle";
 import AdminProfile from "./pages/AdminProfile";
+import AdminVisualPage from "./pages/AdminVisualPage";
 import PublicPage from "./pages/PublicPage";
 import ContactPage from "./pages/ContactPage";
 import FaqPage from "./pages/FaqPage";
@@ -20,6 +21,22 @@ import {
   getCachedHomePageContent,
   getHomePageContent
 } from "./services/contentService";
+import {
+  getVehicleById,
+  listVehicles
+} from "./services/vehicleService";
+import {
+  getAdminDashboardStats,
+  getCachedAdminDashboardStats
+} from "./services/adminDashboardService";
+import {
+  getAdminReservationById,
+  getCachedAdminReservationById,
+  getCachedAdminReservations,
+  getCachedVehicleReservationAvailability,
+  getVehicleReservationAvailability,
+  listAdminReservations
+} from "./services/reservationService";
 import {
   getAdminSession,
   logoutAdmin
@@ -66,6 +83,7 @@ function getCurrentPath() {
 function isAdminOnlyPath(path) {
   return (
     path === "/admin/profile" ||
+    path === "/admin/visuelle" ||
     path === "/reservations" ||
     path === "/reservations/creer" ||
     path === "/location-de-voitures/creer" ||
@@ -186,6 +204,7 @@ function App() {
   const [bootProgress, setBootProgress] = useState(0);
   const [isBootVisible, setIsBootVisible] = useState(true);
   const [isBootExiting, setIsBootExiting] = useState(false);
+  const [isBootDataReady, setIsBootDataReady] = useState(() => Boolean(getCachedHomePageContent()));
 
   useEffect(() => {
     let isActive = true;
@@ -246,7 +265,11 @@ function App() {
       }
 
       if (!isAuthLoading) {
-        value += 25;
+        value += 15;
+      }
+
+      if (isBootDataReady) {
+        value += 35;
       }
 
       if (hasWindowLoaded) {
@@ -256,7 +279,7 @@ function App() {
       return Math.min(100, value);
     };
 
-    const isReadyToReveal = () => Boolean(content) && !isAuthLoading && hasWindowLoaded;
+    const isReadyToReveal = () => Boolean(content) && !isAuthLoading && isBootDataReady && hasWindowLoaded;
 
     const tick = () => {
       setBootProgress((currentValue) => {
@@ -286,7 +309,68 @@ function App() {
       window.clearTimeout(exitTimerId);
       window.clearTimeout(hideTimerId);
     };
-  }, [content, isAuthLoading, isBootVisible]);
+  }, [content, isAuthLoading, isBootDataReady, isBootVisible]);
+
+  useEffect(() => {
+    if (!content || isAuthLoading) {
+      return undefined;
+    }
+
+    let isActive = true;
+
+    const preloadSiteData = async () => {
+      const preloadTasks = [listVehicles().catch(() => null)];
+      const normalizedPath = currentPath;
+      const vehicleDetailId = getVehicleDetailId(normalizedPath);
+      const reservationDetailId = getReservationDetailId(normalizedPath);
+
+      if (vehicleDetailId) {
+        preloadTasks.push(getVehicleById(vehicleDetailId, { adminView: Boolean(currentAdmin) }).catch(() => null));
+
+        if (!getCachedVehicleReservationAvailability(vehicleDetailId).length) {
+          preloadTasks.push(getVehicleReservationAvailability(vehicleDetailId).catch(() => null));
+        }
+      }
+
+      if (currentAdmin) {
+        const today = new Date();
+        const defaultDashboardFilters = {
+          view: "month",
+          year: today.getFullYear(),
+          month: today.getMonth() + 1
+        };
+
+        if (!getCachedAdminDashboardStats(defaultDashboardFilters)) {
+          preloadTasks.push(getAdminDashboardStats(defaultDashboardFilters).catch(() => null));
+        }
+
+        if (!getCachedAdminReservations("pending").length) {
+          preloadTasks.push(listAdminReservations({ scope: "pending" }).catch(() => null));
+        }
+
+        if (!getCachedAdminReservations("accepted").length) {
+          preloadTasks.push(listAdminReservations({ scope: "accepted" }).catch(() => null));
+        }
+
+        if (reservationDetailId && !getCachedAdminReservationById(reservationDetailId)) {
+          preloadTasks.push(getAdminReservationById(reservationDetailId).catch(() => null));
+        }
+      }
+
+      await Promise.allSettled(preloadTasks);
+
+      if (isActive) {
+        setIsBootDataReady(true);
+      }
+    };
+
+    setIsBootDataReady(false);
+    preloadSiteData();
+
+    return () => {
+      isActive = false;
+    };
+  }, [content, currentAdmin, currentPath, isAuthLoading]);
 
   useEffect(() => {
     const loadAdminSession = async () => {
@@ -473,6 +557,8 @@ function App() {
           onAdminUpdated={handleAdminUpdated}
           onBackClick={() => navigateTo("/admin")}
         />
+      ) : currentPath === "/admin/visuelle" && currentAdmin ? (
+        <AdminVisualPage />
       ) : currentPath === "/reservations/creer" && currentAdmin ? (
         <AdminReservationFormPage
           content={content.reservations}
