@@ -160,6 +160,18 @@ function getReservationDetailDestination(scopePath, reservationId) {
   return `/commencer/reservations/${reservationId}`;
 }
 
+function BootLoader({ progress, isExiting }) {
+  const paddedProgress = String(Math.max(0, Math.min(100, Math.round(progress)))).padStart(2, "0");
+
+  return (
+    <div className={"boot-loader" + (isExiting ? " boot-loader--exit" : "") } aria-hidden="true">
+      <div className="boot-loader__simple">
+        <strong className="boot-loader__counter">{paddedProgress}</strong>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [content, setContent] = useState(() => getCachedHomePageContent());
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -171,6 +183,9 @@ function App() {
   const [currentAdmin, setCurrentAdmin] = useState(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [compareVehicleIds, setCompareVehicleIds] = useState(getStoredCompareVehicleIds);
+  const [bootProgress, setBootProgress] = useState(0);
+  const [isBootVisible, setIsBootVisible] = useState(true);
+  const [isBootExiting, setIsBootExiting] = useState(false);
 
   useEffect(() => {
     let isActive = true;
@@ -208,6 +223,70 @@ function App() {
       isActive = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!isBootVisible) {
+      return undefined;
+    }
+
+    let animationFrameId = 0;
+    let exitTimerId = 0;
+    let hideTimerId = 0;
+    let hasWindowLoaded = document.readyState === "complete";
+
+    const handleWindowLoad = () => {
+      hasWindowLoaded = true;
+    };
+
+    const getTargetProgress = () => {
+      let value = 12;
+
+      if (content) {
+        value += 38;
+      }
+
+      if (!isAuthLoading) {
+        value += 25;
+      }
+
+      if (hasWindowLoaded) {
+        value += 25;
+      }
+
+      return Math.min(100, value);
+    };
+
+    const isReadyToReveal = () => Boolean(content) && !isAuthLoading && hasWindowLoaded;
+
+    const tick = () => {
+      setBootProgress((currentValue) => {
+        const targetValue = getTargetProgress();
+        const nextValue = currentValue + Math.max(1, Math.ceil((targetValue - currentValue) * 0.12));
+        return nextValue >= targetValue ? targetValue : nextValue;
+      });
+
+      if (isReadyToReveal()) {
+        setBootProgress(100);
+        setIsBootExiting(true);
+        exitTimerId = window.setTimeout(() => {
+          setIsBootVisible(false);
+        }, 1150);
+        return;
+      }
+
+      animationFrameId = window.setTimeout(tick, 32);
+    };
+
+    window.addEventListener("load", handleWindowLoad, { once: true });
+    hideTimerId = window.setTimeout(tick, 120);
+
+    return () => {
+      window.removeEventListener("load", handleWindowLoad);
+      window.clearTimeout(animationFrameId);
+      window.clearTimeout(exitTimerId);
+      window.clearTimeout(hideTimerId);
+    };
+  }, [content, isAuthLoading, isBootVisible]);
 
   useEffect(() => {
     const loadAdminSession = async () => {
@@ -353,24 +432,17 @@ function App() {
     ((currentPath.startsWith("/admin") && currentPath !== "/admin/login") ||
       isAdminOnlyPath(currentPath));
 
-  if ((!content && isContentLoading && !errorMessage) || (isProtectedPath && isAuthLoading && !currentAdmin)) {
-    return (
-      <main className="page-shell page-shell--centered">
-        <p className="status-message">Chargement de la page d'accueil...</p>
-      </main>
-    );
-  }
-
-  if (errorMessage && !content) {
-    return (
-      <main className="page-shell page-shell--centered">
-        <p className="status-message">{errorMessage}</p>
-      </main>
-    );
-  }
+  const shouldRenderApp = Boolean(content) && (!isProtectedPath || !isAuthLoading || Boolean(currentAdmin));
 
   return (
-    <div className={isHomePage ? "page-shell home" : "page-shell"}>
+    <>
+      {isBootVisible ? <BootLoader progress={bootProgress} isExiting={isBootExiting} /> : null}
+      {errorMessage && !content ? (
+        <main className="page-shell page-shell--centered">
+          <p className="status-message">{errorMessage}</p>
+        </main>
+      ) : shouldRenderApp ? (
+        <div className={isHomePage ? "page-shell home" : "page-shell"}>
       <Header
         brand={content.brand}
         header={content.header}
@@ -546,7 +618,11 @@ function App() {
         header={content.header}
         onNavigate={navigateTo}
       />
-    </div>
+        </div>
+      ) : (
+        <main className="page-shell page-shell--centered page-shell--preload" />
+      )}
+    </>
   );
 }
 

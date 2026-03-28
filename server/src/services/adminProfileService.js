@@ -20,7 +20,7 @@ const VERIFICATION_PURPOSES = {
   PROFILE_UPDATE: "profile_update",
   PASSWORD_CHANGE: "password_change"
 };
-const VERIFICATION_EXPIRY_SECONDS = 60;
+const VERIFICATION_EXPIRY_SECONDS = 300;
 
 function sanitizeAdminUser(adminUser) {
   if (!adminUser) {

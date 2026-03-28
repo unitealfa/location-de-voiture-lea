@@ -27,13 +27,13 @@ async function sendVerificationCodeEmail({ to, code, purpose }) {
   await getTransporter().sendMail({
     from,
     to,
-    subject: "Code de verification Mon Location Lea",
+    subject: "Code de verification Lea Location",
     text: [
       "Bonjour,",
       "",
       `Vous avez demande a ${purposeLabel}.`,
       `Votre code de verification est: ${code}`,
-      "Ce code expire dans 60 secondes.",
+      "Ce code expire dans 5 minutes.",
       "",
       "Si vous n'etes pas a l'origine de cette demande, ignorez cet email."
     ].join("\n"),
@@ -44,7 +44,7 @@ async function sendVerificationCodeEmail({ to, code, purpose }) {
         <p style="font-size: 24px; font-weight: 700; letter-spacing: 0.2em;">
           ${code}
         </p>
-        <p>Ce code expire dans <strong>60 secondes</strong>.</p>
+        <p>Ce code expire dans <strong>5 minutes</strong>.</p>
         <p>Si vous n'etes pas a l'origine de cette demande, ignorez cet email.</p>
       </div>
     `

@@ -13558,3 +13558,49 @@ body.reservation-admin-page-lock {
     box-sizing: border-box;
   }
 }
+
+
+.page-shell--preload {
+  min-height: 100vh;
+  background: #05070b;
+}
+
+.boot-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: #05070b;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+.boot-loader--exit {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.boot-loader__simple {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.boot-loader__counter {
+  display: block;
+  color: #ffffff;
+  font-size: clamp(96px, 18vw, 220px);
+  line-height: 0.9;
+  font-weight: 900;
+  letter-spacing: -0.08em;
+  text-transform: uppercase;
+  font-family: "Arial Black", "Helvetica Inserat", "Impact", sans-serif;
+}
+
+@media (max-width: 767px) {
+  .boot-loader__counter {
+    font-size: clamp(84px, 28vw, 160px);
+  }
+}

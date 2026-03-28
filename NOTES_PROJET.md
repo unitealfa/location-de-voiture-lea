@@ -103,7 +103,7 @@ Il doit servir de reference pour les prochaines evolutions.
 - Le `Footer` doit afficher:
   - un numero de telephone
   - la localisation `Algerie`
-  - le nom `Mon Location Lea`
+  - le nom `Lea Location`
 - Tous les textes doivent etre prepares pour etre modifies plus tard depuis une interface admin.
 - Le projet doit tourner sur un seul `localhost`.
 - Il faut une connexion a une base de donnees pour gerer le compte admin.

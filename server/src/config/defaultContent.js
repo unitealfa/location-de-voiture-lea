@@ -1,6 +1,6 @@
 const defaultContent = {
   brand: {
-    name: "Mon Location Lea",
+    name: "Lea Location",
     logoText: "LEA",
     logoImagePath: "/home/rentzo-logo.jpg"
   },
@@ -278,7 +278,7 @@ const defaultContent = {
     heroTitleAccent: "nous",
     heroSubtitle: "Contactez-nous pour la location de voitures",
     pageTitle: "Contact",
-    shortInfo: "✔︎ MON LOCATION LEA.\nLocation de voitures de luxe à ALGER.",
+    shortInfo: "✔︎ Lea Location.\nLocation de voitures de luxe à ALGER.",
     socialTitle: "Suivez-nous",
     mapQuery: "Alger Centre, Alger, Algeria",
     formNamePlaceholder: "Nom",
@@ -673,11 +673,11 @@ const defaultContent = {
     emailValue: "lea@gmail.com",
     locationLabel: "Localisation",
     locationValue: "Alger",
-    addressValue: "Alger\nMon Location Lea",
+    addressValue: "Alger\nLea Location",
     mapUrl: "https://maps.google.com/?q=Alger%2C+Algerie",
     brandLabel: "Nom",
-    brandValue: "Mon Location Lea",
-    shortInfo: "✔︎ MON LOCATION LEA. Location de voitures de luxe à ALGER.",
+    brandValue: "Lea Location",
+    shortInfo: "✔︎ Lea Location. Location de voitures de luxe à ALGER.",
     facebookUrl: "#",
     instagramUrl: "#",
     youtubeUrl: "#",

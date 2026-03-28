@@ -7,6 +7,13 @@ function getRemainingSeconds(expiresAt) {
   );
 }
 
+function formatRemainingTime(remainingSeconds) {
+  const minutes = Math.floor(remainingSeconds / 60);
+  const seconds = remainingSeconds % 60;
+
+  return minutes + ":" + String(seconds).padStart(2, "0");
+}
+
 function VerificationDialog({
   content,
   dialog,
@@ -117,7 +124,7 @@ function VerificationDialog({
 
           <p className="verification-dialog__timer">
             {remainingSeconds > 0
-              ? `Expiration dans ${remainingSeconds}s`
+              ? "Expiration dans " + formatRemainingTime(remainingSeconds)
               : content.verificationExpiredLabel}
           </p>
 
