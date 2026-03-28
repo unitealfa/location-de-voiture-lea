@@ -25,6 +25,7 @@ const {
 } = require("./db/pool");
 const { getTargetDatabaseName } = require("./config/databaseConfig");
 const { initializeAdminAuth } = require("./services/adminAuthService");
+const { startReservationLicenseCleanupScheduler, stopReservationLicenseCleanupScheduler } = require("./services/reservationService");
 const { trackPublicSiteVisit } = require("./services/siteVisitService");
 const {
   getRuntimeState,
@@ -288,6 +289,7 @@ async function bootstrapDatabaseInBackground() {
       retryDelayMs: DATABASE_RETRY_DELAY_MS
     });
 
+    startReservationLicenseCleanupScheduler();
     console.log("Database bootstrap ready.");
   } catch (error) {
     await closePool();
@@ -319,6 +321,7 @@ async function shutdown() {
       clearTimeout(listenRetryTimer);
       listenRetryTimer = null;
     }
+    stopReservationLicenseCleanupScheduler();
     if (activeHttpServer && activeHttpServer.listening) {
       await new Promise((resolve) => activeHttpServer.close(resolve));
     }

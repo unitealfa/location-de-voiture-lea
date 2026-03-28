@@ -18,8 +18,21 @@ const {
   updateAdminReservation,
   rejectAdminReservation
 } = require("../services/reservationService");
+const { clearResponseCacheByPrefixes } = require("../services/responseCacheService");
 
 const router = express.Router();
+
+
+function invalidateReservationResponseCaches(vehicleId = null) {
+  const prefixes = ["dashboard:"];
+
+  if (vehicleId) {
+    prefixes.push(`vehicles:public:${vehicleId}:availability`);
+    prefixes.push(`vehicles:public:${vehicleId}:detail`);
+  }
+
+  clearResponseCacheByPrefixes(prefixes);
+}
 
 function parseReservationId(value) {
   const reservationId = Number(value);
@@ -52,6 +65,8 @@ router.post("/", handleReservationUpload, async (request, response) => {
       ...(request.body || {}),
       drivingLicensePhotoUrl
     });
+
+    invalidateReservationResponseCaches(reservation.vehicleId);
 
     return response.status(201).json({
       message: "Reservation creee avec succes.",
@@ -189,6 +204,8 @@ router.post("/:id/accept", async (request, response) => {
       });
     }
 
+    invalidateReservationResponseCaches(reservation.vehicleId);
+
     return response.json({
       message: "Reservation acceptee.",
       reservation
@@ -218,6 +235,8 @@ router.post("/:id/reject", async (request, response) => {
         message: "Reservation introuvable."
       });
     }
+
+    invalidateReservationResponseCaches();
 
     return response.json({
       message: "Reservation refusee."
@@ -257,6 +276,8 @@ router.put("/:id", handleReservationUpload, async (request, response) => {
       });
     }
 
+    invalidateReservationResponseCaches(reservation.vehicleId);
+
     return response.json({
       message: "Reservation modifiee avec succes.",
       reservation
@@ -281,6 +302,7 @@ router.delete("/:id", async (request, response) => {
       });
     }
 
+    const existingReservation = await getAdminReservationById(reservationId);
     const reservationDeleted = await deleteAdminReservation(reservationId);
 
     if (!reservationDeleted) {
@@ -288,6 +310,8 @@ router.delete("/:id", async (request, response) => {
         message: "Reservation introuvable."
       });
     }
+
+    invalidateReservationResponseCaches(existingReservation?.vehicleId);
 
     return response.json({
       message: "Reservation supprimee."

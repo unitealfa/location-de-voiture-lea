@@ -17,12 +17,25 @@ const {
   markVehicleAsMaintenance,
   updateAdminVehicle
 } = require("../services/vehicleService");
+const { clearResponseCacheByPrefixes } = require("../services/responseCacheService");
 
 const router = express.Router();
 
 function parseVehicleId(value) {
   const vehicleId = Number(value);
   return Number.isInteger(vehicleId) && vehicleId > 0 ? vehicleId : null;
+}
+
+
+function invalidateVehicleResponseCaches(vehicleId = null) {
+  const prefixes = ["vehicles:public:list", "dashboard:"];
+
+  if (vehicleId) {
+    prefixes.push(`vehicles:public:${vehicleId}:detail`);
+    prefixes.push(`vehicles:public:${vehicleId}:availability`);
+  }
+
+  clearResponseCacheByPrefixes(prefixes);
 }
 
 function parseRetainedPhotoUrls(value) {
@@ -62,6 +75,8 @@ router.post("/", handleVehicleMediaUpload, async (request, response) => {
       photoUrlsConfigured: "true",
       videoUrl: uploadedMedia.videoUrl
     });
+
+    invalidateVehicleResponseCaches(vehicle.id);
 
     response.status(201).json({
       message: "Vehicule cree avec succes.",
@@ -144,6 +159,8 @@ router.put("/:id", handleVehicleMediaUpload, async (request, response) => {
       existingVehicle
     );
 
+    invalidateVehicleResponseCaches(vehicleId);
+
     return response.json({
       message: "Vehicule modifie avec succes.",
       vehicle
@@ -179,6 +196,7 @@ router.delete("/:id", async (request, response) => {
     }
 
     await deleteAdminVehicle(vehicleId);
+    invalidateVehicleResponseCaches(vehicleId);
     return response.json({
       message: "Vehicule supprime avec succes."
     });
@@ -206,6 +224,8 @@ router.post("/:id/maintenance", async (request, response) => {
         message: "Vehicule introuvable."
       });
     }
+
+    invalidateVehicleResponseCaches(vehicleId);
 
     return response.json({
       message: "Vehicule passe en maintenance.",
@@ -235,6 +255,8 @@ router.post("/:id/available", async (request, response) => {
         message: "Vehicule introuvable."
       });
     }
+
+    invalidateVehicleResponseCaches(vehicleId);
 
     return response.json({
       message: "Vehicule repasse disponible.",

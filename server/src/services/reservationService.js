@@ -6,7 +6,8 @@ const {
   listAcceptedReservationsByVehicleId,
   listReservations,
   updateReservation,
-  updateReservationStatus
+  updateReservationStatus,
+  clearReservationDrivingLicensePhotoUrl
 } = require("../repositories/reservationRepository");
 const {
   parseStoredReservationReferences,
@@ -22,6 +23,11 @@ const { calculateReservationPricing } = require("../utils/reservationPricing");
 
 const LOCATION_TYPES = new Set(["bureau", "aeroport", "commentaire"]);
 const RESERVATION_STATUSES = new Set(["pending", "accepted"]);
+const DRIVING_LICENSE_RETENTION_AFTER_RESERVATION_MS = 7 * 24 * 60 * 60 * 1000;
+const DRIVING_LICENSE_CLEANUP_INTERVAL_MS = 6 * 60 * 60 * 1000;
+
+let reservationLicenseCleanupTimer = null;
+let reservationLicenseCleanupPromise = null;
 
 function normalizeString(value) {
   return String(value || "").trim();
@@ -102,6 +108,85 @@ function formatDurationLabel(pickupDatetime, returnDatetime) {
   }
 
   return `${totalDays} jour${totalDays > 1 ? "s" : ""} ${remainingHours} heure${remainingHours > 1 ? "s" : ""}`;
+}
+
+
+function isReservationLicenseExpired(reservation, now = new Date()) {
+  if (
+    !reservation ||
+    reservation.status !== "accepted" ||
+    !reservation.drivingLicensePhotoUrl
+  ) {
+    return false;
+  }
+
+  const returnDate = new Date(String(reservation.returnDatetime || "").replace(" ", "T"));
+
+  if (Number.isNaN(returnDate.getTime())) {
+    return false;
+  }
+
+  return returnDate.getTime() + DRIVING_LICENSE_RETENTION_AFTER_RESERVATION_MS <= now.getTime();
+}
+
+async function purgeExpiredReservationDrivingLicenses(now = new Date()) {
+  if (reservationLicenseCleanupPromise) {
+    return reservationLicenseCleanupPromise;
+  }
+
+  reservationLicenseCleanupPromise = (async () => {
+    const acceptedReservations = await listReservations({ status: "accepted" });
+    let deletedFilesCount = 0;
+
+    for (const reservation of acceptedReservations) {
+      if (!isReservationLicenseExpired(reservation, now)) {
+        continue;
+      }
+
+      await removeStoredReservationFile(reservation.drivingLicensePhotoUrl);
+      await clearReservationDrivingLicensePhotoUrl(reservation.id);
+      deletedFilesCount += 1;
+    }
+
+    return deletedFilesCount;
+  })();
+
+  try {
+    return await reservationLicenseCleanupPromise;
+  } finally {
+    reservationLicenseCleanupPromise = null;
+  }
+}
+
+function startReservationLicenseCleanupScheduler() {
+  if (reservationLicenseCleanupTimer) {
+    return;
+  }
+
+  const runCleanup = () => {
+    void purgeExpiredReservationDrivingLicenses().catch((error) => {
+      console.error("Reservation driving license cleanup failed", error);
+    });
+  };
+
+  runCleanup();
+  reservationLicenseCleanupTimer = setInterval(
+    runCleanup,
+    DRIVING_LICENSE_CLEANUP_INTERVAL_MS
+  );
+
+  if (typeof reservationLicenseCleanupTimer.unref === "function") {
+    reservationLicenseCleanupTimer.unref();
+  }
+}
+
+function stopReservationLicenseCleanupScheduler() {
+  if (!reservationLicenseCleanupTimer) {
+    return;
+  }
+
+  clearInterval(reservationLicenseCleanupTimer);
+  reservationLicenseCleanupTimer = null;
 }
 
 function buildAdminDrivingLicenseUrls(reservation) {
@@ -357,6 +442,7 @@ function normalizeReservationScope(scope) {
 }
 
 async function listAdminReservations(scope = "pending") {
+  await purgeExpiredReservationDrivingLicenses();
   const normalizedScope = normalizeReservationScope(scope);
   const reservations = await listReservations({
     status: normalizedScope === "all" ? null : normalizedScope,
@@ -367,11 +453,13 @@ async function listAdminReservations(scope = "pending") {
 }
 
 async function getAdminReservationById(id) {
+  await purgeExpiredReservationDrivingLicenses();
   const reservation = await findReservationById(id);
   return withReservationComputedFields(reservation);
 }
 
 async function getAdminReservationDrivingLicenseFile(id, index = 0) {
+  await purgeExpiredReservationDrivingLicenses();
   const reservation = await findReservationById(id);
 
   if (!reservation || !reservation.drivingLicensePhotoUrl) {
@@ -558,6 +646,9 @@ module.exports = {
   getAdminReservationDrivingLicenseFile,
   listAdminReservations,
   listVehicleAcceptedReservationSlots,
+  purgeExpiredReservationDrivingLicenses,
+  startReservationLicenseCleanupScheduler,
+  stopReservationLicenseCleanupScheduler,
   updateAdminReservation,
   rejectAdminReservation
 };

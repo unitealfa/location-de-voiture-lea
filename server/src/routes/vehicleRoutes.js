@@ -13,6 +13,7 @@ const {
   getPublicVehicleById: getVehicleByPublicId,
   listPublicVehicles: listPublicVehiclesService
 } = require("../services/vehicleService");
+const { getOrSetResponseCache, clearResponseCacheByPrefixes } = require("../services/responseCacheService");
 
 const router = express.Router();
 
@@ -23,7 +24,8 @@ function parseVehicleId(value) {
 
 router.get("/", async (request, response) => {
   try {
-    const vehicles = await listPublicVehiclesService();
+    const vehicles = await getOrSetResponseCache("vehicles:public:list", 1000 * 30, async () => listPublicVehiclesService());
+    response.set("Cache-Control", "public, max-age=30, stale-while-revalidate=300");
     response.json({ vehicles });
   } catch (error) {
     console.error("Public vehicles list failed", error);
@@ -53,6 +55,12 @@ router.post("/:id/reservations", handleReservationUpload, async (request, respon
       drivingLicensePhotoUrl
     });
 
+    clearResponseCacheByPrefixes([
+      `vehicles:public:${vehicleId}:availability`,
+      `vehicles:public:${vehicleId}:detail`,
+      "dashboard:"
+    ]);
+
     return response.status(201).json({
       message: "Reservation envoyee avec succes.",
       reservation
@@ -76,19 +84,29 @@ router.get("/:id/reservation-availability", async (request, response) => {
       });
     }
 
-    const vehicle = await getVehicleByPublicId(vehicleId);
+    const payload = await getOrSetResponseCache(
+      `vehicles:public:${vehicleId}:availability`,
+      1000 * 20,
+      async () => {
+        const vehicle = await getVehicleByPublicId(vehicleId);
 
-    if (!vehicle) {
+        if (!vehicle) {
+          return null;
+        }
+
+        const reservations = await listVehicleAcceptedReservationSlots(vehicleId);
+        return { reservations };
+      }
+    );
+
+    if (!payload) {
       return response.status(404).json({
         message: "Vehicule introuvable."
       });
     }
 
-    const reservations = await listVehicleAcceptedReservationSlots(vehicleId);
-
-    return response.json({
-      reservations
-    });
+    response.set("Cache-Control", "public, max-age=20, stale-while-revalidate=120");
+    return response.json(payload);
   } catch (error) {
     console.error("Vehicle reservation availability failed", error);
     return response.status(500).json({
@@ -107,15 +125,23 @@ router.get("/:id", async (request, response) => {
       });
     }
 
-    const vehicle = await getVehicleByPublicId(vehicleId);
+    const payload = await getOrSetResponseCache(
+      `vehicles:public:${vehicleId}:detail`,
+      1000 * 30,
+      async () => {
+        const vehicle = await getVehicleByPublicId(vehicleId);
+        return vehicle ? { vehicle } : null;
+      }
+    );
 
-    if (!vehicle) {
+    if (!payload) {
       return response.status(404).json({
         message: "Vehicule introuvable."
       });
     }
 
-    return response.json({ vehicle });
+    response.set("Cache-Control", "public, max-age=30, stale-while-revalidate=300");
+    return response.json(payload);
   } catch (error) {
     console.error("Public vehicle detail failed", error);
     return response.status(500).json({

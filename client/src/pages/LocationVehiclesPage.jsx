@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import CompareDrawer from "../components/CompareDrawer";
 import VehicleCard from "../components/VehicleCard";
-import { listVehicles } from "../services/vehicleService";
+import { listVehicles, readCachedVehicleList } from "../services/vehicleService";
 
 function getUniqueValues(values) {
   return [...new Set(values.filter(Boolean))].sort((left, right) =>
@@ -87,9 +87,9 @@ function LocationVehiclesPage(props) {
   const onComparePageOpen = props.onComparePageOpen;
   const onCreateClick = props.onCreateClick;
   const onVehicleClick = props.onVehicleClick;
-  const [vehicles, setVehicles] = useState([]);
+  const [vehicles, setVehicles] = useState(() => readCachedVehicleList({ adminView: Boolean(currentAdmin) }));
   const [errorMessage, setErrorMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(() => readCachedVehicleList({ adminView: Boolean(currentAdmin) }).length === 0);
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const [viewMode, setViewMode] = useState("grid");
   const [sortBy, setSortBy] = useState("newest");
@@ -108,7 +108,7 @@ function LocationVehiclesPage(props) {
     let isActive = true;
 
     const loadVehicles = async () => {
-      setIsLoading(true);
+      setIsLoading(() => vehicles.length === 0);
       setErrorMessage("");
 
       try {

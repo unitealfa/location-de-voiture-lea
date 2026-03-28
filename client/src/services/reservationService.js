@@ -1,3 +1,35 @@
+import { readCachedValue, writeCachedValue } from "./cacheService";
+
+const PUBLIC_AVAILABILITY_CACHE_PREFIX = "reservation-availability:";
+const ADMIN_RESERVATION_LIST_CACHE_PREFIX = "admin-reservations:";
+const ADMIN_RESERVATION_DETAIL_CACHE_PREFIX = "admin-reservation:";
+
+function getAvailabilityCacheKey(vehicleId) {
+  return PUBLIC_AVAILABILITY_CACHE_PREFIX + String(vehicleId);
+}
+
+function getAdminReservationListCacheKey(scope) {
+  return ADMIN_RESERVATION_LIST_CACHE_PREFIX + String(scope || "pending");
+}
+
+function getAdminReservationDetailCacheKey(id) {
+  return ADMIN_RESERVATION_DETAIL_CACHE_PREFIX + String(id);
+}
+
+export function getCachedVehicleReservationAvailability(vehicleId) {
+  const value = readCachedValue(getAvailabilityCacheKey(vehicleId), { maxAgeMs: 1000 * 60 * 5 });
+  return Array.isArray(value) ? value : [];
+}
+
+export function getCachedAdminReservations(scope = "pending") {
+  const value = readCachedValue(getAdminReservationListCacheKey(scope), { maxAgeMs: 1000 * 60 * 5 });
+  return Array.isArray(value) ? value : [];
+}
+
+export function getCachedAdminReservationById(id) {
+  return readCachedValue(getAdminReservationDetailCacheKey(id), { maxAgeMs: 1000 * 60 * 5 });
+}
+
 function normalizePublicApiErrorMessage(message, fallbackMessage) {
   const normalizedMessage = String(message || "").toLowerCase();
 
@@ -110,7 +142,9 @@ export async function getVehicleReservationAvailability(vehicleId) {
     { publicFacing: true }
   );
 
-  return payload.reservations || [];
+  const reservations = payload.reservations || [];
+  writeCachedValue(getAvailabilityCacheKey(vehicleId), reservations);
+  return reservations;
 }
 
 export async function listAdminReservations({ scope = "pending" } = {}) {
@@ -129,7 +163,9 @@ export async function listAdminReservations({ scope = "pending" } = {}) {
     "Impossible de charger les reservations."
   );
 
-  return payload.reservations || [];
+  const reservations = payload.reservations || [];
+  writeCachedValue(getAdminReservationListCacheKey(scope), reservations);
+  return reservations;
 }
 
 export async function getAdminReservationById(id) {
@@ -142,6 +178,7 @@ export async function getAdminReservationById(id) {
     "Impossible de charger cette reservation."
   );
 
+  writeCachedValue(getAdminReservationDetailCacheKey(id), payload.reservation);
   return payload.reservation;
 }
 
@@ -156,6 +193,7 @@ export async function acceptAdminReservation(id) {
     "Impossible d'accepter cette reservation."
   );
 
+  writeCachedValue(getAdminReservationDetailCacheKey(id), payload.reservation);
   return payload.reservation;
 }
 

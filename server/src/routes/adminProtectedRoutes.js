@@ -5,6 +5,7 @@ const {
 const {
   getAdminDashboardStats
 } = require("../services/adminDashboardService");
+const { getOrSetResponseCache } = require("../services/responseCacheService");
 
 const router = express.Router();
 
@@ -18,8 +19,11 @@ router.get("/me", (request, response) => {
 
 router.get("/dashboard", async (request, response, next) => {
   try {
-    const stats = await getAdminDashboardStats(request.query || {});
+    const queryKey = new URLSearchParams(request.query || {}).toString();
+    const cacheKey = `dashboard:${request.admin?.id || "admin"}:${queryKey}`;
+    const stats = await getOrSetResponseCache(cacheKey, 1000 * 20, async () => getAdminDashboardStats(request.query || {}));
 
+    response.set("Cache-Control", "private, max-age=15, stale-while-revalidate=60");
     response.json({
       admin: request.admin,
       stats

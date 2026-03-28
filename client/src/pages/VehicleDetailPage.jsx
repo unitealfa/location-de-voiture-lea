@@ -5,6 +5,8 @@ import {
   deleteVehicle,
   getVehicleById,
   listVehicles,
+  readCachedVehicleById,
+  readCachedVehicleList,
   markVehicleAsAvailable,
   markVehicleAsMaintenance
 } from "../services/vehicleService";
@@ -292,10 +294,14 @@ function VehicleDetailPage({
   onReserveClick,
   onVehicleClick
 }) {
-  const [vehicle, setVehicle] = useState(null);
-  const [relatedVehicles, setRelatedVehicles] = useState([]);
+  const [vehicle, setVehicle] = useState(() => readCachedVehicleById(vehicleId, { adminView: Boolean(currentAdmin) }));
+  const [relatedVehicles, setRelatedVehicles] = useState(() => {
+    const cachedVehicle = readCachedVehicleById(vehicleId, { adminView: Boolean(currentAdmin) });
+    const cachedVehicles = readCachedVehicleList({ adminView: Boolean(currentAdmin) });
+    return cachedVehicle ? buildRelatedVehicles(cachedVehicle, cachedVehicles) : [];
+  });
   const [errorMessage, setErrorMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(() => !readCachedVehicleById(vehicleId, { adminView: Boolean(currentAdmin) }));
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const [gallerySlidesPerView, setGallerySlidesPerView] = useState(() => {
@@ -335,7 +341,7 @@ function VehicleDetailPage({
     let isActive = true;
 
     const loadVehicle = async () => {
-      setIsLoading(true);
+      setIsLoading(() => !vehicle);
       setErrorMessage("");
 
       try {

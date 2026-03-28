@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getAdminDashboardStats } from "../services/adminDashboardService";
+import { getAdminDashboardStats, getCachedAdminDashboardStats } from "../services/adminDashboardService";
 
 const numberFormatter = new Intl.NumberFormat("fr-FR");
 const currencyFormatter = new Intl.NumberFormat("fr-FR", {
@@ -310,9 +310,9 @@ function AdminAceulle({ content, admin }) {
     year: today.getFullYear(),
     month: today.getMonth() + 1
   });
-  const [stats, setStats] = useState(null);
+  const [stats, setStats] = useState(() => getCachedAdminDashboardStats({ view: "month", year: today.getFullYear(), month: today.getMonth() + 1 }));
   const [errorMessage, setErrorMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(() => !getCachedAdminDashboardStats({ view: "month", year: today.getFullYear(), month: today.getMonth() + 1 }));
   const [visitRangeFilter, setVisitRangeFilter] = useState("month");
   const [visitorRangeFilter, setVisitorRangeFilter] = useState("month");
 
@@ -320,7 +320,7 @@ function AdminAceulle({ content, admin }) {
     let isActive = true;
 
     const loadDashboard = async () => {
-      setIsLoading(true);
+      setIsLoading(() => !stats);
       setErrorMessage("");
 
       try {

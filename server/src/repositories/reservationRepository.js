@@ -175,6 +175,20 @@ async function listReservations({ status, futureOnly = false } = {}) {
   return rows.map(mapReservation);
 }
 
+async function clearReservationDrivingLicensePhotoUrl(id) {
+  const pool = getPool();
+  await pool.execute(
+    `
+      UPDATE reservations
+      SET driving_license_photo_url = NULL
+      WHERE id = ?
+    `,
+    [id]
+  );
+
+  return findReservationById(id);
+}
+
 async function updateReservationStatus(id, status) {
   const pool = getPool();
   await pool.execute(
@@ -373,5 +387,6 @@ module.exports = {
   listReservations,
   listVehicleIdsWithFutureAcceptedReservations,
   updateReservation,
-  updateReservationStatus
+  updateReservationStatus,
+  clearReservationDrivingLicensePhotoUrl
 };
