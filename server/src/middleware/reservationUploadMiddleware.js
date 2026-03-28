@@ -4,6 +4,11 @@ const crypto = require("crypto");
 const multer = require("multer");
 const sharp = require("sharp");
 const {
+  createReservationSecureFile,
+  deleteReservationSecureFile,
+  findReservationSecureFileById
+} = require("../repositories/reservationSecureFileRepository");
+const {
   resolveSecureStorageRoot,
   resolveUploadsRoot
 } = require("../services/storagePathService");
@@ -14,6 +19,7 @@ const secureReservationUploadsRoot = path.resolve(
   "reservations"
 );
 const SECURE_LICENSE_PREFIX = "secure-license:";
+const SECURE_LICENSE_DB_PREFIX = "secure-license-db:";
 const ENCRYPTED_FILE_HEADER = Buffer.from("RVL2");
 const LEGACY_ENCRYPTED_FILE_HEADER = Buffer.from("RVL1");
 const MAX_RESERVATION_LICENSE_FILES = 2;
@@ -190,6 +196,18 @@ function getSecureReservationFilename(reference) {
   return filename;
 }
 
+function getSecureReservationDbId(reference) {
+  if (
+    typeof reference !== "string" ||
+    !reference.startsWith(SECURE_LICENSE_DB_PREFIX)
+  ) {
+    return null;
+  }
+
+  const dbId = Number(reference.slice(SECURE_LICENSE_DB_PREFIX.length));
+  return Number.isInteger(dbId) && dbId > 0 ? dbId : null;
+}
+
 function getLegacyReservationPath(reference) {
   if (
     typeof reference !== "string" ||
@@ -290,11 +308,6 @@ async function optimizeReservationLicensePhotos(files) {
     const references = [];
 
     for (const file of normalizedFiles) {
-      const optimizedFilename = `${Date.now()}-${crypto.randomUUID()}.rvl`;
-      const optimizedPath = path.resolve(
-        secureReservationUploadsRoot,
-        optimizedFilename
-      );
       let securedBuffer = null;
       let securedContentType = "image/webp";
 
@@ -316,15 +329,13 @@ async function optimizeReservationLicensePhotos(files) {
         securedContentType = String(file.mimetype || "application/octet-stream");
       }
 
-      await fs.writeFile(
-        optimizedPath,
-        encryptReservationBuffer(securedBuffer, securedContentType),
-        {
-          mode: 0o600
-        }
+      const encryptedPayload = encryptReservationBuffer(
+        securedBuffer,
+        securedContentType
       );
+      const secureFile = await createReservationSecureFile(encryptedPayload);
 
-      references.push(`${SECURE_LICENSE_PREFIX}${optimizedFilename}`);
+      references.push(`${SECURE_LICENSE_DB_PREFIX}${secureFile.id}`);
     }
 
     return serializeReservationLicenseReferences(references);
@@ -351,6 +362,23 @@ async function readStoredReservationFile(reference, index = 0) {
   }
 
   const secureFilename = getSecureReservationFilename(selectedReference);
+  const secureDbId = getSecureReservationDbId(selectedReference);
+
+  if (secureDbId) {
+    const secureFile = await findReservationSecureFileById(secureDbId);
+
+    if (!secureFile) {
+      return null;
+    }
+
+    const decryptedFile = decryptReservationBuffer(secureFile.encryptedPayload);
+
+    return {
+      buffer: decryptedFile.buffer,
+      contentType: decryptedFile.contentType,
+      filename: `reservation-license-${secureDbId}${getMimeExtension(decryptedFile.contentType)}`
+    };
+  }
 
   if (secureFilename) {
     const encryptedBuffer = await fs.readFile(
@@ -382,6 +410,13 @@ async function removeStoredReservationFile(reference) {
   const references = parseStoredReservationReferences(reference);
 
   for (const currentReference of references) {
+    const secureDbId = getSecureReservationDbId(currentReference);
+
+    if (secureDbId) {
+      await deleteReservationSecureFile(secureDbId).catch(() => {});
+      continue;
+    }
+
     const secureFilename = getSecureReservationFilename(currentReference);
 
     if (secureFilename) {

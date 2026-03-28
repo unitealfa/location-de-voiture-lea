@@ -121,6 +121,16 @@ async function ensureSchema() {
   `);
 
   await pool.execute(`
+    CREATE TABLE IF NOT EXISTS reservation_secure_files (
+      id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+      encrypted_payload LONGBLOB NOT NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      PRIMARY KEY (id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  `);
+
+  await pool.execute(`
     CREATE TABLE IF NOT EXISTS vehicle_media_assets (
       id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
       content_type VARCHAR(191) NOT NULL,
