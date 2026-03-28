@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getCachedAdminReservations, listAdminReservations } from "../services/reservationService";
 import { formatReservationDateTime } from "../utils/reservationFormatters";
+import { handleImageFallback } from "../utils/imageFallback";
 
 function CommencerReservationsPage({ content, onReservationClick }) {
   const [reservations, setReservations] = useState(() => getCachedAdminReservations("pending"));
@@ -83,6 +84,7 @@ function CommencerReservationsPage({ content, onReservationClick }) {
                 alt={reservation.vehicleName}
                 loading="lazy"
                 decoding="async"
+                onError={handleImageFallback}
               />
               <div className="reservation-card__body">
                 <h2>{reservation.vehicleName}</h2>

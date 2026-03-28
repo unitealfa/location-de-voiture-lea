@@ -5,6 +5,7 @@ import {
   formatVehiclePrice,
   getVehicleCardImageUrl
 } from "../utils/vehicleFormatters";
+import { handleImageFallback } from "../utils/imageFallback";
 
 function CalendarIcon() {
   return (
@@ -223,6 +224,7 @@ function VehicleCard({ vehicle, onNavigate, wrapperClassName }) {
                 alt={formatVehicleName(vehicle)}
                 loading="lazy"
                 decoding="async"
+                onError={handleImageFallback}
               />
 
               <div className="vehica-car-card__image-info">

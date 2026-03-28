@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { getCachedAdminReservations, listAdminReservations } from "../services/reservationService";
 import { formatReservationDateTime } from "../utils/reservationFormatters";
+import { handleImageFallback } from "../utils/imageFallback";
 
 const weekdayFormatter = new Intl.DateTimeFormat("fr-FR", {
   weekday: "short"
@@ -237,6 +238,7 @@ function ClientsCalendarPage({ content, onCreateClick, onReservationClick }) {
                         alt={reservation.vehicleName}
                         loading="lazy"
                         decoding="async"
+                        onError={handleImageFallback}
                       />
 
                       <div className="reservations-calendar-page__pending-body">
@@ -424,6 +426,7 @@ function ClientsCalendarPage({ content, onCreateClick, onReservationClick }) {
                           alt={reservation.vehicleName}
                           loading="lazy"
                           decoding="async"
+                          onError={handleImageFallback}
                         />
                         <div className="reservations-calendar-page__card-body">
                           <div className="reservations-calendar-page__card-top">

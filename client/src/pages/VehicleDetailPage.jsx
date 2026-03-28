@@ -14,6 +14,7 @@ import {
   formatVehiclePrice,
   getVehicleCardImageUrl
 } from "../utils/vehicleFormatters";
+import { handleImageFallback } from "../utils/imageFallback";
 
 function getVehicleTitle(vehicle) {
   return [vehicle.brand, vehicle.model, vehicle.version].filter(Boolean).join(" ");
@@ -174,6 +175,7 @@ function RelatedVehicleCard({ content, vehicle, onOpen }) {
               alt={vehicleTitle}
               loading="lazy"
               decoding="async"
+              onError={handleImageFallback}
             />
 
             <div className="vehica-car-card__image-info">
@@ -933,6 +935,7 @@ function VehicleDetailPage({
                         loading="eager"
                         decoding="async"
                         draggable={false}
+                        onError={handleImageFallback}
                       />
                     </div>
                   </div>

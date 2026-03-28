@@ -347,6 +347,7 @@ function MiniVehicleCardPreview({ vehicle, className = "" }) {
                 alt={formatVehicleName(vehicle)}
                 loading="lazy"
                 decoding="async"
+                onError={handleImageFallback}
               />
 
               <div className="vehica-car-card__image-info">

@@ -725,6 +725,7 @@ function ReservationDetailPage({
                 src={activeLicenseUrl}
                 alt={`${content.licenseLabel} ${activeLicenseIndex + 1}`}
                 className="reservation-detail-theme__lightbox-image"
+                onError={handleImageFallback}
                 onClick={(event) => event.stopPropagation()}
               />
             </div>
