@@ -107,10 +107,12 @@ function ClientsCalendarPage({ content, onCreateClick, onReservationClick }) {
   useEffect(() => {
     let isActive = true;
 
-    const loadReservations = async () => {
-      setIsLoading(
-        () => !hasCachedAdminReservations("pending") || !hasCachedAdminReservations("accepted")
-      );
+    const loadReservations = async ({ silent = false } = {}) => {
+      if (!silent) {
+        setIsLoading(
+          () => !hasCachedAdminReservations("pending") || !hasCachedAdminReservations("accepted")
+        );
+      }
       setErrorMessage("");
 
       try {
@@ -140,8 +142,23 @@ function ClientsCalendarPage({ content, onCreateClick, onReservationClick }) {
 
     loadReservations();
 
+    const refreshReservations = () => {
+      if (document.visibilityState === "hidden") {
+        return;
+      }
+
+      void loadReservations({ silent: true });
+    };
+
+    const intervalId = window.setInterval(refreshReservations, 15000);
+    window.addEventListener("focus", refreshReservations);
+    document.addEventListener("visibilitychange", refreshReservations);
+
     return () => {
       isActive = false;
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", refreshReservations);
+      document.removeEventListener("visibilitychange", refreshReservations);
     };
   }, [content.detailErrorMessage]);
 

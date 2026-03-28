@@ -252,8 +252,10 @@ function AdminAceulle({ content, admin, onNavigate }) {
   useEffect(() => {
     let isActive = true;
 
-    const loadDashboard = async () => {
-      setIsLoading(() => !stats);
+    const loadDashboard = async ({ silent = false } = {}) => {
+      if (!silent) {
+        setIsLoading(() => !getCachedAdminDashboardStats(filters));
+      }
       setErrorMessage("");
 
       try {
@@ -279,8 +281,23 @@ function AdminAceulle({ content, admin, onNavigate }) {
 
     loadDashboard();
 
+    const refreshDashboard = () => {
+      if (document.visibilityState === "hidden") {
+        return;
+      }
+
+      void loadDashboard({ silent: true });
+    };
+
+    const intervalId = window.setInterval(refreshDashboard, 15000);
+    window.addEventListener("focus", refreshDashboard);
+    document.addEventListener("visibilitychange", refreshDashboard);
+
     return () => {
       isActive = false;
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", refreshDashboard);
+      document.removeEventListener("visibilitychange", refreshDashboard);
     };
   }, [content.errorMessage, filters]);
 

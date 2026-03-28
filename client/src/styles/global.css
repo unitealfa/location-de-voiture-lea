@@ -10409,6 +10409,15 @@ a {
   padding: 34px 0 90px;
 }
 
+.reservations-calendar-page--pending-only .reservations-calendar-page__body {
+  padding-top: 28px;
+}
+
+.reservations-calendar-page--pending-only .reservations-calendar-page__panel--pending {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
 .reservations-calendar-page__summary-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
