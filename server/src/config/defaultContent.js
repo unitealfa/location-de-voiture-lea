@@ -351,12 +351,12 @@ const defaultContent = {
       "Les dates grisées sont déjà réservées et ne peuvent pas être sélectionnées.",
     reservationAvailabilityLoadingLabel:
       "Chargement des disponibilites en cours...",
-    reservationPickupDateLabel: "Date de récupération",
+    reservationPickupDateLabel: "Lieux de récupération",
     reservationPickupTimeLabel: "Heure de récupération",
-    reservationReturnDateLabel: "Date de retour",
+    reservationReturnDateLabel: "Lieux de retour",
     reservationReturnTimeLabel: "Heure de retour",
     reservationSelectPickupFirstLabel:
-      "Sélectionnez d'abord une date de récupération disponible.",
+      "Sélectionnez d'abord un Lieux de récupération.",
     reservationNoAvailabilityLabel:
       "Aucune date disponible sur cette période.",
     reservationMonthPreviousLabel: "Mois précédent",
@@ -396,7 +396,7 @@ const defaultContent = {
     reservationCommentPlaceholder: "Écrivez votre message",
     reservationPickupLocationLabel: "À récupérer à",
     reservationReturnLocationLabel: "Retourner à",
-    reservationPickupDatetimeLabel: "Date de récupération",
+    reservationPickupDatetimeLabel: "Lieux de récupération",
     reservationReturnDatetimeLabel: "Date de retour",
     reservationSubmitLabel: "Envoyer",
     reservationPrivacyLabel:

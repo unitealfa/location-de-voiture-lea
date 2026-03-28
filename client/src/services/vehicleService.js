@@ -7,13 +7,29 @@ import {
 const PUBLIC_VEHICLE_LIST_CACHE_KEY = "vehicles:public:list";
 const ADMIN_VEHICLE_LIST_CACHE_KEY = "vehicles:admin:list";
 
-async function parseJsonResponse(response, fallbackMessage) {
+function normalizePublicApiErrorMessage(message, fallbackMessage) {
+  const normalizedMessage = String(message || "").toLowerCase();
+
+  if (
+    normalizedMessage.includes("service admin") ||
+    normalizedMessage.includes("admin est temporairement indisponible")
+  ) {
+    return fallbackMessage;
+  }
+
+  return message || fallbackMessage;
+}
+
+async function parseJsonResponse(response, fallbackMessage, { publicFacing = false } = {}) {
   const payload = await response.json().catch(() => ({
     message: "Reponse serveur invalide."
   }));
 
   if (!response.ok) {
-    throw new Error(payload.message || fallbackMessage);
+    const nextMessage = publicFacing
+      ? normalizePublicApiErrorMessage(payload.message, fallbackMessage)
+      : payload.message || fallbackMessage;
+    throw new Error(nextMessage || fallbackMessage);
   }
 
   return payload;
@@ -180,7 +196,8 @@ export async function listVehicles({ adminView = false } = {}) {
 
     const payload = await parseJsonResponse(
       response,
-      "Impossible de charger les vehicules."
+      "Impossible de charger les vehicules.",
+      { publicFacing: !adminView }
     );
     const vehicles = payload.vehicles || [];
 
@@ -209,7 +226,8 @@ export async function getVehicleById(id, { adminView = false } = {}) {
 
     const payload = await parseJsonResponse(
       response,
-      "Impossible de charger ce vehicule."
+      "Impossible de charger ce vehicule.",
+      { publicFacing: !adminView }
     );
 
     writeVehicleDetailCache(payload.vehicle, { adminView });

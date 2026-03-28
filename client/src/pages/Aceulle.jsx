@@ -282,6 +282,9 @@ function TestimonialsSection({ content }) {
   const pageCount = Math.max(1, testimonials.length - slidesPerView + 1);
   const [sectionRef, isVisible] = useRevealOnce();
   const [activeIndex, setActiveIndex] = useState(0);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const gestureRef = useRef({ dragging: false, pointerId: null, startX: 0, deltaX: 0 });
 
   useEffect(() => {
     setActiveIndex((currentIndex) => Math.min(currentIndex, pageCount - 1));
@@ -311,6 +314,56 @@ function TestimonialsSection({ content }) {
     });
   };
 
+  const handlePointerDown = (event) => {
+    if (pageCount <= 1) {
+      return;
+    }
+
+    gestureRef.current = {
+      dragging: true,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      deltaX: 0
+    };
+    setDragOffset(0);
+    setIsDragging(true);
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+  };
+
+  const handlePointerMove = (event) => {
+    if (!gestureRef.current.dragging || gestureRef.current.pointerId !== event.pointerId) {
+      return;
+    }
+
+    gestureRef.current.deltaX = event.clientX - gestureRef.current.startX;
+    setDragOffset(gestureRef.current.deltaX);
+  };
+
+  const handlePointerEnd = (event) => {
+    if (!gestureRef.current.dragging || gestureRef.current.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const deltaX = gestureRef.current.deltaX;
+    event.currentTarget.releasePointerCapture?.(event.pointerId);
+    gestureRef.current = { dragging: false, pointerId: null, startX: 0, deltaX: 0 };
+    setIsDragging(false);
+
+    if (Math.abs(deltaX) < 45) {
+      setDragOffset(0);
+      return;
+    }
+
+    setDragOffset(0);
+
+    if (deltaX < 0) {
+      handleNext();
+      return;
+    }
+
+    handlePrevious();
+  };
+
   return (
     <section
       ref={sectionRef}
@@ -333,12 +386,13 @@ function TestimonialsSection({ content }) {
 
         <div className="vehica-app">
           <div className="vehica-testimonial-carousel">
-            <div className="vehica-swiper-container">
+            <div className="vehica-swiper-container" onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerEnd} onPointerCancel={handlePointerEnd}>
               <div
                 className="vehica-swiper-wrapper"
                 style={{
                   transform:
-                    "translate3d(-" + activeIndex * (100 / slidesPerView) + "%, 0, 0)"
+                    "translate3d(calc(-" + activeIndex * (100 / slidesPerView) + "% + " + dragOffset + "px), 0, 0)",
+                  transition: isDragging ? "none" : undefined
                 }}
               >
                 {testimonials.map((testimonial, index) => (
@@ -458,8 +512,94 @@ function Aceulle({ content, onNavigate }) {
   const featuredVehicles = vehicles.slice(0, 4);
   const convertibleVehicles = vehicles.filter((vehicle) => vehicle.isConvertible);
   const featuredConvertibles = (convertibleVehicles.length ? convertibleVehicles : vehicles).slice(0, 4);
+  const convertibleSlidesPerView = useSlidesPerView();
+  const convertiblePageCount = Math.max(1, featuredConvertibles.length - convertibleSlidesPerView + 1);
+  const [activeConvertibleIndex, setActiveConvertibleIndex] = useState(0);
+  const [convertibleDragOffset, setConvertibleDragOffset] = useState(0);
+  const [isConvertibleDragging, setIsConvertibleDragging] = useState(false);
+  const convertibleGestureRef = useRef({ dragging: false, pointerId: null, startX: 0, deltaX: 0 });
   const convertiblesClassName =
     "vehica-carousel-v1 vehica-carousel-v1--cars-" + Math.max(1, Math.min(featuredConvertibles.length, 4));
+
+  useEffect(() => {
+    setActiveConvertibleIndex((currentIndex) => Math.min(currentIndex, convertiblePageCount - 1));
+  }, [convertiblePageCount]);
+
+  const goToPreviousConvertible = () => {
+    setActiveConvertibleIndex((currentIndex) => {
+      const nextIndex = currentIndex - 1;
+      return nextIndex < 0 ? convertiblePageCount - 1 : nextIndex;
+    });
+  };
+
+  const goToNextConvertible = () => {
+    setActiveConvertibleIndex((currentIndex) => {
+      const nextIndex = currentIndex + 1;
+      return nextIndex >= convertiblePageCount ? 0 : nextIndex;
+    });
+  };
+
+  const handleConvertiblePointerDown = (event) => {
+    if (convertiblePageCount <= 1) {
+      return;
+    }
+
+    convertibleGestureRef.current = {
+      dragging: true,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      deltaX: 0
+    };
+    setConvertibleDragOffset(0);
+    setIsConvertibleDragging(true);
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+  };
+
+  const handleConvertiblePointerMove = (event) => {
+    if (
+      !convertibleGestureRef.current.dragging ||
+      convertibleGestureRef.current.pointerId !== event.pointerId
+    ) {
+      return;
+    }
+
+    convertibleGestureRef.current.deltaX = event.clientX - convertibleGestureRef.current.startX;
+    setConvertibleDragOffset(convertibleGestureRef.current.deltaX);
+  };
+
+  const handleConvertiblePointerEnd = (event) => {
+    if (
+      !convertibleGestureRef.current.dragging ||
+      convertibleGestureRef.current.pointerId !== event.pointerId
+    ) {
+      return;
+    }
+
+    const deltaX = convertibleGestureRef.current.deltaX;
+    event.currentTarget.releasePointerCapture?.(event.pointerId);
+    convertibleGestureRef.current = { dragging: false, pointerId: null, startX: 0, deltaX: 0 };
+    setIsConvertibleDragging(false);
+
+    if (Math.abs(deltaX) < 45) {
+      setConvertibleDragOffset(0);
+      return;
+    }
+
+    setConvertibleDragOffset(0);
+
+    if (deltaX < 0) {
+      goToNextConvertible();
+      return;
+    }
+
+    goToPreviousConvertible();
+  };
+
+  const convertibleTrackStyle = {
+    transform:
+      "translate3d(calc(-" + activeConvertibleIndex * (100 / convertibleSlidesPerView) + "% + " + convertibleDragOffset + "px), 0, 0)",
+    transition: isConvertibleDragging ? "none" : undefined
+  };
 
   return (
     <main className="rentzo-home">
@@ -572,8 +712,8 @@ function Aceulle({ content, onNavigate }) {
               </div>
             ) : featuredConvertibles.length ? (
               <div className={convertiblesClassName}>
-                <div className="vehica-carousel__swiper">
-                  <div className="vehica-swiper-wrapper">
+                <div className="vehica-carousel__swiper" onPointerDown={handleConvertiblePointerDown} onPointerMove={handleConvertiblePointerMove} onPointerUp={handleConvertiblePointerEnd} onPointerCancel={handleConvertiblePointerEnd}>
+                  <div className="vehica-swiper-wrapper" style={convertibleTrackStyle}>
                     {featuredConvertibles.map((vehicle) => (
                       <VehicleCard
                         key={vehicle.id}

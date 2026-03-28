@@ -12983,3 +12983,266 @@ a {
     display: none;
   }
 }
+
+.rentzo-single-car-page .rentzo-single-car__section--mobile-conditions {
+  display: none;
+}
+
+@media (max-width: 899px) {
+  .rentzo-single-car-page .rentzo-single-car__section--mobile-prices {
+    display: block;
+  }
+
+  .rentzo-single-car-page .rentzo-single-car__section--mobile-prices .rentzo-single-car__panel-title,
+  .rentzo-single-car-page .rentzo-single-car__section--mobile-conditions .rentzo-single-car__panel-title {
+    text-align: center;
+  }
+
+  .rentzo-single-car-page .rentzo-single-car__sidebar-panel--price,
+  .rentzo-single-car-page .rentzo-single-car__sidebar-panel--conditions {
+    display: none;
+  }
+
+  .rentzo-single-car-page .rentzo-single-car__section--mobile-conditions {
+    display: block;
+    margin-top: 50px;
+  }
+
+  .rentzo-single-car-page .rentzo-single-car__section--mobile-prices .rentzo-single-car__price-card--dark {
+    padding: 18px 18px 14px;
+  }
+
+  .rentzo-single-car-page .rentzo-single-car__section--mobile-prices .rentzo-single-car__price-card--dark .vehica-car-price {
+    text-align: center;
+    font-size: 24px;
+    line-height: 28px;
+  }
+
+  .rentzo-single-car-page .rentzo-single-car__section--mobile-prices .rentzo-single-car__price-secondary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .rentzo-single-car-page .rentzo-single-car__section--mobile-prices .rentzo-single-car__price-secondary-item {
+    padding: 18px 12px 14px;
+  }
+
+  .rentzo-single-car-page .rentzo-single-car__section--mobile-prices .rentzo-single-car__price-secondary .vehica-car-price {
+    text-align: center;
+    font-size: 16px;
+    line-height: 22px;
+  }
+
+  .rentzo-single-car-page .rentzo-single-car__attributes-grid::after,
+  .rentzo-single-car-page .rentzo-single-car__attribute-inner::after {
+    content: "";
+    display: table;
+    clear: both;
+  }
+
+  .rentzo-single-car-page .rentzo-single-car__attributes-grid > .vehica-grid__element.vehica-grid__element--mobile-1of1 {
+    float: left;
+    width: 50% !important;
+    padding-right: 14px;
+    margin-bottom: 10px;
+  }
+
+  .rentzo-single-car-page .rentzo-single-car__attribute-inner {
+    display: block;
+  }
+
+  .rentzo-single-car-page .rentzo-single-car__attribute-inner > .vehica-grid__element--1of2 {
+    float: left;
+    width: 50% !important;
+  }
+
+  .rentzo-single-car-page .vehica-car-attributes__name,
+  .rentzo-single-car-page .vehica-car-attributes__values {
+    font-size: 13px;
+    line-height: 18px;
+    white-space: nowrap;
+  }
+
+  .rentzo-single-car-page .vehica-car-attributes__name {
+    padding-right: 8px;
+    margin-bottom: 8px;
+  }
+
+  .rentzo-single-car-page .vehica-car-attributes__values {
+    margin-bottom: 8px;
+  }
+
+  .rentzo-single-car-page .rentzo-single-car__section--quality {
+    margin-top: 50px;
+  }
+}
+
+@media (max-width: 899px) {
+  .rentzo-single-car-page .rentzo-single-car__attributes-grid > .vehica-grid__element.vehica-grid__element--mobile-1of1 {
+    float: none;
+    width: 100% !important;
+    padding-right: 0;
+    margin-bottom: 12px;
+  }
+
+  .rentzo-single-car-page .rentzo-single-car__attribute-inner {
+    display: grid;
+    grid-template-columns: 132px minmax(0, 1fr);
+    align-items: start;
+    column-gap: 10px;
+  }
+
+  .rentzo-single-car-page .rentzo-single-car__attribute-inner > .vehica-grid__element--1of2 {
+    float: none;
+    width: auto !important;
+  }
+
+  .rentzo-single-car-page .vehica-car-attributes__name,
+  .rentzo-single-car-page .vehica-car-attributes__values {
+    font-size: 13px;
+    line-height: 18px;
+    white-space: normal;
+    margin-bottom: 0;
+  }
+
+  .rentzo-single-car-page .vehica-car-attributes__name {
+    padding-right: 0;
+    font-weight: 800;
+  }
+
+  .rentzo-single-car-page .rentzo-single-car__conditions-heading {
+    margin-top: 12px;
+  }
+
+  .rentzo-single-car-page .rentzo-single-car__section--quality .vehica-heading__title {
+    font-size: 62px;
+    line-height: 1.02;
+  }
+
+  .rentzo-single-car-page .rentzo-detail-form__calendar-summary {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .rentzo-single-car-page .rentzo-detail-form__calendar-card {
+    padding: 14px 16px;
+  }
+
+  .rentzo-single-car-page .rentzo-detail-form__calendar-card strong {
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  .rentzo-single-car-page .rentzo-detail-form__calendar-fields {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .rentzo-single-car-page .rentzo-detail-form__calendar-field {
+    display: block;
+  }
+
+  .rentzo-single-car-page .rentzo-detail-form__calendar-field > label {
+    margin: 0 0 8px;
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #6f7784;
+  }
+
+  .rentzo-single-car-page .rentzo-detail-form__calendar-field .wpcf7-form-control-wrap {
+    display: block;
+  }
+
+  .rentzo-single-car-page .rentzo-detail-form__calendar-field select {
+    width: 100%;
+  }
+}
+
+@media (max-width: 899px) {
+  .rentzo-single-car-page .rentzo-single-car__related-carousel .vehica-car-card__image {
+    padding-top: 64% !important;
+  }
+}
+
+@media (max-width: 899px) {
+  .rentzo-single-car-page .rentzo-detail-form__calendar-shell {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .rentzo-single-car-page .rentzo-detail-form__calendar-summary,
+  .rentzo-single-car-page .rentzo-detail-form__calendar-fields {
+    display: contents;
+  }
+
+  .rentzo-single-car-page .rentzo-detail-form__calendar-summary .rentzo-detail-form__calendar-card:first-child {
+    order: 1;
+  }
+
+  .rentzo-single-car-page .rentzo-detail-form__calendar-fields .rentzo-detail-form__calendar-field:first-child {
+    order: 2;
+  }
+
+  .rentzo-single-car-page .rentzo-detail-form__calendar-summary .rentzo-detail-form__calendar-card:last-child {
+    order: 3;
+  }
+
+  .rentzo-single-car-page .rentzo-detail-form__calendar-fields .rentzo-detail-form__calendar-field:last-child {
+    order: 4;
+  }
+
+  .rentzo-single-car-page .rentzo-detail-form__datetime-panel {
+    order: 5;
+  }
+
+  .rentzo-single-car-page .rentzo-detail-form__calendar-card,
+  .rentzo-single-car-page .rentzo-detail-form__calendar-field {
+    margin-bottom: 12px;
+  }
+}
+
+@media (max-width: 899px) {
+  .rentzo-home__testimonials .vehica-heading__title {
+    font-size: 60px;
+    line-height: 1;
+  }
+
+  .rentzo-home__convertibles .vehica-tabs-top-v2__heading {
+    font-size: 72px;
+    line-height: 0.95;
+  }
+
+  .vehica-testimonial-carousel .vehica-swiper-container,
+  .rentzo-home__convertibles .vehica-carousel__swiper,
+  .rentzo-single-car-page .rentzo-single-car__related-carousel .vehica-swiper-container {
+    touch-action: pan-y;
+    cursor: grab;
+  }
+
+  .vehica-testimonial-carousel .vehica-swiper-container:active,
+  .rentzo-home__convertibles .vehica-carousel__swiper:active,
+  .rentzo-single-car-page .rentzo-single-car__related-carousel .vehica-swiper-container:active {
+    cursor: grabbing;
+  }
+
+  .rentzo-home__convertibles .vehica-carousel__swiper {
+    overflow: hidden;
+  }
+
+  .rentzo-home__convertibles .vehica-carousel-v1 .vehica-swiper-wrapper {
+    flex-wrap: nowrap;
+    gap: 0;
+    transition: transform 0.45s ease;
+    will-change: transform;
+  }
+
+  .rentzo-home__convertibles .vehica-carousel-v1 .vehica-swiper-slide {
+    width: 100%;
+    min-width: 100%;
+  }
+}

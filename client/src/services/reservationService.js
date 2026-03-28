@@ -1,10 +1,26 @@
-async function parseJsonResponse(response, fallbackMessage) {
+function normalizePublicApiErrorMessage(message, fallbackMessage) {
+  const normalizedMessage = String(message || "").toLowerCase();
+
+  if (
+    normalizedMessage.includes("service admin") ||
+    normalizedMessage.includes("admin est temporairement indisponible")
+  ) {
+    return fallbackMessage;
+  }
+
+  return message || fallbackMessage;
+}
+
+async function parseJsonResponse(response, fallbackMessage, { publicFacing = false } = {}) {
   const payload = await response.json().catch(() => ({
     message: "Reponse serveur invalide."
   }));
 
   if (!response.ok) {
-    throw new Error(payload.message || fallbackMessage);
+    const nextMessage = publicFacing
+      ? normalizePublicApiErrorMessage(payload.message, fallbackMessage)
+      : payload.message || fallbackMessage;
+    throw new Error(nextMessage || fallbackMessage);
   }
 
   return payload;
@@ -80,7 +96,7 @@ export async function createVehicleReservation(vehicleId, payload) {
     body: formData
   });
 
-  return parseJsonResponse(response, "Reservation impossible.");
+  return parseJsonResponse(response, "Reservation impossible.", { publicFacing: true });
 }
 
 export async function getVehicleReservationAvailability(vehicleId) {
@@ -90,7 +106,8 @@ export async function getVehicleReservationAvailability(vehicleId) {
 
   const payload = await parseJsonResponse(
     response,
-    "Impossible de charger les disponibilites du vehicule."
+    "Impossible de charger les disponibilites du vehicule.",
+    { publicFacing: true }
   );
 
   return payload.reservations || [];

@@ -318,6 +318,8 @@ function VehicleDetailPage({
   });
   const [relatedTrackWidth, setRelatedTrackWidth] = useState(0);
   const [relatedActiveIndex, setRelatedActiveIndex] = useState(0);
+  const [relatedDragOffset, setRelatedDragOffset] = useState(0);
+  const [isRelatedDragging, setIsRelatedDragging] = useState(false);
   const galleryGestureRef = useRef({
     dragging: false,
     pointerId: null,
@@ -327,6 +329,7 @@ function VehicleDetailPage({
   const galleryImagePreloadRef = useRef(new Set());
   const galleryTrackRef = useRef(null);
   const relatedTrackRef = useRef(null);
+  const relatedGestureRef = useRef({ dragging: false, pointerId: null, startX: 0, deltaX: 0 });
 
   useEffect(() => {
     let isActive = true;
@@ -622,7 +625,8 @@ function VehicleDetailPage({
     relatedSlideWidth > 0
       ? {
           transform:
-            "translate3d(-" + relatedActiveIndex * (relatedSlideWidth + 22) + "px, 0, 0)"
+            "translate3d(" + (-relatedActiveIndex * (relatedSlideWidth + 22) + relatedDragOffset) + "px, 0, 0)",
+          transition: isRelatedDragging ? "none" : undefined
         }
       : undefined;
   const relatedSlideStyle =
@@ -777,6 +781,62 @@ function VehicleDetailPage({
       const nextIndex = currentIndex + 1;
       return nextIndex > relatedMaxIndex ? 0 : nextIndex;
     });
+  };
+
+  const handleRelatedPointerDown = (event) => {
+    if (relatedMaxIndex <= 0) {
+      return;
+    }
+
+    relatedGestureRef.current = {
+      dragging: true,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      deltaX: 0
+    };
+    setRelatedDragOffset(0);
+    setIsRelatedDragging(true);
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+  };
+
+  const handleRelatedPointerMove = (event) => {
+    if (
+      !relatedGestureRef.current.dragging ||
+      relatedGestureRef.current.pointerId !== event.pointerId
+    ) {
+      return;
+    }
+
+    relatedGestureRef.current.deltaX = event.clientX - relatedGestureRef.current.startX;
+    setRelatedDragOffset(relatedGestureRef.current.deltaX);
+  };
+
+  const handleRelatedPointerEnd = (event) => {
+    if (
+      !relatedGestureRef.current.dragging ||
+      relatedGestureRef.current.pointerId !== event.pointerId
+    ) {
+      return;
+    }
+
+    const deltaX = relatedGestureRef.current.deltaX;
+    event.currentTarget.releasePointerCapture?.(event.pointerId);
+    relatedGestureRef.current = { dragging: false, pointerId: null, startX: 0, deltaX: 0 };
+    setIsRelatedDragging(false);
+
+    if (Math.abs(deltaX) < 45) {
+      setRelatedDragOffset(0);
+      return;
+    }
+
+    setRelatedDragOffset(0);
+
+    if (deltaX < 0) {
+      goToNextRelated();
+      return;
+    }
+
+    goToPreviousRelated();
   };
 
   const scrollToReservationForm = () => {
@@ -1022,6 +1082,38 @@ function VehicleDetailPage({
                 )}
               </section>
 
+              <section className="rentzo-single-car__section rentzo-single-car__section--mobile-conditions">
+                <h2 className="elementor-heading-title elementor-size-default rentzo-single-car__panel-title">
+                  {content.detailConditionsTitle}
+                </h2>
+                <div className="elementor-divider">
+                  <span className="elementor-divider-separator"></span>
+                </div>
+
+                <div className="vehica-car-description rentzo-single-car__conditions-copy">
+                  <p className="rentzo-single-car__conditions-heading">
+                    <strong>{content.detailSecurityDepositHeading}</strong>
+                  </p>
+                  <ul className="rentzo-single-car__conditions-list">
+                    <li>{securityDepositText}</li>
+                  </ul>
+
+                  <p className="rentzo-single-car__conditions-spacer" aria-hidden="true"></p>
+
+                  <p className="rentzo-single-car__conditions-heading">
+                    <strong>{content.detailAllowedMileageHeading}</strong>
+                  </p>
+                  <ul className="rentzo-single-car__conditions-list">
+                    <li>{includedMileageText}</li>
+                    <li>{extraMileageText}</li>
+                  </ul>
+
+                  <p className="rentzo-single-car__conditions-spacer" aria-hidden="true"></p>
+
+                  <p className="rentzo-single-car__conditions-note">{content.globalPricingDescription}</p>
+                </div>
+              </section>
+
               <section className="rentzo-single-car__section rentzo-single-car__section--quality">
                 <div className="vehica-heading">
                   <h3 className="vehica-heading__title">{content.detailQualityTitle}</h3>
@@ -1087,7 +1179,7 @@ function VehicleDetailPage({
                 </div>
               </div>
 
-              <div className="rentzo-single-car__sidebar-panel">
+              <div className="rentzo-single-car__sidebar-panel rentzo-single-car__sidebar-panel--conditions">
                 <h2 className="elementor-heading-title elementor-size-default rentzo-single-car__panel-title">
                   {content.detailConditionsTitle}
                 </h2>
@@ -1222,7 +1314,7 @@ function VehicleDetailPage({
               <div className={"vehica-car-tabs-carousel rentzo-single-car__related-carousel vehica-carousel-v1--cars-" + relatedVehicles.length}>
                 <div className="vehica-carousel-v1">
                   <div className="vehica-carousel__swiper" ref={relatedTrackRef}>
-                    <div className="vehica-swiper-container">
+                    <div className="vehica-swiper-container" onPointerDown={handleRelatedPointerDown} onPointerMove={handleRelatedPointerMove} onPointerUp={handleRelatedPointerEnd} onPointerCancel={handleRelatedPointerEnd}>
                       <div className="vehica-swiper-wrapper" style={relatedTrackStyle}>
                         {relatedVehicles.map((relatedVehicle) => (
                           <div
