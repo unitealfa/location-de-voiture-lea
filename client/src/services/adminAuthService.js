@@ -1,7 +1,7 @@
 export async function loginAdmin(credentials) {
   const response = await fetch("/api/admin/login", {
     method: "POST",
-    credentials: "same-origin",
+    credentials: "include",
     headers: {
       "Content-Type": "application/json"
     },
@@ -21,7 +21,7 @@ export async function loginAdmin(credentials) {
 
 export async function getAdminSession() {
   const response = await fetch("/api/admin/session", {
-    credentials: "same-origin"
+    credentials: "include"
   });
 
   if (response.status === 401 || response.status === 503) {
@@ -42,7 +42,7 @@ export async function getAdminSession() {
 export async function logoutAdmin() {
   const response = await fetch("/api/admin/logout", {
     method: "POST",
-    credentials: "same-origin"
+    credentials: "include"
   });
 
   const payload = await response.json().catch(() => ({

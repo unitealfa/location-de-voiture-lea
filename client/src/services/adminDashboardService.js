@@ -47,7 +47,7 @@ export async function getAdminDashboardStats(filters = {}) {
   });
 
   const response = await fetch(`/api/admin/protected/dashboard?${query.toString()}`, {
-    credentials: "same-origin"
+    credentials: "include"
   });
 
   const payload = await parseJsonResponse(

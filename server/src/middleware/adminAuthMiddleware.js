@@ -1,9 +1,6 @@
 const { resolveAdminFromSessionToken } = require("../services/adminAuthService");
 const { getRuntimeState } = require("../services/runtimeStateService");
-const {
-  clearAdminSessionCookie,
-  readAdminSessionToken
-} = require("../utils/sessionCookie");
+const { clearAdminSessionCookie, readAdminSessionToken } = require("../utils/sessionCookie");
 
 async function hydrateAdminRequest(request, response, next) {
   try {
@@ -38,7 +35,6 @@ async function hydrateAdminRequest(request, response, next) {
 
 function requireAdminApiAuth(request, response, next) {
   if (!request.admin) {
-    clearAdminSessionCookie(response);
     return response.status(401).json({
       message: "Authentification admin requise."
     });
@@ -49,7 +45,6 @@ function requireAdminApiAuth(request, response, next) {
 
 function requireAdminPageAuth(request, response, next) {
   if (!request.admin) {
-    clearAdminSessionCookie(response);
     return response.redirect(302, "/admin/login");
   }
 

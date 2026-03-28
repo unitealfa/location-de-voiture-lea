@@ -186,7 +186,7 @@ export async function listVehicles({ adminView = false } = {}) {
     const response = await fetch(
       adminView ? "/api/admin/vehicles" : "/api/vehicles",
       {
-        credentials: "same-origin"
+        credentials: adminView ? "include" : "same-origin"
       }
     );
 
@@ -220,7 +220,7 @@ export async function getVehicleById(id, { adminView = false } = {}) {
     const response = await fetch(
       adminView ? `/api/admin/vehicles/${id}` : `/api/vehicles/${id}`,
       {
-        credentials: "same-origin"
+        credentials: adminView ? "include" : "same-origin"
       }
     );
 
@@ -245,7 +245,7 @@ export async function getVehicleById(id, { adminView = false } = {}) {
 export async function createVehicle(payload) {
   const response = await fetch("/api/admin/vehicles", {
     method: "POST",
-    credentials: "same-origin",
+    credentials: "include",
     body: buildVehicleFormData(payload)
   });
 
@@ -264,7 +264,7 @@ export async function createVehicle(payload) {
 export async function updateVehicle(id, payload) {
   const response = await fetch(`/api/admin/vehicles/${id}`, {
     method: "PUT",
-    credentials: "same-origin",
+    credentials: "include",
     body: buildVehicleFormData(payload)
   });
 
@@ -283,7 +283,7 @@ export async function updateVehicle(id, payload) {
 export async function deleteVehicle(id) {
   const response = await fetch(`/api/admin/vehicles/${id}`, {
     method: "DELETE",
-    credentials: "same-origin"
+    credentials: "include"
   });
 
   const parsedResponse = await parseJsonResponse(
@@ -298,7 +298,7 @@ export async function deleteVehicle(id) {
 export async function markVehicleAsMaintenance(id) {
   const response = await fetch(`/api/admin/vehicles/${id}/maintenance`, {
     method: "POST",
-    credentials: "same-origin"
+    credentials: "include"
   });
 
   const parsedResponse = await parseJsonResponse(
@@ -316,7 +316,7 @@ export async function markVehicleAsMaintenance(id) {
 export async function markVehicleAsAvailable(id) {
   const response = await fetch(`/api/admin/vehicles/${id}/available`, {
     method: "POST",
-    credentials: "same-origin"
+    credentials: "include"
   });
 
   const parsedResponse = await parseJsonResponse(

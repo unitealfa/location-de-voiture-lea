@@ -180,7 +180,7 @@ export async function listAdminReservations({ scope = "pending" } = {}) {
   }
 
   const response = await fetch(`/api/admin/reservations?${query.toString()}`, {
-    credentials: "same-origin"
+    credentials: "include"
   });
 
   const payload = await parseJsonResponse(
@@ -195,7 +195,7 @@ export async function listAdminReservations({ scope = "pending" } = {}) {
 
 export async function getAdminReservationById(id) {
   const response = await fetch(`/api/admin/reservations/${id}`, {
-    credentials: "same-origin"
+    credentials: "include"
   });
 
   const payload = await parseJsonResponse(
@@ -210,7 +210,7 @@ export async function getAdminReservationById(id) {
 export async function acceptAdminReservation(id) {
   const response = await fetch(`/api/admin/reservations/${id}/accept`, {
     method: "POST",
-    credentials: "same-origin"
+    credentials: "include"
   });
 
   const payload = await parseJsonResponse(
@@ -225,7 +225,7 @@ export async function acceptAdminReservation(id) {
 export async function rejectAdminReservation(id) {
   const response = await fetch(`/api/admin/reservations/${id}/reject`, {
     method: "POST",
-    credentials: "same-origin"
+    credentials: "include"
   });
 
   return parseJsonResponse(
@@ -237,7 +237,7 @@ export async function rejectAdminReservation(id) {
 export async function createAdminReservation(payload) {
   const response = await fetch("/api/admin/reservations", {
     method: "POST",
-    credentials: "same-origin",
+    credentials: "include",
     body: buildAdminReservationFormData(payload)
   });
 
@@ -253,7 +253,7 @@ export async function createAdminReservation(payload) {
 export async function updateAdminReservation(id, payload) {
   const response = await fetch(`/api/admin/reservations/${id}`, {
     method: "PUT",
-    credentials: "same-origin",
+    credentials: "include",
     body: buildAdminReservationFormData(payload)
   });
 
@@ -269,7 +269,7 @@ export async function updateAdminReservation(id, payload) {
 export async function deleteAdminReservation(id) {
   const response = await fetch(`/api/admin/reservations/${id}`, {
     method: "DELETE",
-    credentials: "same-origin"
+    credentials: "include"
   });
 
   return parseJsonResponse(

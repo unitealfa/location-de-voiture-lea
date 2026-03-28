@@ -40,7 +40,7 @@ export async function getAdminVisualSettings() {
 
   try {
     const response = await fetch("/api/admin/protected/visual-settings", {
-      credentials: "same-origin"
+      credentials: "include"
     });
 
     if (!response.ok) {
@@ -62,7 +62,7 @@ export async function getAdminVisualSettings() {
 export async function saveAdminVisualSettings(payload) {
   const response = await fetch("/api/admin/protected/visual-settings", {
     method: "PUT",
-    credentials: "same-origin",
+    credentials: "include",
     headers: {
       "Content-Type": "application/json"
     },
@@ -96,7 +96,7 @@ export async function uploadAdminVisualImage({ file, slot, previousUrl = "" }) {
 
   const response = await fetch("/api/admin/protected/visual-settings/upload", {
     method: "POST",
-    credentials: "same-origin",
+    credentials: "include",
     body: formData
   });
 
