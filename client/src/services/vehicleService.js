@@ -4,8 +4,9 @@ import {
   writeCachedValue
 } from "./cacheService";
 
-const PUBLIC_VEHICLE_LIST_CACHE_KEY = "vehicles:public:list";
-const ADMIN_VEHICLE_LIST_CACHE_KEY = "vehicles:admin:list";
+const VEHICLE_CACHE_VERSION = "v2";
+const PUBLIC_VEHICLE_LIST_CACHE_KEY = `vehicles:${VEHICLE_CACHE_VERSION}:public:list`;
+const ADMIN_VEHICLE_LIST_CACHE_KEY = `vehicles:${VEHICLE_CACHE_VERSION}:admin:list`;
 
 function normalizePublicApiErrorMessage(message, fallbackMessage) {
   const normalizedMessage = String(message || "").toLowerCase();
@@ -92,7 +93,7 @@ function getVehicleListCacheKey(adminView) {
 }
 
 function getVehicleDetailCacheKey(id, adminView) {
-  return `vehicle:${adminView ? "admin" : "public"}:${id}`;
+  return `vehicle:${VEHICLE_CACHE_VERSION}:${adminView ? "admin" : "public"}:${id}`;
 }
 
 export function readCachedVehicleList({ adminView = false } = {}) {

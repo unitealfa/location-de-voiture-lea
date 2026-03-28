@@ -566,7 +566,10 @@ function VehicleReservationForm({ content, vehicle, hideActionButtons = false, h
       const parsedFullName = splitFullName(formValues.fullName);
 
       if (drivingLicensePhotos.length === 0) {
-        throw new Error(content.reservationDrivingLicenseInvalidMessage);
+        throw new Error(
+          content.reservationDrivingLicenseRequiredMessage ||
+            "Ajoutez obligatoirement la photo du permis de conduire."
+        );
       }
 
       await createVehicleReservation(vehicle.id, {

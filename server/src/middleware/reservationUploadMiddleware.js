@@ -14,7 +14,8 @@ const secureReservationUploadsRoot = path.resolve(
   "reservations"
 );
 const SECURE_LICENSE_PREFIX = "secure-license:";
-const ENCRYPTED_FILE_HEADER = Buffer.from("RVL1");
+const ENCRYPTED_FILE_HEADER = Buffer.from("RVL2");
+const LEGACY_ENCRYPTED_FILE_HEADER = Buffer.from("RVL1");
 const MAX_RESERVATION_LICENSE_FILES = 2;
 
 async function ensureSecureReservationUploadsRoot() {
@@ -32,7 +33,7 @@ function getReservationFileEncryptionKey() {
   return crypto.createHash("sha256").update(String(keySeed)).digest();
 }
 
-function encryptReservationBuffer(buffer) {
+function encryptReservationBuffer(buffer, contentType = "image/webp") {
   const iv = crypto.randomBytes(12);
   const cipher = crypto.createCipheriv(
     "aes-256-gcm",
@@ -44,9 +45,17 @@ function encryptReservationBuffer(buffer) {
     cipher.final()
   ]);
   const authTag = cipher.getAuthTag();
+  const contentTypeBuffer = Buffer.from(
+    String(contentType || "application/octet-stream"),
+    "utf8"
+  );
+  const contentTypeLengthBuffer = Buffer.alloc(2);
+  contentTypeLengthBuffer.writeUInt16BE(contentTypeBuffer.length, 0);
 
   return Buffer.concat([
     ENCRYPTED_FILE_HEADER,
+    contentTypeLengthBuffer,
+    contentTypeBuffer,
     iv,
     authTag,
     encryptedBuffer
@@ -56,11 +65,41 @@ function encryptReservationBuffer(buffer) {
 function decryptReservationBuffer(buffer) {
   const header = buffer.subarray(0, ENCRYPTED_FILE_HEADER.length);
 
+  if (header.equals(LEGACY_ENCRYPTED_FILE_HEADER)) {
+    const ivStart = LEGACY_ENCRYPTED_FILE_HEADER.length;
+    const ivEnd = ivStart + 12;
+    const authTagEnd = ivEnd + 16;
+    const iv = buffer.subarray(ivStart, ivEnd);
+    const authTag = buffer.subarray(ivEnd, authTagEnd);
+    const encryptedBuffer = buffer.subarray(authTagEnd);
+    const decipher = crypto.createDecipheriv(
+      "aes-256-gcm",
+      getReservationFileEncryptionKey(),
+      iv
+    );
+
+    decipher.setAuthTag(authTag);
+
+    return {
+      buffer: Buffer.concat([
+        decipher.update(encryptedBuffer),
+        decipher.final()
+      ]),
+      contentType: "image/webp"
+    };
+  }
+
   if (!header.equals(ENCRYPTED_FILE_HEADER)) {
     throw new Error("Fichier de permis invalide.");
   }
 
-  const ivStart = ENCRYPTED_FILE_HEADER.length;
+  const contentTypeLengthStart = ENCRYPTED_FILE_HEADER.length;
+  const contentTypeLengthEnd = contentTypeLengthStart + 2;
+  const contentTypeLength = buffer.readUInt16BE(contentTypeLengthStart);
+  const contentTypeStart = contentTypeLengthEnd;
+  const contentTypeEnd = contentTypeStart + contentTypeLength;
+  const contentType = buffer.subarray(contentTypeStart, contentTypeEnd).toString("utf8");
+  const ivStart = contentTypeEnd;
   const ivEnd = ivStart + 12;
   const authTagEnd = ivEnd + 16;
   const iv = buffer.subarray(ivStart, ivEnd);
@@ -74,10 +113,13 @@ function decryptReservationBuffer(buffer) {
 
   decipher.setAuthTag(authTag);
 
-  return Buffer.concat([
-    decipher.update(encryptedBuffer),
-    decipher.final()
-  ]);
+  return {
+    buffer: Buffer.concat([
+      decipher.update(encryptedBuffer),
+      decipher.final()
+    ]),
+    contentType: contentType || "application/octet-stream"
+  };
 }
 
 function normalizeReservationUploadFiles(files) {
@@ -178,13 +220,40 @@ function getLegacyReservationMimeType(filePath) {
   }
 }
 
+function getMimeExtension(contentType) {
+  const normalizedContentType = String(contentType || "").toLowerCase();
+
+  switch (normalizedContentType) {
+    case "image/jpeg":
+      return ".jpg";
+    case "image/png":
+      return ".png";
+    case "image/gif":
+      return ".gif";
+    case "image/avif":
+      return ".avif";
+    case "image/svg+xml":
+      return ".svg";
+    case "image/bmp":
+      return ".bmp";
+    case "image/webp":
+      return ".webp";
+    default:
+      return ".bin";
+  }
+}
+
 const upload = multer({
   storage: multer.memoryStorage(),
   fileFilter(request, file, callback) {
     const isImage = String(file.mimetype || "").startsWith("image/");
 
     if (!isImage) {
-      callback(new Error("Le permis doit etre une image."));
+      callback(
+        new Error(
+          "Format non accepte. Utilisez JPG, JPEG, PNG, WEBP, GIF, BMP, SVG, AVIF, HEIC, HEIF ou JFIF."
+        )
+      );
       return;
     }
 
@@ -200,7 +269,7 @@ function handleReservationUpload(request, response, next) {
   upload.array("drivingLicensePhoto", MAX_RESERVATION_LICENSE_FILES)(request, response, (error) => {
     if (error) {
       return response.status(400).json({
-        message: "Upload du permis impossible."
+        message: error.message || "Upload du permis impossible."
       });
     }
 
@@ -226,22 +295,30 @@ async function optimizeReservationLicensePhotos(files) {
         secureReservationUploadsRoot,
         optimizedFilename
       );
-      const optimizedBuffer = await sharp(file.buffer)
-        .rotate()
-        .resize({
-          width: 1800,
-          height: 1800,
-          fit: "inside",
-          withoutEnlargement: true
-        })
-        .webp({
-          quality: 74
-        })
-        .toBuffer();
+      let securedBuffer = null;
+      let securedContentType = "image/webp";
+
+      try {
+        securedBuffer = await sharp(file.buffer)
+          .rotate()
+          .resize({
+            width: 1800,
+            height: 1800,
+            fit: "inside",
+            withoutEnlargement: true
+          })
+          .webp({
+            quality: 74
+          })
+          .toBuffer();
+      } catch (error) {
+        securedBuffer = Buffer.from(file.buffer);
+        securedContentType = String(file.mimetype || "application/octet-stream");
+      }
 
       await fs.writeFile(
         optimizedPath,
-        encryptReservationBuffer(optimizedBuffer),
+        encryptReservationBuffer(securedBuffer, securedContentType),
         {
           mode: 0o600
         }
@@ -252,7 +329,7 @@ async function optimizeReservationLicensePhotos(files) {
 
     return serializeReservationLicenseReferences(references);
   } catch (error) {
-    throw new Error("Le permis de conduire n'a pas pu etre securise.");
+    throw new Error("Le permis de conduire est invalide ou n'a pas pu etre traite.");
   }
 }
 
@@ -279,11 +356,12 @@ async function readStoredReservationFile(reference, index = 0) {
     const encryptedBuffer = await fs.readFile(
       path.resolve(secureReservationUploadsRoot, secureFilename)
     );
+    const decryptedFile = decryptReservationBuffer(encryptedBuffer);
 
     return {
-      buffer: decryptReservationBuffer(encryptedBuffer),
-      contentType: "image/webp",
-      filename: `${path.parse(secureFilename).name}.webp`
+      buffer: decryptedFile.buffer,
+      contentType: decryptedFile.contentType,
+      filename: `${path.parse(secureFilename).name}${getMimeExtension(decryptedFile.contentType)}`
     };
   }
 

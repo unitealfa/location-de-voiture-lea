@@ -22,6 +22,25 @@ function parseVehicleId(value) {
   return Number.isInteger(vehicleId) && vehicleId > 0 ? vehicleId : null;
 }
 
+function getPublicReservationErrorMessage(error) {
+  const normalizedMessage = String(error?.message || "").toLowerCase();
+
+  if (normalizedMessage.includes("permis de conduire est obligatoire")) {
+    return "Ajoutez obligatoirement la photo du permis de conduire.";
+  }
+
+  if (
+    normalizedMessage.includes("format non accepte") ||
+    normalizedMessage.includes("permis de conduire est invalide") ||
+    normalizedMessage.includes("upload du permis impossible") ||
+    normalizedMessage.includes("le permis doit etre une image")
+  ) {
+    return "Ajoutez une image valide du permis de conduire.";
+  }
+
+  return error?.message || "Reservation impossible.";
+}
+
 router.get("/", async (request, response) => {
   try {
     const vehicles = await getOrSetResponseCache("vehicles:public:list", 1000 * 30, async () => listPublicVehiclesService());
@@ -69,7 +88,7 @@ router.post("/:id/reservations", handleReservationUpload, async (request, respon
     await removeUploadedReservationFile(request.files);
     await removeStoredReservationFile(drivingLicensePhotoUrl);
     return response.status(400).json({
-      message: error.message || "Reservation impossible."
+      message: getPublicReservationErrorMessage(error)
     });
   }
 });

@@ -5,6 +5,7 @@ const {
   listSiteSettings,
   upsertSiteSettings
 } = require("../repositories/siteSettingsRepository");
+const { sanitizeBrandingImageUrl } = require("./mediaUrlService");
 
 const LEGACY_CONTENT_STORAGE_PATH = path.resolve(__dirname, "../data/site-content.json");
 
@@ -221,6 +222,29 @@ function applyVisualSettings(baseContent, settingsMap) {
       setPathValue(nextContent, contentPath, value.trim());
     }
   });
+
+  nextContent.brand = {
+    ...(nextContent.brand || {}),
+    faviconImagePath: sanitizeBrandingImageUrl(nextContent.brand?.faviconImagePath),
+    logoImagePath: sanitizeBrandingImageUrl(nextContent.brand?.logoImagePath)
+  };
+  nextContent.footer = {
+    ...(nextContent.footer || {}),
+    logoImagePath: sanitizeBrandingImageUrl(nextContent.footer?.logoImagePath)
+  };
+  nextContent.aceulle = {
+    ...(nextContent.aceulle || {}),
+    heroImagePath: sanitizeBrandingImageUrl(nextContent.aceulle?.heroImagePath),
+    carHotelImagePath: sanitizeBrandingImageUrl(nextContent.aceulle?.carHotelImagePath)
+  };
+  nextContent.faqPage = {
+    ...(nextContent.faqPage || {}),
+    heroImagePath: sanitizeBrandingImageUrl(nextContent.faqPage?.heroImagePath)
+  };
+  nextContent.contactPage = {
+    ...(nextContent.contactPage || {}),
+    heroImagePath: sanitizeBrandingImageUrl(nextContent.contactPage?.heroImagePath)
+  };
 
   return nextContent;
 }

@@ -1,4 +1,8 @@
 const { getPool } = require("../db/pool");
+const {
+  sanitizeVehiclePhotoUrls,
+  sanitizeVehicleVideoUrl
+} = require("../services/mediaUrlService");
 
 function parseJsonArray(value) {
   try {
@@ -37,8 +41,8 @@ function mapVehicle(row) {
     extraKmPrice: Number(row.extra_km_price),
     pricingDescription: row.pricing_description,
     rentalConditions: row.rental_conditions,
-    videoUrl: row.video_url,
-    photoUrls: parsePhotoUrls(row.photo_urls),
+    videoUrl: sanitizeVehicleVideoUrl(row.video_url),
+    photoUrls: sanitizeVehiclePhotoUrls(parsePhotoUrls(row.photo_urls)),
     availabilityStatus: row.availability_status,
     createdAt: row.created_at,
     updatedAt: row.updated_at

@@ -395,6 +395,8 @@ const defaultContent = {
     reservationBirthDatePlaceholder: "Date de naissance*",
     reservationDrivingLicensePlaceholder: "Ajoutez la photo du permis de conduire*",
     reservationDrivingLicenseEmptyLabel: "Aucun fichier choisi",
+    reservationDrivingLicenseRequiredMessage:
+      "Ajoutez obligatoirement la photo du permis de conduire.",
     reservationDrivingLicenseInvalidMessage:
       "Format non accepte. Utilisez JPG, JPEG, PNG, WEBP, GIF, BMP, SVG, AVIF, HEIC, HEIF ou JFIF.",
     reservationEmailPlaceholder: "E-mail (optionnel)",

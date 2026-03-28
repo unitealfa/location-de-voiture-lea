@@ -323,13 +323,12 @@ async function buildReservationPayload(vehicleId, payload, options = {}) {
     payload.privacyPolicyAccepted === "true" ||
     payload.privacyPolicyAccepted === "on";
 
-  if (
-    !firstName ||
-    !lastName ||
-    !phone ||
-    (requiredLicensePhoto && !drivingLicensePhotoUrl)
-  ) {
+  if (!firstName || !lastName || !phone) {
     throw new Error("Tous les champs obligatoires de reservation doivent etre remplis.");
+  }
+
+  if (requiredLicensePhoto && !drivingLicensePhotoUrl) {
+    throw new Error("Le permis de conduire est obligatoire.");
   }
 
   if (

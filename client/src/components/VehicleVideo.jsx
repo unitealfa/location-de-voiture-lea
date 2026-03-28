@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+
 function getYoutubeEmbedUrl(url) {
   if (typeof url !== "string" || !url) {
     return "";
@@ -19,9 +21,14 @@ function getYoutubeEmbedUrl(url) {
 }
 
 function VehicleVideo({ src, title }) {
+  const [hasLoadError, setHasLoadError] = useState(false);
   const youtubeEmbedUrl = getYoutubeEmbedUrl(src);
 
-  if (!src) {
+  useEffect(() => {
+    setHasLoadError(false);
+  }, [src]);
+
+  if (!src || hasLoadError) {
     return null;
   }
 
@@ -49,6 +56,7 @@ function VehicleVideo({ src, title }) {
       preload="metadata"
       playsInline
       src={src}
+      onError={() => setHasLoadError(true)}
     />
   );
 }

@@ -1,4 +1,8 @@
 const { getPool } = require("../db/pool");
+const {
+  DEFAULT_VEHICLE_IMAGE_URL,
+  sanitizeVehicleImageUrl
+} = require("../services/mediaUrlService");
 
 function mapReservation(row) {
   if (!row) {
@@ -11,7 +15,7 @@ function mapReservation(row) {
     vehicleBrand: row.vehicle_brand,
     vehicleModel: row.vehicle_model,
     vehicleVersion: row.vehicle_version,
-    vehiclePhotoUrl: row.vehicle_photo_url,
+    vehiclePhotoUrl: sanitizeVehicleImageUrl(row.vehicle_photo_url) || DEFAULT_VEHICLE_IMAGE_URL,
     firstName: row.first_name,
     lastName: row.last_name,
     drivingLicensePhotoUrl: row.driving_license_photo_url,
