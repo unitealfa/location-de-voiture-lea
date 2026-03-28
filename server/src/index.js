@@ -33,13 +33,14 @@ const {
   ensureDatabaseBootstrap,
   DATABASE_RETRY_DELAY_MS
 } = require("./services/databaseBootstrapService");
+const { resolveUploadsRoot } = require("./services/storagePathService");
 
 const PORT = process.env.PORT || 4000;
 const HOST = process.env.HOST || "127.0.0.1";
 const isProduction = process.env.NODE_ENV === "production";
 const clientRoot = path.resolve(__dirname, "../../client");
 const clientDist = path.resolve(clientRoot, "dist");
-const uploadsRoot = path.resolve(__dirname, "../uploads");
+const uploadsRoot = resolveUploadsRoot();
 const HTTP_RETRY_DELAY_MS = 3000;
 
 let bootstrapRetryTimer = null;

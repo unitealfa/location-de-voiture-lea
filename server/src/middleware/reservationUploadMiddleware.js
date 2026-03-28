@@ -3,11 +3,15 @@ const path = require("path");
 const crypto = require("crypto");
 const multer = require("multer");
 const sharp = require("sharp");
+const {
+  resolveSecureStorageRoot,
+  resolveUploadsRoot
+} = require("../services/storagePathService");
 
-const uploadsRoot = path.resolve(__dirname, "../../uploads");
+const uploadsRoot = resolveUploadsRoot();
 const secureReservationUploadsRoot = path.resolve(
-  __dirname,
-  "../../secure-storage/reservations"
+  resolveSecureStorageRoot(),
+  "reservations"
 );
 const SECURE_LICENSE_PREFIX = "secure-license:";
 const ENCRYPTED_FILE_HEADER = Buffer.from("RVL1");

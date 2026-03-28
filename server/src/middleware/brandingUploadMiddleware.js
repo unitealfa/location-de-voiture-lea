@@ -3,8 +3,9 @@ const path = require("path");
 const crypto = require("crypto");
 const multer = require("multer");
 const sharp = require("sharp");
+const { resolveUploadsRoot } = require("../services/storagePathService");
 
-const uploadsRoot = path.resolve(__dirname, "../../uploads");
+const uploadsRoot = resolveUploadsRoot();
 const brandingUploadsRoot = path.resolve(uploadsRoot, "branding");
 
 async function ensureBrandingUploadsRoot() {

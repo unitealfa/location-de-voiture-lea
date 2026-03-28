@@ -18,8 +18,9 @@ const {
 } = require("./middleware/adminAuthMiddleware");
 const { getTargetDatabaseName } = require("./config/databaseConfig");
 const { getRuntimeState } = require("./services/runtimeStateService");
+const { resolveUploadsRoot } = require("./services/storagePathService");
 
-const uploadsRoot = path.resolve(__dirname, "../uploads");
+const uploadsRoot = resolveUploadsRoot();
 
 function createApiApp() {
   const app = express();
