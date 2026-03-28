@@ -40,17 +40,20 @@ function SocialIcon({ href, label, children }) {
 }
 
 function Footer({ brand, content, header, onNavigate }) {
-  const telHref = "tel:" + content.phoneValue.replace(/[^+\d]/g, "");
-  const mailHref = content.emailValue ? "mailto:" + content.emailValue : "#";
-  const footerLogoPath = content.logoImagePath || brand.logoImagePath;
+  const phoneValue = content.phoneValue || "0779 10 74 46";
+  const emailValue = content.emailValue || "lea@gmail.com";
+  const locationValue = content.locationValue || "Alger";
+  const telHref = "tel:" + phoneValue.replace(/[^+\d]/g, "");
+  const mailHref = emailValue ? "mailto:" + emailValue : "#";
+  const footerLogoPath = content.logoImagePath || brand.logoImagePath || "/home/rentzo-logo.jpg";
   const shortInfo =
     content.shortInfo ||
-    "✔︎ " + brand.name + ".\nLocation de voitures de luxe à " + content.locationValue + ".";
+    "✔︎ " + brand.name + ".\nLocation de voitures de luxe à " + locationValue + ".";
   const addressValue =
-    content.addressValue || [content.locationValue, content.brandValue].filter(Boolean).join("\n");
+    content.addressValue || [locationValue, content.brandValue || brand.name].filter(Boolean).join("\n");
   const locationHref =
     content.mapUrl ||
-    "https://maps.google.com/?q=" + encodeURIComponent((content.locationValue || "Alger") + ", Algerie");
+    "https://maps.google.com/?q=" + encodeURIComponent(locationValue + ", Algerie");
 
   return (
     <footer className="rentzo-footer">
@@ -95,18 +98,18 @@ function Footer({ brand, content, header, onNavigate }) {
             <div className="vehica-phone">
               <div className="vehica-phone-v2">
                 <a className="vehica-phone-highlight" href={telHref}>
-                  {content.phoneValue}
+                  {phoneValue}
                 </a>
               </div>
             </div>
 
-            {content.emailValue ? (
+            {emailValue ? (
               <div className="vehica-email">
                 <a className="vehica-email__link" href={mailHref}>
                   <span className="vehica-email__icon">
                     <EmailIcon />
                   </span>
-                  <span>{content.emailValue}</span>
+                  <span>{emailValue}</span>
                 </a>
               </div>
             ) : null}

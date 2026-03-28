@@ -8,6 +8,36 @@ const {
 
 const LEGACY_CONTENT_STORAGE_PATH = path.resolve(__dirname, "../data/site-content.json");
 
+const VISUAL_DEFAULT_FALLBACKS = {
+  brand: {
+    browserTitle: "Lea Location",
+    faviconImagePath: "/home/rentzo-logo.jpg",
+    logoImagePath: "/home/rentzo-logo.jpg"
+  },
+  aceulle: {
+    heroImagePath: "/home/rentzo-hero.jpg",
+    carHotelImagePath: "/home/rentzo-car-hotel.jpg"
+  },
+  faqPage: {
+    heroImagePath: "/home/rentzo-contact-hero.jpg"
+  },
+  contactPage: {
+    heroImagePath: "/home/rentzo-contact-hero.jpg",
+    mapQuery: "Alger Centre, Alger, Algeria",
+    mapLinkUrl: "https://maps.google.com/?q=Alger%20Centre%2C%20Alger%2C%20Algeria"
+  },
+  footer: {
+    logoImagePath: "/home/rentzo-logo.jpg",
+    shortInfo: "✔︎ Lea Location. Location de voitures de luxe à ALGER.",
+    phoneValue: "0779 10 74 46",
+    emailValue: "lea@gmail.com",
+    locationValue: "Alger",
+    addressValue: "Alger\nLea Location",
+    facebookUrl: "#",
+    instagramUrl: "#"
+  }
+};
+
 const VISUAL_SETTING_KEYS = {
   browserTitle: "brand.browserTitle",
   faviconImagePath: "brand.faviconImagePath",
@@ -141,7 +171,31 @@ function getPathValue(target, pathKey) {
 }
 
 function getBaseContent() {
-  return cloneValue(defaultContent);
+  const baseContent = cloneValue(defaultContent);
+
+  return {
+    ...baseContent,
+    brand: {
+      ...VISUAL_DEFAULT_FALLBACKS.brand,
+      ...(baseContent.brand || {})
+    },
+    aceulle: {
+      ...VISUAL_DEFAULT_FALLBACKS.aceulle,
+      ...(baseContent.aceulle || {})
+    },
+    faqPage: {
+      ...VISUAL_DEFAULT_FALLBACKS.faqPage,
+      ...(baseContent.faqPage || {})
+    },
+    contactPage: {
+      ...VISUAL_DEFAULT_FALLBACKS.contactPage,
+      ...(baseContent.contactPage || {})
+    },
+    footer: {
+      ...VISUAL_DEFAULT_FALLBACKS.footer,
+      ...(baseContent.footer || {})
+    }
+  };
 }
 
 function applyVisualSettings(baseContent, settingsMap) {

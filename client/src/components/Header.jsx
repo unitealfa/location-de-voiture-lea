@@ -53,6 +53,7 @@ function Header({
 
   const telHref = footerContent?.phoneValue ? "tel:" + footerContent.phoneValue.replace(/[^+\d]/g, "") : "#";
   const mailHref = footerContent?.emailValue ? "mailto:" + footerContent.emailValue : "#";
+  const headerLogoPath = brand.logoImagePath || "/home/rentzo-logo.jpg";
 
   const navigationItems = currentAdmin
     ? [
@@ -260,7 +261,7 @@ function Header({
                   aria-label={brand.name}
                   onClick={() => handleNavigate("/")}
                 >
-                  <img src={brand.logoImagePath} alt={brand.name} />
+                  <img src={headerLogoPath} alt={brand.name} />
                 </button>
               </div>
 
@@ -271,7 +272,7 @@ function Header({
                   aria-label={brand.name}
                   onClick={() => handleNavigate("/")}
                 >
-                  <img src={brand.logoImagePath} alt={brand.name} />
+                  <img src={headerLogoPath} alt={brand.name} />
                 </button>
               </div>
 
@@ -395,7 +396,7 @@ function Header({
                 aria-label={brand.name}
                 onClick={() => handleNavigate("/")}
               >
-                <img src={brand.logoImagePath} alt={brand.name} />
+                <img src={headerLogoPath} alt={brand.name} />
               </button>
             </div>
           </div>

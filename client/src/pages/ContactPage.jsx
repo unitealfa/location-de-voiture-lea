@@ -40,11 +40,13 @@ function SocialIcon({ href, label, children }) {
 }
 
 function ContactPage({ content, footerContent, brand }) {
-  const telHref = "tel:" + footerContent.phoneValue.replace(/[^+\d]/g, "");
-  const mailHref = footerContent.emailValue ? "mailto:" + footerContent.emailValue : "#";
+  const phoneValue = footerContent.phoneValue || "0779 10 74 46";
+  const emailValue = footerContent.emailValue || "lea@gmail.com";
+  const telHref = "tel:" + phoneValue.replace(/[^+\d]/g, "");
+  const mailHref = emailValue ? "mailto:" + emailValue : "#";
   const addressValue =
     footerContent.addressValue ||
-    [footerContent.locationValue, brand.name].filter(Boolean).join("\n");
+    [footerContent.locationValue || "Alger", brand.name].filter(Boolean).join("\n");
   const mapQuery = content.mapQuery || "Alger Centre, Alger, Algeria";
   const mapLinkUrl = content.mapLinkUrl || "";
   const hasManualCoordinates =
@@ -108,7 +110,7 @@ function ContactPage({ content, footerContent, brand }) {
             <div className="vehica-phone rentzo-contact-main__phone">
               <div className="vehica-phone-v1">
                 <a className="vehica-phone-highlight" href={telHref}>
-                  {footerContent.phoneValue}
+                  {phoneValue}
                 </a>
               </div>
             </div>
@@ -119,7 +121,7 @@ function ContactPage({ content, footerContent, brand }) {
                 <span className="vehica-email__icon">
                   <EmailIcon />
                 </span>
-                <span>{footerContent.emailValue}</span>
+                <span>{emailValue}</span>
               </a>
             </div>
             <div className="rentzo-contact-main__spacer rentzo-contact-main__spacer--regular"></div>
@@ -165,7 +167,7 @@ function ContactPage({ content, footerContent, brand }) {
 
             <div className="rentzo-contact-hours__text">
               <ul>
-                {content.hoursItems.map((item) => (
+                {(content.hoursItems || []).map((item) => (
                   <li key={item.day}>
                     <span className="vehica-day-label">
                       <strong>{item.day}</strong>: {item.value}
