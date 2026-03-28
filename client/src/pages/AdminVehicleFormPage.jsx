@@ -5,6 +5,7 @@ import {
   getVehicleById,
   updateVehicle
 } from "../services/vehicleService";
+import { extractAcceptedFilesFromDrop } from "../utils/dropFiles";
 
 function buildInitialFormValues() {
   return {
@@ -285,16 +286,24 @@ function AdminVehicleFormPage({
     setActiveDropZone("");
   };
 
-  const handlePhotoDrop = (event) => {
+  const handlePhotoDrop = async (event) => {
     event.preventDefault();
     setActiveDropZone("");
-    applyPhotoFiles(event.dataTransfer.files);
+    const droppedFiles = await extractAcceptedFilesFromDrop(event, {
+      acceptPrefix: "image",
+      maxFiles: 20
+    });
+    applyPhotoFiles(droppedFiles);
   };
 
-  const handleVideoDrop = (event) => {
+  const handleVideoDrop = async (event) => {
     event.preventDefault();
     setActiveDropZone("");
-    applyVideoFile(event.dataTransfer.files?.[0] || null);
+    const droppedFiles = await extractAcceptedFilesFromDrop(event, {
+      acceptPrefix: "video",
+      maxFiles: 1
+    });
+    applyVideoFile(droppedFiles?.[0] || null);
   };
 
   const handleSubmit = async (event) => {

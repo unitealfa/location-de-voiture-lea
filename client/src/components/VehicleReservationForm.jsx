@@ -3,6 +3,7 @@ import {
   createVehicleReservation,
   getVehicleReservationAvailability
 } from "../services/reservationService";
+import { extractAcceptedFilesFromDrop } from "../utils/dropFiles";
 import { calculateReservationPricing, getReservationRateLabel } from "../utils/reservationPricing";
 import { formatVehicleName, formatVehiclePrice } from "../utils/vehicleFormatters";
 import { formatReservationDateTime } from "../utils/reservationFormatters";
@@ -463,10 +464,14 @@ function VehicleReservationForm({ content, vehicle, hideActionButtons = false, h
     setIsLicenseDragActive(false);
   };
 
-  const handleDrivingLicenseDrop = (event) => {
+  const handleDrivingLicenseDrop = async (event) => {
     event.preventDefault();
     setIsLicenseDragActive(false);
-    applyDrivingLicensePhotos(event.dataTransfer.files);
+    const droppedFiles = await extractAcceptedFilesFromDrop(event, {
+      acceptPrefix: "image",
+      maxFiles: 2
+    });
+    applyDrivingLicensePhotos(droppedFiles);
   };
 
   const scrollToForm = (event) => {

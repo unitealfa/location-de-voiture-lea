@@ -6,6 +6,7 @@ import {
   listAdminReservations,
   updateAdminReservation
 } from "../services/reservationService";
+import { extractAcceptedFilesFromDrop } from "../utils/dropFiles";
 import { formatReservationDateTime } from "../utils/reservationFormatters";
 import { calculateReservationPricing, getReservationRateLabel } from "../utils/reservationPricing";
 import { formatVehicleName, formatVehiclePrice } from "../utils/vehicleFormatters";
@@ -453,10 +454,14 @@ function AdminReservationFormPage({
     setIsLicenseDragActive(false);
   };
 
-  const handleDrivingLicenseDrop = (event) => {
+  const handleDrivingLicenseDrop = async (event) => {
     event.preventDefault();
     setIsLicenseDragActive(false);
-    applyDrivingLicensePhotos(event.dataTransfer.files);
+    const droppedFiles = await extractAcceptedFilesFromDrop(event, {
+      acceptPrefix: "image",
+      maxFiles: 2
+    });
+    applyDrivingLicensePhotos(droppedFiles);
   };
 
   const selectedDurationLabel = useMemo(

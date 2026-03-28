@@ -15,6 +15,7 @@ import {
   formatVehiclePrice,
   getVehicleCardImageUrl
 } from "../utils/vehicleFormatters";
+import { extractAcceptedFilesFromDrop } from "../utils/dropFiles";
 
 const DEFAULT_FORM = {
   browserTitle: "",
@@ -815,7 +816,10 @@ function ImageDropField({
         }}
         onDrop={(event) => {
           event.preventDefault();
-          handleFiles(event.dataTransfer.files);
+          extractAcceptedFilesFromDrop(event, {
+            acceptPrefix: "image",
+            maxFiles: 1
+          }).then(handleFiles);
         }}
       >
         <div className="admin-visual-page__upload-preview">
