@@ -76,6 +76,36 @@ npm run build
 npm run start
 ```
 
+Deploiement Vercel:
+
+```text
+- le front est servi depuis client/dist
+- l'API Express est exposee via api/index.js en fonction Node Vercel
+- les variables DB doivent etre renseignees dans Vercel :
+  DB_HOST
+  DB_PORT
+  DB_USER
+  DB_PASSWORD
+  DB_NAME
+  DB_SSL_CA si necessaire
+  SESSION_SECRET
+  MAIL_SMTP_HOST
+  MAIL_SMTP_PORT
+  MAIL_SMTP_SECURE
+  MAIL_SMTP_USER
+  MAIL_SMTP_PASS
+  MAIL_FROM
+  RESERVATION_FILE_ENCRYPTION_KEY
+```
+
+Important pour Vercel:
+
+```text
+- les ecritures locales dans /server/uploads et /server/secure-storage ne sont pas un stockage persistant sur Vercel
+- le site peut etre deploye, mais pour une production fiable des uploads il faut ensuite migrer les fichiers vers un stockage externe type S3 / Cloudinary / Vercel Blob
+- la configuration Vercel est fournie dans vercel.json
+```
+
 API utile:
 
 ```text

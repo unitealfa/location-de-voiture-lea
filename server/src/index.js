@@ -20,18 +20,19 @@ const {
   requireAdminPageAuth
 } = require("./middleware/adminAuthMiddleware");
 const {
-  pingDatabase,
   closePool
 } = require("./db/pool");
 const { getTargetDatabaseName } = require("./config/databaseConfig");
-const { initializeAdminAuth } = require("./services/adminAuthService");
-const { startReservationLicenseCleanupScheduler, stopReservationLicenseCleanupScheduler } = require("./services/reservationService");
+const { stopReservationLicenseCleanupScheduler } = require("./services/reservationService");
 const { trackPublicSiteVisit } = require("./services/siteVisitService");
 const {
   getRuntimeState,
-  setAdminSeed,
   setDatabaseState
 } = require("./services/runtimeStateService");
+const {
+  ensureDatabaseBootstrap,
+  DATABASE_RETRY_DELAY_MS
+} = require("./services/databaseBootstrapService");
 
 const PORT = process.env.PORT || 4000;
 const HOST = process.env.HOST || "127.0.0.1";
@@ -39,7 +40,6 @@ const isProduction = process.env.NODE_ENV === "production";
 const clientRoot = path.resolve(__dirname, "../../client");
 const clientDist = path.resolve(clientRoot, "dist");
 const uploadsRoot = path.resolve(__dirname, "../uploads");
-const DATABASE_RETRY_DELAY_MS = 15000;
 const HTTP_RETRY_DELAY_MS = 3000;
 
 let bootstrapRetryTimer = null;
@@ -270,36 +270,11 @@ async function bootstrapDatabaseInBackground() {
   }
 
   isBootstrapping = true;
-  setDatabaseState({
-    ready: false,
-    status: "connecting",
-    retryDelayMs: DATABASE_RETRY_DELAY_MS
-  });
 
   try {
-    await pingDatabase();
-    const seededAdmin = await initializeAdminAuth();
-
-    setAdminSeed(seededAdmin.username);
-    setDatabaseState({
-      ready: true,
-      status: "ready",
-      lastError: "",
-      lastSuccessAt: new Date().toISOString(),
-      retryDelayMs: DATABASE_RETRY_DELAY_MS
-    });
-
-    startReservationLicenseCleanupScheduler();
+    await ensureDatabaseBootstrap();
     console.log("Database bootstrap ready.");
   } catch (error) {
-    await closePool();
-    setDatabaseState({
-      ready: false,
-      status: "retrying",
-      lastError: `${error.code || "ERROR"}: ${error.message}`,
-      retryDelayMs: DATABASE_RETRY_DELAY_MS
-    });
-
     console.error(
       `Database bootstrap failed. Retrying in ${DATABASE_RETRY_DELAY_MS / 1000}s.`,
       error

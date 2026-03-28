@@ -1,0 +1,8 @@
+MAIL_SMTP_HOST=smtp.gmail.com
+MAIL_SMTP_PORT=465
+MAIL_SMTP_SECURE=true
+MAIL_SMTP_USER=automatiquexmail@gmail.com
+MAIL_SMTP_PASS=wkse ryxm mvwu pjhs
+MAIL_FROM=Lea Location de voitures <automatiquexmail@gmail.com>
+RESERVATION_FILE_ENCRYPTION_KEY=8dc7517e03486adf8c1768eb4354b14901017255f29179c61467e5f445c0d6d9
+    

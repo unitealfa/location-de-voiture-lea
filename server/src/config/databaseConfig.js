@@ -8,7 +8,7 @@ const TARGET_DATABASE_NAME = process.env.DB_NAME || "location-de-v";
 
 function readDbInfoFile() {
   if (!fs.existsSync(DBINFO_PATH)) {
-    throw new Error(`Database config file not found at ${DBINFO_PATH}`);
+    return "";
   }
 
   return fs.readFileSync(DBINFO_PATH, "utf8");
@@ -53,7 +53,9 @@ function resolveConnectionSettings() {
   const ca = process.env.DB_SSL_CA || readCaCertificate(content);
 
   if (!host || !port || !user || !password) {
-    throw new Error("Database configuration is incomplete.");
+    throw new Error(
+      "Database configuration is incomplete. Provide DB_HOST, DB_PORT, DB_USER, DB_PASSWORD and DB_NAME, or keep dbinfo.txt locally."
+    );
   }
 
   return {

@@ -1,7 +1,17 @@
 const { getRuntimeState } = require("../services/runtimeStateService");
+const { ensureDatabaseBootstrap } = require("../services/databaseBootstrapService");
 
-function requireDatabaseReady(request, response, next) {
-  const runtimeState = getRuntimeState();
+async function requireDatabaseReady(request, response, next) {
+  let runtimeState = getRuntimeState();
+
+  if (!runtimeState.database.ready) {
+    try {
+      await ensureDatabaseBootstrap();
+      runtimeState = getRuntimeState();
+    } catch (error) {
+      runtimeState = getRuntimeState();
+    }
+  }
 
   if (runtimeState.database.ready) {
     return next();
