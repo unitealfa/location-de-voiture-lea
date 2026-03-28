@@ -46,15 +46,33 @@ function ContactPage({ content, footerContent, brand }) {
     footerContent.addressValue ||
     [footerContent.locationValue, brand.name].filter(Boolean).join("\n");
   const mapQuery = content.mapQuery || "Alger Centre, Alger, Algeria";
-  const locationHref = "https://maps.google.com/?q=" + encodeURIComponent(mapQuery);
+  const mapLinkUrl = content.mapLinkUrl || "";
+  const hasManualCoordinates =
+    content.mapLatitude !== undefined &&
+    content.mapLatitude !== null &&
+    String(content.mapLatitude).trim() !== "" &&
+    content.mapLongitude !== undefined &&
+    content.mapLongitude !== null &&
+    String(content.mapLongitude).trim() !== "";
+  const coordinatesQuery = hasManualCoordinates
+    ? String(content.mapLatitude).trim() + "," + String(content.mapLongitude).trim()
+    : "";
+  const resolvedMapQuery = coordinatesQuery || mapQuery;
+  const locationHref =
+    mapLinkUrl ||
+    "https://maps.google.com/?q=" + encodeURIComponent(resolvedMapQuery);
   const mapSrc =
     "https://maps.google.com/maps?q=" +
-    encodeURIComponent(mapQuery) +
-    "&t=m&z=13&output=embed&iwloc=near";
+    encodeURIComponent(resolvedMapQuery) +
+    "&t=m&z=15&output=embed&iwloc=near";
+  const heroImagePath = content.heroImagePath || "/home/rentzo-contact-hero.jpg";
 
   return (
     <main className="rentzo-contact-page">
-      <section className="rentzo-contact-hero">
+      <section
+        className="rentzo-contact-hero"
+        style={{ backgroundImage: "url('" + heroImagePath + "')" }}
+      >
         <div className="rentzo-contact-hero__overlay"></div>
 
         <div className="rentzo-contact-hero__inner">

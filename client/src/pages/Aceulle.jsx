@@ -163,6 +163,43 @@ function useSlidesPerView() {
   return slidesPerView;
 }
 
+function getConvertibleSlidesPerView(width) {
+  if (width >= 1408) {
+    return 4;
+  }
+
+  if (width >= 900) {
+    return 2;
+  }
+
+  return 1;
+}
+
+function useConvertibleSlidesPerView() {
+  const [slidesPerView, setSlidesPerView] = useState(() => {
+    if (typeof window === "undefined") {
+      return 4;
+    }
+
+    return getConvertibleSlidesPerView(window.innerWidth);
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setSlidesPerView(getConvertibleSlidesPerView(window.innerWidth));
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  return slidesPerView;
+}
+
 function VehicleCard({ vehicle, onNavigate, wrapperClassName }) {
   return (
     <div className={wrapperClassName}>
@@ -234,6 +271,7 @@ function RentzoFeature({ icon, label, text }) {
 
 function CarHotelSection({ content }) {
   const [sectionRef, isVisible] = useRevealOnce();
+  const carHotelImagePath = content.carHotelImagePath || "/home/rentzo-car-hotel.jpg";
 
   return (
     <section
@@ -241,7 +279,11 @@ function CarHotelSection({ content }) {
       className={"rentzo-home__car-hotel" + (isVisible ? " is-visible" : "")}
     >
       <div className="rentzo-home__car-hotel-grid">
-        <div className="rentzo-home__car-hotel-image" aria-hidden="true"></div>
+        <div
+          className="rentzo-home__car-hotel-image"
+          aria-hidden="true"
+          style={{ backgroundImage: "url('" + carHotelImagePath + "')" }}
+        ></div>
 
         <div className="rentzo-home__car-hotel-content">
           <h2 className="rentzo-home__car-hotel-title">{content.carHotelTitle}</h2>
@@ -510,9 +552,17 @@ function Aceulle({ content, onNavigate }) {
   }, []);
 
   const featuredVehicles = vehicles.slice(0, 4);
+  const selectedConvertibleIds = Array.isArray(content.convertibleVehicleIds)
+    ? content.convertibleVehicleIds.map((id) => Number(id)).filter((id) => Number.isInteger(id))
+    : [];
+  const selectedConvertibles = selectedConvertibleIds
+    .map((selectedId) => vehicles.find((vehicle) => Number(vehicle.id) === selectedId))
+    .filter(Boolean);
   const convertibleVehicles = vehicles.filter((vehicle) => vehicle.isConvertible);
-  const featuredConvertibles = (convertibleVehicles.length ? convertibleVehicles : vehicles).slice(0, 4);
-  const convertibleSlidesPerView = useSlidesPerView();
+  const featuredConvertibles = (
+    selectedConvertibles.length ? selectedConvertibles : convertibleVehicles.length ? convertibleVehicles : vehicles
+  ).slice(0, 8);
+  const convertibleSlidesPerView = useConvertibleSlidesPerView();
   const convertiblePageCount = Math.max(1, featuredConvertibles.length - convertibleSlidesPerView + 1);
   const [activeConvertibleIndex, setActiveConvertibleIndex] = useState(0);
   const [convertibleDragOffset, setConvertibleDragOffset] = useState(0);
@@ -609,7 +659,7 @@ function Aceulle({ content, onNavigate }) {
             <div className="vehica-swiper-wrapper">
               <div
                 className="vehica-slider__slide"
-                style={{ backgroundImage: "url('/home/rentzo-hero.jpg')" }}
+                style={{ backgroundImage: "url('" + (content.heroImagePath || "/home/rentzo-hero.jpg") + "')" }}
               >
                 <div className="vehica-slider__mask-additional"></div>
 
@@ -636,13 +686,13 @@ function Aceulle({ content, onNavigate }) {
           <div className="vehica-features">
             <RentzoFeature
               icon={<i className="far fa-calendar-alt" aria-hidden="true"></i>}
-              label="LOCATION : à la journée, à la semaine ou au mois"
-              text="Nous vous offrons la possibilité de louer nos véhicules pour la durée de votre choix."
+              label={content.featureRentalLabel}
+              text={content.featureRentalText}
             />
             <RentzoFeature
               icon={<i className="fas fa-hotel" aria-hidden="true"></i>}
-              label="CONTACT ET RÉSERVATION RAPIDES"
-              text="Téléphone, WhatsApp ou formulaire selon le véhicule choisi, avec un affichage optimisé même sur connexion lente."
+              label={content.featureContactLabel}
+              text={content.featureContactText}
             />
           </div>
         </div>
@@ -652,7 +702,7 @@ function Aceulle({ content, onNavigate }) {
         <div className="rentzo-home__container">
           <div className="vehica-hero-v2-title">
             <h2 className="elementor-heading-title elementor-size-default">
-              Notre flotte de voitures de luxe à <span className="vehica-text-primary">Alger</span>
+              {content.fleetTitle}
             </h2>
           </div>
 
@@ -715,15 +765,42 @@ function Aceulle({ content, onNavigate }) {
                 <div className="vehica-carousel__swiper" onPointerDown={handleConvertiblePointerDown} onPointerMove={handleConvertiblePointerMove} onPointerUp={handleConvertiblePointerEnd} onPointerCancel={handleConvertiblePointerEnd}>
                   <div className="vehica-swiper-wrapper" style={convertibleTrackStyle}>
                     {featuredConvertibles.map((vehicle) => (
-                      <VehicleCard
+                      <div
                         key={vehicle.id}
-                        vehicle={vehicle}
-                        onNavigate={onNavigate}
-                        wrapperClassName="vehica-swiper-slide vehica-carousel-v1__slide"
-                      />
+                        className="vehica-swiper-slide vehica-carousel-v1__slide"
+                        style={{ width: 100 / convertibleSlidesPerView + "%" }}
+                      >
+                        <VehicleCard
+                          vehicle={vehicle}
+                          onNavigate={onNavigate}
+                          wrapperClassName="rentzo-home__convertibles-slide-inner"
+                        />
+                      </div>
                     ))}
                   </div>
                 </div>
+
+                {convertiblePageCount > 1 ? (
+                  <>
+                    <button
+                      type="button"
+                      className="rentzo-home__convertibles-nav rentzo-home__convertibles-nav--prev"
+                      aria-label="Voir les vehicules precedents"
+                      onClick={goToPreviousConvertible}
+                    >
+                      <ChevronLeftIcon />
+                    </button>
+
+                    <button
+                      type="button"
+                      className="rentzo-home__convertibles-nav rentzo-home__convertibles-nav--next"
+                      aria-label="Voir les vehicules suivants"
+                      onClick={goToNextConvertible}
+                    >
+                      <ChevronRightIcon />
+                    </button>
+                  </>
+                ) : null}
               </div>
             ) : (
               <div className="rentzo-home__empty rentzo-home__empty--light">
@@ -731,6 +808,20 @@ function Aceulle({ content, onNavigate }) {
                 <p>{content.convertiblesEmptyDescription}</p>
               </div>
             )}
+
+            <div className="rentzo-home__convertibles-cta">
+              <div className="elementor-button-wrapper">
+                <button
+                  type="button"
+                  className="elementor-button elementor-size-sm"
+                  onClick={() => onNavigate("/location-de-voitures")}
+                >
+                  <span className="elementor-button-content-wrapper">
+                    <span className="elementor-button-text">VOIR TOUT</span>
+                  </span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </section>

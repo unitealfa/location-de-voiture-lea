@@ -7,27 +7,102 @@ const {
 } = require("../repositories/siteSettingsRepository");
 
 const LEGACY_CONTENT_STORAGE_PATH = path.resolve(__dirname, "../data/site-content.json");
-const MUTABLE_DEFAULT_CONTENT = {
-  brand: {
-    logoImagePath: "/home/rentzo-logo.jpg",
-    faviconImagePath: "/home/rentzo-logo.jpg"
-  },
-  footer: {
-    phoneValue: "0779 10 74 46",
-    emailValue: "lea@gmail.com",
-    locationValue: "Alger",
-    addressValue: "Alger\nLea Location",
-    logoImagePath: "/home/rentzo-logo.jpg",
-    shortInfo: "✔︎ Lea Location. Location de voitures de luxe à ALGER.",
-    facebookUrl: "#",
-    instagramUrl: "#"
-  }
-};
 
 const VISUAL_SETTING_KEYS = {
   faviconImagePath: "brand.faviconImagePath",
   headerLogoImagePath: "brand.logoImagePath",
   footerLogoImagePath: "footer.logoImagePath",
+  homeHeroImagePath: "aceulle.heroImagePath",
+  homeEyebrow: "aceulle.eyebrow",
+  homeTitle: "aceulle.title",
+  homeFeatureRentalLabel: "aceulle.featureRentalLabel",
+  homeFeatureRentalText: "aceulle.featureRentalText",
+  homeFeatureContactLabel: "aceulle.featureContactLabel",
+  homeFeatureContactText: "aceulle.featureContactText",
+  homeFleetTitle: "aceulle.fleetTitle",
+  homeCarHotelImagePath: "aceulle.carHotelImagePath",
+  homeCarHotelTitle: "aceulle.carHotelTitle",
+  homeCarHotelDescription: "aceulle.carHotelDescription",
+  homeCarHotelServicesTitle: "aceulle.carHotelServicesTitle",
+  homeCarHotelService1: "aceulle.carHotelServices.0",
+  homeCarHotelService2: "aceulle.carHotelServices.1",
+  homeCarHotelService3: "aceulle.carHotelServices.2",
+  homeCarHotelService4: "aceulle.carHotelServices.3",
+  homeTestimonialsTitle: "aceulle.testimonialsTitle",
+  homeTestimonialsHighlight: "aceulle.testimonialsHighlight",
+  homeTestimonialsTextLine1: "aceulle.testimonialsTextLine1",
+  homeTestimonialsTextLine2: "aceulle.testimonialsTextLine2",
+  homeTestimonial1Text: "aceulle.testimonialsItems.0.text",
+  homeTestimonial1Name: "aceulle.testimonialsItems.0.name",
+  homeTestimonial1Role: "aceulle.testimonialsItems.0.title",
+  homeTestimonial2Text: "aceulle.testimonialsItems.1.text",
+  homeTestimonial2Name: "aceulle.testimonialsItems.1.name",
+  homeTestimonial2Role: "aceulle.testimonialsItems.1.title",
+  homeTestimonial3Text: "aceulle.testimonialsItems.2.text",
+  homeTestimonial3Name: "aceulle.testimonialsItems.2.name",
+  homeTestimonial3Role: "aceulle.testimonialsItems.2.title",
+  homeTestimonial4Text: "aceulle.testimonialsItems.3.text",
+  homeTestimonial4Name: "aceulle.testimonialsItems.3.name",
+  homeTestimonial4Role: "aceulle.testimonialsItems.3.title",
+  homeTestimonial5Text: "aceulle.testimonialsItems.4.text",
+  homeTestimonial5Name: "aceulle.testimonialsItems.4.name",
+  homeTestimonial5Role: "aceulle.testimonialsItems.4.title",
+  homeConvertiblesTitle: "aceulle.convertiblesTitle",
+  homeConvertibleVehicleIds: "aceulle.convertibleVehicleIds",
+  faqHeroImagePath: "faqPage.heroImagePath",
+  faqHeroTitleStart: "faqPage.heroTitleStart",
+  faqHeroTitleAccent: "faqPage.heroTitleAccent",
+  faqHeroSubtitle: "faqPage.heroSubtitle",
+  faqPageTitle: "faqPage.pageTitle",
+  faqContactButtonLabel: "faqPage.contactButtonLabel",
+  faqLeftQuestion1: "faqPage.leftItems.0.question",
+  faqLeftAnswer1: "faqPage.leftItems.0.answer",
+  faqLeftQuestion2: "faqPage.leftItems.1.question",
+  faqLeftAnswer2: "faqPage.leftItems.1.answer",
+  faqLeftQuestion3: "faqPage.leftItems.2.question",
+  faqLeftAnswer3: "faqPage.leftItems.2.answer",
+  faqLeftQuestion4: "faqPage.leftItems.3.question",
+  faqLeftAnswer4: "faqPage.leftItems.3.answer",
+  faqLeftQuestion5: "faqPage.leftItems.4.question",
+  faqLeftAnswer5: "faqPage.leftItems.4.answer",
+  faqLeftQuestion6: "faqPage.leftItems.5.question",
+  faqLeftAnswer6: "faqPage.leftItems.5.answer",
+  faqRightQuestion1: "faqPage.rightItems.0.question",
+  faqRightAnswer1: "faqPage.rightItems.0.answer",
+  faqRightQuestion2: "faqPage.rightItems.1.question",
+  faqRightAnswer2: "faqPage.rightItems.1.answer",
+  faqRightQuestion3: "faqPage.rightItems.2.question",
+  faqRightAnswer3: "faqPage.rightItems.2.answer",
+  faqRightQuestion4: "faqPage.rightItems.3.question",
+  faqRightAnswer4: "faqPage.rightItems.3.answer",
+  faqRightQuestion5: "faqPage.rightItems.4.question",
+  faqRightAnswer5: "faqPage.rightItems.4.answer",
+  faqRightQuestion6: "faqPage.rightItems.5.question",
+  faqRightAnswer6: "faqPage.rightItems.5.answer",
+  contactHoursTitle: "contactPage.hoursTitle",
+  contactHoursSubtitle: "contactPage.hoursSubtitle",
+  contactHoursDay1: "contactPage.hoursItems.0.day",
+  contactHoursValue1: "contactPage.hoursItems.0.value",
+  contactHoursDay2: "contactPage.hoursItems.1.day",
+  contactHoursValue2: "contactPage.hoursItems.1.value",
+  contactHoursDay3: "contactPage.hoursItems.2.day",
+  contactHoursValue3: "contactPage.hoursItems.2.value",
+  contactHoursDay4: "contactPage.hoursItems.3.day",
+  contactHoursValue4: "contactPage.hoursItems.3.value",
+  contactHoursDay5: "contactPage.hoursItems.4.day",
+  contactHoursValue5: "contactPage.hoursItems.4.value",
+  contactHoursDay6: "contactPage.hoursItems.5.day",
+  contactHoursValue6: "contactPage.hoursItems.5.value",
+  contactHoursDay7: "contactPage.hoursItems.6.day",
+  contactHoursValue7: "contactPage.hoursItems.6.value",
+  contactMapQuery: "contactPage.mapQuery",
+  contactMapLinkUrl: "contactPage.mapLinkUrl",
+  contactMapLatitude: "contactPage.mapLatitude",
+  contactMapLongitude: "contactPage.mapLongitude",
+  contactHeroImagePath: "contactPage.heroImagePath",
+  contactHeroTitleStart: "contactPage.heroTitleStart",
+  contactHeroTitleAccent: "contactPage.heroTitleAccent",
+  contactHeroSubtitle: "contactPage.heroSubtitle",
   footerShortInfo: "footer.shortInfo",
   footerPhoneValue: "footer.phoneValue",
   footerEmailValue: "footer.emailValue",
@@ -65,17 +140,7 @@ function getPathValue(target, pathKey) {
 }
 
 function getBaseContent() {
-  return {
-    ...cloneValue(defaultContent),
-    brand: {
-      ...cloneValue(defaultContent.brand),
-      ...cloneValue(MUTABLE_DEFAULT_CONTENT.brand)
-    },
-    footer: {
-      ...cloneValue(defaultContent.footer),
-      ...cloneValue(MUTABLE_DEFAULT_CONTENT.footer)
-    }
-  };
+  return cloneValue(defaultContent);
 }
 
 function applyVisualSettings(baseContent, settingsMap) {
@@ -85,6 +150,19 @@ function applyVisualSettings(baseContent, settingsMap) {
     const value = settingsMap[formKey];
 
     if (typeof value === "string" && value.trim() !== "") {
+      if (formKey === "homeConvertibleVehicleIds") {
+        try {
+          const parsedValue = JSON.parse(value);
+
+          if (Array.isArray(parsedValue)) {
+            setPathValue(nextContent, contentPath, parsedValue);
+          }
+        } catch (error) {
+        }
+
+        return;
+      }
+
       setPathValue(nextContent, contentPath, value.trim());
     }
   });
@@ -96,7 +174,9 @@ function buildVisualSettingsFromContent(content) {
   return Object.fromEntries(
     Object.entries(VISUAL_SETTING_KEYS).map(([formKey, contentPath]) => [
       formKey,
-      String(getPathValue(content, contentPath) || "").trim()
+      Array.isArray(getPathValue(content, contentPath))
+        ? JSON.stringify(getPathValue(content, contentPath))
+        : String(getPathValue(content, contentPath) || "").trim()
     ])
   );
 }
@@ -198,18 +278,20 @@ async function getVisualSettings() {
 
 async function updateVisualSettings(payload = {}) {
   const currentContent = await hydrateSiteContent();
-  const nextVisualSettings = {
-    faviconImagePath: String(payload.faviconImagePath || currentContent.brand?.faviconImagePath || currentContent.brand?.logoImagePath || "").trim(),
-    headerLogoImagePath: String(payload.headerLogoImagePath || currentContent.brand?.logoImagePath || "").trim(),
-    footerLogoImagePath: String(payload.footerLogoImagePath || currentContent.footer?.logoImagePath || currentContent.brand?.logoImagePath || "").trim(),
-    footerShortInfo: String(payload.footerShortInfo || currentContent.footer?.shortInfo || "").trim(),
-    footerPhoneValue: String(payload.footerPhoneValue || currentContent.footer?.phoneValue || "").trim(),
-    footerEmailValue: String(payload.footerEmailValue || currentContent.footer?.emailValue || "").trim(),
-    footerLocationValue: String(payload.footerLocationValue || currentContent.footer?.locationValue || "").trim(),
-    footerAddressValue: String(payload.footerAddressValue || currentContent.footer?.addressValue || "").trim(),
-    footerFacebookUrl: String(payload.footerFacebookUrl || currentContent.footer?.facebookUrl || "#").trim() || "#",
-    footerInstagramUrl: String(payload.footerInstagramUrl || currentContent.footer?.instagramUrl || "#").trim() || "#"
-  };
+  const nextVisualSettings = Object.fromEntries(
+    Object.entries(VISUAL_SETTING_KEYS).map(([formKey, contentPath]) => {
+      const hasPayloadValue = Object.prototype.hasOwnProperty.call(payload, formKey);
+      const rawPayloadValue = hasPayloadValue ? payload[formKey] : undefined;
+      const payloadValue = hasPayloadValue
+        ? Array.isArray(rawPayloadValue)
+          ? JSON.stringify(rawPayloadValue)
+          : String(rawPayloadValue ?? "").trim()
+        : undefined;
+      const currentValue = String(getPathValue(currentContent, contentPath) || "").trim();
+
+      return [formKey, hasPayloadValue ? payloadValue : currentValue];
+    })
+  );
 
   await upsertVisualSettings(nextVisualSettings);
   siteContentCache = applyVisualSettings(getBaseContent(), nextVisualSettings);

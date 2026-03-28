@@ -153,13 +153,17 @@ function FaqPage({ content, onContactClick }) {
   const heroSubtitle = content?.heroSubtitle ?? "Nous répondrons à toutes vos questions";
   const pageTitle = content?.pageTitle ?? "Questions fréquentes";
   const contactButtonLabel = content?.contactButtonLabel || "Contact";
+  const heroImagePath = content?.heroImagePath || "/home/rentzo-contact-hero.jpg";
   const leftItems = content?.leftItems || [];
   const rightItems = content?.rightItems || [];
 
   return (
     <main className="rentzo-faq-source">
       <div className="elementor elementor-27299">
-        <section className="elementor-section elementor-top-section elementor-element elementor-element-b224af9 elementor-section-height-min-height elementor-hidden-mobile elementor-section-boxed elementor-section-height-default elementor-section-items-middle">
+        <section
+          className="elementor-section elementor-top-section elementor-element elementor-element-b224af9 elementor-section-height-min-height elementor-hidden-mobile elementor-section-boxed elementor-section-height-default elementor-section-items-middle"
+          style={{ backgroundImage: "url('" + heroImagePath + "')" }}
+        >
           <div className="elementor-background-overlay"></div>
 
           <div className="elementor-container elementor-column-gap-default">
