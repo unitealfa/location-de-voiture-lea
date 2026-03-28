@@ -14076,6 +14076,17 @@ body.reservation-admin-page-lock {
   flex-shrink: 0;
 }
 
+.admin-dashboard-v2__list-thumb {
+  width: 52px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+  display: block;
+  flex-shrink: 0;
+  background: #e7e7e7;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
 .admin-dashboard-v2__weekday-row {
   display: flex;
   align-items: center;

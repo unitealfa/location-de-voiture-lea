@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { getAdminDashboardStats, getCachedAdminDashboardStats } from "../services/adminDashboardService";
+import { handleImageFallback } from "../utils/imageFallback";
 
 const numberFormatter = new Intl.NumberFormat("fr-FR");
 const currencyFormatter = new Intl.NumberFormat("fr-FR", {
@@ -138,9 +139,19 @@ function RankedList({ title, items, formatter = formatNumber, emptyLabel }) {
           {items.map((item) => (
             <div key={`${title}-${item.label}`} className="admin-dashboard-v2__list-row">
               <div className="admin-dashboard-v2__list-row-left">
-                <div className="admin-dashboard-v2__list-icon">
-                  <i className="far fa-car" aria-hidden="true"></i>
-                </div>
+                {item.photoUrl ? (
+                  <img
+                    className="admin-dashboard-v2__list-thumb"
+                    src={item.photoUrl}
+                    alt={item.label}
+                    onError={handleImageFallback}
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="admin-dashboard-v2__list-icon">
+                    <i className="far fa-car" aria-hidden="true"></i>
+                  </div>
+                )}
                 <span>{item.label}</span>
               </div>
               <strong>{formatter(item.value)}</strong>
