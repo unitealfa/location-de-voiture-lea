@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getAdminDashboardStats, getCachedAdminDashboardStats } from "../services/adminDashboardService";
 
 const numberFormatter = new Intl.NumberFormat("fr-FR");
@@ -30,48 +30,23 @@ function formatCurrency(value) {
   return currencyFormatter.format(Number(value || 0));
 }
 
-function getSeriesTitle(baseLabel, view) {
-  if (view === "month") {
-    return `${baseLabel} par semaine`;
+function getRangeLabel(activeView, activeYear, activeMonth, content) {
+  if (activeView === "month") {
+    return `${MONTH_OPTIONS[activeMonth - 1]?.label || ""} ${activeYear}`.trim();
   }
 
-  if (view === "year") {
-    return `${baseLabel} par mois`;
+  if (activeView === "year") {
+    return String(activeYear);
   }
 
-  return `${baseLabel} par an`;
-}
-
-function SummaryCard({
-  label,
-  value,
-  helper,
-  accent,
-  formatter = formatNumber,
-  kicker = "Synthese",
-  headerExtra = null
-}) {
-  return (
-    <article className={`admin-home__summary-card admin-home__summary-card--${accent}`}>
-      <div className="admin-home__summary-head">
-        <span className="admin-home__summary-kicker">{kicker}</span>
-        <div className="admin-home__summary-head-side">
-          {headerExtra}
-          <span className="admin-home__summary-accent" />
-        </div>
-      </div>
-      <span className="admin-home__summary-label">{label}</span>
-      <strong className="admin-home__summary-value">{formatter(value)}</strong>
-      <p className="admin-home__summary-helper">{helper}</p>
-    </article>
-  );
+  return content.filterViewAllLabel;
 }
 
 function FilterButton({ active, label, onClick }) {
   return (
     <button
       type="button"
-      className={"admin-home__filter-pill" + (active ? " admin-home__filter-pill--active" : "")}
+      className={"admin-dashboard-v2__pill" + (active ? " is-active" : "")}
       onClick={onClick}
     >
       {label}
@@ -79,240 +54,198 @@ function FilterButton({ active, label, onClick }) {
   );
 }
 
-function VehicleHeroCard({ title, insight }) {
+function MiniFilter({ labels, value, onChange }) {
   return (
-    <article className="admin-home__feature-card admin-home__feature-card--vehicle">
-      <div className="admin-home__feature-media">
-        {insight.photoUrl ? (
-          <img src={insight.photoUrl} alt={insight.label} loading="lazy" decoding="async" />
-        ) : (
-          <div className="admin-home__feature-media-placeholder">Aucune photo</div>
-        )}
-      </div>
-      <div className="admin-home__feature-body">
-        <span className="admin-home__feature-title">{title}</span>
-        <strong className="admin-home__feature-label">{insight.label}</strong>
-        <div className="admin-home__feature-metric">{formatNumber(insight.value)}</div>
-        <p className="admin-home__feature-helper">{insight.helper}</p>
-      </div>
-    </article>
+    <div className="admin-dashboard-v2__mini-filter">
+      {labels.map((item) => (
+        <button
+          key={item.value}
+          type="button"
+          className={"admin-dashboard-v2__mini-pill" + (value === item.value ? " is-active" : "")}
+          onClick={() => onChange(item.value)}
+        >
+          {item.label}
+        </button>
+      ))}
+    </div>
   );
 }
 
-function PeriodInsightCard({ title, insight, items }) {
-  const chartWidth = 360;
-  const chartHeight = 150;
-  const maxValue = items.reduce((highestValue, item) => Math.max(highestValue, item.value), 0);
-
-  if (items.length === 0 || maxValue === 0) {
-    return (
-      <article className="admin-home__feature-card admin-home__feature-card--graph">
-        <div className="admin-home__feature-body">
-          <span className="admin-home__feature-title">{title}</span>
-          <strong className="admin-home__feature-label">{insight.label}</strong>
-          <div className="admin-home__feature-metric">{formatNumber(insight.value)}</div>
-          <p className="admin-home__feature-helper">{insight.helper}</p>
-        </div>
-      </article>
-    );
-  }
-
-  const points = items.map((item, index) => {
-    const x = items.length === 1 ? chartWidth / 2 : (index / (items.length - 1)) * chartWidth;
-    const y = chartHeight - (item.value / maxValue) * (chartHeight - 32) - 16;
-    return { ...item, x, y };
-  });
-  const pathData = points.map((point, index) => `${index === 0 ? "M" : "L"}${point.x},${point.y}`).join(" ");
-  const areaData = `${pathData} L ${points[points.length - 1].x},${chartHeight} L 0,${chartHeight} Z`;
-
+function TopStatCard({
+  label,
+  value,
+  iconClassName = "far fa-chart-bar",
+  accent = "dark",
+  onClick
+}) {
   return (
-    <article className="admin-home__feature-card admin-home__feature-card--graph">
-      <div className="admin-home__feature-body">
-        <span className="admin-home__feature-title">{title}</span>
-        <strong className="admin-home__feature-label">{insight.label}</strong>
-        <div className="admin-home__feature-metric">{formatNumber(insight.value)}</div>
-        <p className="admin-home__feature-helper">{insight.helper}</p>
+    <button
+      type="button"
+      className={`admin-dashboard-v2__top-card admin-dashboard-v2__top-card--${accent}${onClick ? " is-clickable" : ""}`}
+      onClick={onClick}
+    >
+      <span className="admin-dashboard-v2__top-label">{label}</span>
+      <div className="admin-dashboard-v2__top-row">
+        <strong>{formatNumber(value)}</strong>
+        <i className={iconClassName} aria-hidden="true"></i>
       </div>
-      <div className="admin-home__feature-graph-wrap">
-        <div className="admin-home__feature-line-chart">
-          <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} preserveAspectRatio="none">
-            <path className="admin-home__feature-line-area" d={areaData} />
-            <path className="admin-home__feature-line-stroke" d={pathData} />
-            {points.map((point) => (
-              <circle key={`${title}-${point.label}`} className="admin-home__feature-line-point" cx={point.x} cy={point.y} r="4.5" />
-            ))}
-          </svg>
-        </div>
-        <div className="admin-home__feature-axis">
-          {items.map((item) => (
-            <span key={`${title}-${item.label}-axis`}>{item.label}</span>
-          ))}
-        </div>
-      </div>
-    </article>
+    </button>
   );
 }
 
-function WeekdayInsightCard({ title, insight, items }) {
-  const maxValue = items.reduce((highestValue, item) => Math.max(highestValue, item.value), 0);
+function OverviewChart({ items }) {
+  const maxValue = items.reduce((highestValue, item) => Math.max(highestValue, Number(item.value || 0)), 0);
 
   return (
-    <article className="admin-home__feature-card admin-home__feature-card--graph admin-home__feature-card--columns-compact">
-      <div className="admin-home__feature-body">
-        <span className="admin-home__feature-title">{title}</span>
-        <strong className="admin-home__feature-label">{insight.label}</strong>
-        <div className="admin-home__feature-metric">{formatNumber(insight.value)}</div>
-        <p className="admin-home__feature-helper">{insight.helper}</p>
-      </div>
-      <div className="admin-home__columns-chart admin-home__columns-chart--compact">
-        {items.map((item) => (
-          <div key={`${title}-${item.label}`} className="admin-home__column-item admin-home__column-item--compact">
-            <div className="admin-home__column-value admin-home__column-value--compact">{formatNumber(item.value)}</div>
-            <div className="admin-home__column-track admin-home__column-track--compact">
-              <span
-                className="admin-home__column-fill admin-home__column-fill--weekday"
-                style={{ height: `${maxValue > 0 ? (item.value / maxValue) * 100 : 0}%` }}
-              />
+    <div className="admin-dashboard-v2__overview-chart">
+      {items.map((item) => {
+        const ratio = maxValue > 0 ? Number(item.value || 0) / maxValue : 0;
+        return (
+          <div key={item.label} className="admin-dashboard-v2__overview-column">
+            <div
+              className="admin-dashboard-v2__overview-bar"
+              style={{ height: `${Math.max(10, ratio * 100)}%` }}
+            >
+              <span>{formatNumber(item.value)}</span>
             </div>
-            <div className="admin-home__column-label admin-home__column-label--weekday">{item.label.slice(0, 3)}</div>
+            <small>{item.label}</small>
           </div>
-        ))}
-      </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function InsightCard({ title, label, helper, iconClassName = "far fa-star" }) {
+  return (
+    <article className="admin-dashboard-v2__insight-card">
+      <i className={iconClassName} aria-hidden="true"></i>
+      <span>{title}</span>
+      <strong>{label}</strong>
+      <p>{helper}</p>
     </article>
   );
 }
 
-function LineChart({ title, items, accent = "orange", formatter = formatNumber, emptyLabel }) {
-  const chartWidth = 600;
-  const chartHeight = 220;
-  const maxValue = items.reduce((highestValue, item) => Math.max(highestValue, item.value), 0);
-
-  if (items.length === 0 || maxValue === 0) {
-    return (
-      <article className="admin-home__chart-card admin-home__chart-card--line">
-        <div className="admin-home__chart-head"><h2>{title}</h2></div>
-        <p className="admin-home__chart-empty">{emptyLabel}</p>
-      </article>
-    );
-  }
-
-  const points = items.map((item, index) => {
-    const x = items.length === 1 ? chartWidth / 2 : (index / (items.length - 1)) * chartWidth;
-    const y = chartHeight - (item.value / maxValue) * (chartHeight - 30) - 15;
-    return { ...item, x, y };
-  });
-  const pathData = points.map((point, index) => `${index === 0 ? "M" : "L"}${point.x},${point.y}`).join(" ");
-  const areaData = `${pathData} L ${points[points.length - 1].x},${chartHeight} L 0,${chartHeight} Z`;
-
+function RankedList({ title, items, formatter = formatNumber, emptyLabel }) {
   return (
-    <article className="admin-home__chart-card admin-home__chart-card--line">
-      <div className="admin-home__chart-head"><h2>{title}</h2></div>
-      <div className="admin-home__line-chart">
-        <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} preserveAspectRatio="none">
-          <path className={`admin-home__line-area admin-home__line-area--${accent}`} d={areaData} />
-          <path className={`admin-home__line-stroke admin-home__line-stroke--${accent}`} d={pathData} />
-          {points.map((point) => (
-            <circle
-              key={`${title}-${point.label}`}
-              className={`admin-home__line-point admin-home__line-point--${accent}`}
-              cx={point.x}
-              cy={point.y}
-              r="4.5"
-            />
-          ))}
-        </svg>
-      </div>
-      <div className="admin-home__line-footer">
-        {points.map((point) => (
-          <div key={`${title}-${point.label}-meta`} className="admin-home__line-meta">
-            <span>{point.label}</span>
-            <strong>{formatter(point.value)}</strong>
-          </div>
-        ))}
-      </div>
-    </article>
-  );
-}
-
-function ColumnChart({ title, items, accent = "orange", formatter = formatNumber, emptyLabel }) {
-  const maxValue = items.reduce((highestValue, item) => Math.max(highestValue, item.value), 0);
-
-  if (items.length === 0 || maxValue === 0) {
-    return (
-      <article className="admin-home__chart-card admin-home__chart-card--columns">
-        <div className="admin-home__chart-head"><h2>{title}</h2></div>
-        <p className="admin-home__chart-empty">{emptyLabel}</p>
-      </article>
-    );
-  }
-
-  return (
-    <article className="admin-home__chart-card admin-home__chart-card--columns">
-      <div className="admin-home__chart-head"><h2>{title}</h2></div>
-      <div className="admin-home__columns-chart">
-        {items.map((item) => (
-          <div key={`${title}-${item.label}`} className="admin-home__column-item">
-            <div className="admin-home__column-value">{formatter(item.value)}</div>
-            <div className="admin-home__column-track">
-              <span
-                className={`admin-home__column-fill admin-home__column-fill--${accent}`}
-                style={{ height: `${maxValue > 0 ? (item.value / maxValue) * 100 : 0}%` }}
-              />
-            </div>
-            <div className="admin-home__column-label">{item.label}</div>
-          </div>
-        ))}
-      </div>
-    </article>
-  );
-}
-
-function SplitChart({ title, items, emptyLabel }) {
-  const totalValue = items.reduce((sum, item) => sum + item.value, 0);
-
-  return (
-    <article className="admin-home__chart-card admin-home__chart-card--split">
-      <div className="admin-home__chart-head"><h2>{title}</h2></div>
-      {items.length === 0 || totalValue === 0 ? (
-        <p className="admin-home__chart-empty">{emptyLabel}</p>
+    <section className="admin-dashboard-v2__list-card">
+      <h3>{title}</h3>
+      {items.length === 0 ? (
+        <p className="admin-dashboard-v2__empty">{emptyLabel}</p>
       ) : (
-        <>
-          <div className="admin-home__split-bar">
-            {items.map((item) => (
-              <span
-                key={item.label}
-                className={`admin-home__split-segment admin-home__split-segment--${item.tone}`}
-                style={{ width: `${(item.value / totalValue) * 100}%` }}
-              />
-            ))}
-          </div>
-          <div className="admin-home__split-legend">
-            {items.map((item) => (
-              <div key={item.label} className="admin-home__split-item">
-                <span className={`admin-home__split-dot admin-home__split-dot--${item.tone}`} />
-                <div>
-                  <strong>{item.label}</strong>
-                  <small>{formatNumber(item.value)}</small>
+        <div className="admin-dashboard-v2__list">
+          {items.map((item) => (
+            <div key={`${title}-${item.label}`} className="admin-dashboard-v2__list-row">
+              <div className="admin-dashboard-v2__list-row-left">
+                <div className="admin-dashboard-v2__list-icon">
+                  <i className="far fa-car" aria-hidden="true"></i>
                 </div>
+                <span>{item.label}</span>
               </div>
-            ))}
-          </div>
-        </>
+              <strong>{formatter(item.value)}</strong>
+            </div>
+          ))}
+        </div>
       )}
-    </article>
+    </section>
   );
 }
 
-function AdminAceulle({ content, admin }) {
+function WeekdayList({ title, items, emptyLabel }) {
+  return (
+    <section className="admin-dashboard-v2__list-card admin-dashboard-v2__list-card--plain">
+      <h3>{title}</h3>
+      {items.length === 0 ? (
+        <p className="admin-dashboard-v2__empty">{emptyLabel}</p>
+      ) : (
+        <div className="admin-dashboard-v2__weekday-list">
+          {items.map((item) => (
+            <div key={`${title}-${item.label}`} className="admin-dashboard-v2__weekday-row">
+              <span>{item.label}</span>
+              <strong>{formatNumber(item.value)}</strong>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function FleetStatusCard({ title, items }) {
+  const total = items.reduce((sum, item) => sum + Number(item.value || 0), 0);
+  const available = items.find((item) => item.tone === "available")?.value || 0;
+  const reserved = items.find((item) => item.tone === "reserved")?.value || 0;
+  const maintenance = items.find((item) => item.tone === "maintenance")?.value || 0;
+  const availableRatio = total > 0 ? (available / total) * 100 : 0;
+  const reservedRatio = total > 0 ? (reserved / total) * 100 : 0;
+  const ringStyle = {
+    background: `conic-gradient(#ffffff 0% ${availableRatio}%, rgba(255,255,255,0.38) ${availableRatio}% ${availableRatio + reservedRatio}%, rgba(255,255,255,0.12) ${availableRatio + reservedRatio}% 100%)`
+  };
+
+  return (
+    <section className="admin-dashboard-v2__status-card">
+      <h3>{title}</h3>
+      <div className="admin-dashboard-v2__status-ring" style={ringStyle}>
+        <div className="admin-dashboard-v2__status-center">
+          <strong>{formatNumber(total)}</strong>
+          <span>Vehicules</span>
+        </div>
+      </div>
+      <div className="admin-dashboard-v2__status-legend">
+        <div><span className="is-available"></span><label>Disponibles</label><strong>{formatNumber(available)}</strong></div>
+        <div><span className="is-reserved"></span><label>Reserves</label><strong>{formatNumber(reserved)}</strong></div>
+        <div><span className="is-maintenance"></span><label>Maintenance</label><strong>{formatNumber(maintenance)}</strong></div>
+      </div>
+    </section>
+  );
+}
+
+function FocusCard({ pendingCount, helper, onClick }) {
+  return (
+    <button type="button" className="admin-dashboard-v2__focus-card admin-dashboard-v2__focus-card--button" onClick={onClick}>
+      <div className="admin-dashboard-v2__focus-head">
+        <span>Focus immediat</span>
+        <h3>Aujourd'hui</h3>
+      </div>
+      <div className="admin-dashboard-v2__focus-body">
+        <div className="admin-dashboard-v2__focus-inline">
+          <i className="far fa-bell" aria-hidden="true"></i>
+          <strong>{formatNumber(pendingCount)} Demande{Number(pendingCount) > 1 ? "s" : ""} en attente</strong>
+        </div>
+        <p>{helper}</p>
+      </div>
+    </button>
+  );
+}
+
+function VisitorsCard({ label, helper, value, filterValue, onFilterChange, labels }) {
+  return (
+    <section className="admin-dashboard-v2__mini-card">
+      <div className="admin-dashboard-v2__mini-head">
+        <span>{label}</span>
+        <i className="far fa-user" aria-hidden="true"></i>
+      </div>
+      <MiniFilter labels={labels} value={filterValue} onChange={onFilterChange} />
+      <div className="admin-dashboard-v2__mini-metric">
+        <strong>{formatNumber(value)}</strong>
+        <small>{helper}</small>
+      </div>
+    </section>
+  );
+}
+
+function AdminAceulle({ content, admin, onNavigate }) {
   const today = new Date();
-  const [filters, setFilters] = useState({
+  const defaultFilters = {
     view: "month",
     year: today.getFullYear(),
     month: today.getMonth() + 1
-  });
-  const [stats, setStats] = useState(() => getCachedAdminDashboardStats({ view: "month", year: today.getFullYear(), month: today.getMonth() + 1 }));
+  };
+  const [filters, setFilters] = useState(defaultFilters);
+  const [stats, setStats] = useState(() => getCachedAdminDashboardStats(defaultFilters));
   const [errorMessage, setErrorMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(() => !getCachedAdminDashboardStats({ view: "month", year: today.getFullYear(), month: today.getMonth() + 1 }));
+  const [isLoading, setIsLoading] = useState(() => !getCachedAdminDashboardStats(defaultFilters));
   const [visitRangeFilter, setVisitRangeFilter] = useState("month");
   const [visitorRangeFilter, setVisitorRangeFilter] = useState("month");
 
@@ -351,9 +284,9 @@ function AdminAceulle({ content, admin }) {
     };
   }, [content.errorMessage, filters]);
 
-  const summary = stats?.summary;
-  const insights = stats?.insights;
-  const charts = stats?.charts;
+  const summary = stats?.summary || {};
+  const insights = stats?.insights || {};
+  const charts = stats?.charts || {};
   const availableYears = stats?.filters?.availableYears || [filters.year];
   const activeView = stats?.filters?.view || filters.view;
   const activeYear = stats?.filters?.year || filters.year;
@@ -366,79 +299,54 @@ function AdminAceulle({ content, admin }) {
     totalVisits: summary?.totalVisits || 0,
     totalVisitors: summary?.totalVisitors || 0
   };
-  const visitFilterControls = (
-    <div className="admin-home__summary-mini-filter">
-      <button
-        type="button"
-        className={"admin-home__summary-mini-pill" + (visitRangeFilter === "day" ? " admin-home__summary-mini-pill--active" : "")}
-        onClick={() => setVisitRangeFilter("day")}
-      >
-        {content.summaryVisitsFilterDayLabel}
-      </button>
-      <button
-        type="button"
-        className={"admin-home__summary-mini-pill" + (visitRangeFilter === "week" ? " admin-home__summary-mini-pill--active" : "")}
-        onClick={() => setVisitRangeFilter("week")}
-      >
-        {content.summaryVisitsFilterWeekLabel}
-      </button>
-      <button
-        type="button"
-        className={"admin-home__summary-mini-pill" + (visitRangeFilter === "month" ? " admin-home__summary-mini-pill--active" : "")}
-        onClick={() => setVisitRangeFilter("month")}
-      >
-        {content.summaryVisitsFilterMonthLabel}
-      </button>
-    </div>
-  );
-  const visitorFilterControls = (
-    <div className="admin-home__summary-mini-filter">
-      <button
-        type="button"
-        className={"admin-home__summary-mini-pill" + (visitorRangeFilter === "day" ? " admin-home__summary-mini-pill--active" : "")}
-        onClick={() => setVisitorRangeFilter("day")}
-      >
-        {content.summaryVisitsFilterDayLabel}
-      </button>
-      <button
-        type="button"
-        className={"admin-home__summary-mini-pill" + (visitorRangeFilter === "week" ? " admin-home__summary-mini-pill--active" : "")}
-        onClick={() => setVisitorRangeFilter("week")}
-      >
-        {content.summaryVisitsFilterWeekLabel}
-      </button>
-      <button
-        type="button"
-        className={"admin-home__summary-mini-pill" + (visitorRangeFilter === "month" ? " admin-home__summary-mini-pill--active" : "")}
-        onClick={() => setVisitorRangeFilter("month")}
-      >
-        {content.summaryVisitsFilterMonthLabel}
-      </button>
-    </div>
-  );
+  const performanceTitle = `Performance ${getRangeLabel(activeView, activeYear, activeMonth, content)}`;
+  const visitFilterItems = [
+    { value: "day", label: content.summaryVisitsFilterDayLabel },
+    { value: "week", label: content.summaryVisitsFilterWeekLabel },
+    { value: "month", label: content.summaryVisitsFilterMonthLabel }
+  ];
+  const topVehicles = (charts.topVehicles || []).slice(0, 3);
+  const weekdayItems = charts.reservationsByWeekday || [];
+  const fleetItems = charts.fleetStatus || [];
+  const overviewItems = useMemo(() => {
+    const source = charts.visitsSeries || [];
+
+    if (activeView === "year") {
+      return source;
+    }
+
+    if (source.length <= 4) {
+      return source;
+    }
+
+    return source.slice(-4);
+  }, [activeView, charts.visitsSeries]);
+  const overviewChartTitle =
+    activeView === "month"
+      ? "Repartition des visites par semaine du mois"
+      : activeView === "year"
+        ? "Repartition des visites par mois sur l'annee"
+        : "Repartition des visites par annee";
+  const overviewChartDescription =
+    activeView === "month"
+      ? "Chaque colonne represente le nombre de visites detectees sur une semaine du mois selectionne."
+      : activeView === "year"
+        ? "Chaque colonne represente le nombre de visites detectees sur un mois de l'annee selectionnee."
+        : "Chaque colonne represente le nombre de visites detectees sur une annee complete.";
 
   return (
-    <main className="admin-home">
-      <section className="admin-home__hero">
-        <div className="admin-home__hero-copy">
-          <p className="admin-home__eyebrow">{content.eyebrow}</p>
-          <h1>
-            {content.titlePrefix}, {admin.username}
-          </h1>
+    <main className="admin-dashboard-v2">
+      <header className="admin-dashboard-v2__header">
+        <div>
+          <h1>Bienvenue, {admin.username}</h1>
           <p>{content.description}</p>
         </div>
+      </header>
 
-        <div className="admin-home__hero-side">
-          <span>{content.fleetCountLabel}</span>
-          <strong>{formatNumber(summary?.vehicleCount || 0)}</strong>
-          <p>{content.summaryAcceptedHelper}</p>
-        </div>
-      </section>
-
-      <section className="admin-home__filters">
-        <div className="admin-home__filters-copy">
+      <section className="admin-dashboard-v2__filters">
+        <div className="admin-dashboard-v2__filters-left">
           <span>{content.filterViewLabel}</span>
-          <div className="admin-home__filters-pills">
+          <div className="admin-dashboard-v2__pills">
             <FilterButton
               label={content.filterViewMonthLabel}
               active={activeView === "month"}
@@ -457,44 +365,34 @@ function AdminAceulle({ content, admin }) {
           </div>
         </div>
 
-        <div className="admin-home__filters-controls">
+        <div className="admin-dashboard-v2__filters-right">
           {activeView === "month" ? (
-            <label className="admin-home__filter-field">
+            <label className="admin-dashboard-v2__select-field">
               <span>{content.filterMonthLabel}</span>
               <select
                 value={activeMonth}
                 onChange={(event) =>
-                  setFilters((current) => ({
-                    ...current,
-                    month: Number(event.target.value)
-                  }))
+                  setFilters((current) => ({ ...current, month: Number(event.target.value) }))
                 }
               >
                 {MONTH_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
+                  <option key={option.value} value={option.value}>{option.label}</option>
                 ))}
               </select>
             </label>
           ) : null}
 
           {activeView !== "all" ? (
-            <label className="admin-home__filter-field">
+            <label className="admin-dashboard-v2__select-field">
               <span>{content.filterYearLabel}</span>
               <select
                 value={activeYear}
                 onChange={(event) =>
-                  setFilters((current) => ({
-                    ...current,
-                    year: Number(event.target.value)
-                  }))
+                  setFilters((current) => ({ ...current, year: Number(event.target.value) }))
                 }
               >
                 {availableYears.map((yearOption) => (
-                  <option key={yearOption} value={yearOption}>
-                    {yearOption}
-                  </option>
+                  <option key={yearOption} value={yearOption}>{yearOption}</option>
                 ))}
               </select>
             </label>
@@ -512,79 +410,104 @@ function AdminAceulle({ content, admin }) {
         </section>
       ) : (
         <>
-          <section className="admin-home__summary-grid">
-            <SummaryCard label={content.summaryPendingLabel} value={summary.pendingCount} helper={content.summaryPendingHelper} accent="pending" />
-            <SummaryCard label={content.summaryAcceptedLabel} value={summary.acceptedCount} helper={content.summaryAcceptedHelper} accent="accepted" />
-            <SummaryCard label={content.summaryVisibleLabel} value={summary.visibleThisMonthCount} helper={content.summaryVisibleHelper} accent="visible" />
-            <SummaryCard
-              label={content.summaryVisitsLabel}
-              value={visitRangeSummary.totalVisits}
-              helper={content.summaryVisitsHelper}
-              accent="visits"
-              kicker={content.summaryVisitsFilterLabel}
-              headerExtra={visitFilterControls}
+          <section className="admin-dashboard-v2__top-grid">
+            <TopStatCard
+              label={content.fleetCountLabel}
+              value={summary.vehicleCount}
+              iconClassName="far fa-car"
+              accent="neutral"
+              onClick={() => onNavigate?.("/location-de-voitures")}
             />
-            <SummaryCard
-              label={content.summaryVisitorsLabel}
-              value={visitorRangeSummary.totalVisitors}
-              helper={content.summaryVisitorsHelper}
-              accent="visitors"
-              kicker={content.summaryVisitsFilterLabel}
-              headerExtra={visitorFilterControls}
+            <TopStatCard
+              label={content.summaryPendingLabel}
+              value={summary.pendingCount}
+              iconClassName="far fa-clock"
+              accent="alert"
+              onClick={() => onNavigate?.("/reservations")}
             />
-            <SummaryCard label={content.summaryRevenueLabel} value={summary.totalRevenue} helper={content.summaryRevenueHelper} accent="revenue" formatter={formatCurrency} />
-            <SummaryCard
-              label={content.summaryRangeLabel}
-              value={activeView === "month" ? `${MONTH_OPTIONS[activeMonth - 1]?.label} ${activeYear}` : activeView === "year" ? activeYear : content.filterViewAllLabel}
-              helper={content.summaryRangeHelper}
-              accent="range"
-              formatter={(value) => value}
+            <TopStatCard
+              label={content.summaryAcceptedLabel}
+              value={summary.acceptedCount}
+              iconClassName="far fa-check-circle"
+              accent="primary"
+              onClick={() => onNavigate?.("/reservations")}
             />
           </section>
 
-          <section className="admin-home__feature-grid">
-            <VehicleHeroCard title={content.insightTopVehicleTitle} insight={insights.topVehicle} />
-            <PeriodInsightCard title={content.insightBusiestMonthTitle} insight={insights.busiestMonth} items={charts.periodDistribution} />
-            <WeekdayInsightCard title={content.insightBusiestWeekdayTitle} insight={insights.busiestWeekday} items={charts.reservationsByWeekday} />
-          </section>
+          <section className="admin-dashboard-v2__layout">
+            <div className="admin-dashboard-v2__main">
+              <section className="admin-dashboard-v2__overview-card">
+                <div className="admin-dashboard-v2__overview-head">
+                  <div>
+                    <span>{performanceTitle}</span>
+                    <h2>{content.summaryVisitsLabel}: {formatNumber(visitRangeSummary.totalVisits)}</h2>
+                  </div>
+                  <div className="admin-dashboard-v2__overview-right">
+                    <MiniFilter labels={visitFilterItems} value={visitRangeFilter} onChange={setVisitRangeFilter} />
+                    <div>
+                      <span>{content.summaryRevenueLabel}</span>
+                      <p>{formatCurrency(summary.totalRevenue)}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="admin-dashboard-v2__overview-caption">
+                  <strong>{overviewChartTitle}</strong>
+                  <p>{overviewChartDescription}</p>
+                </div>
+                <OverviewChart items={overviewItems} />
+              </section>
 
-          <section className="admin-home__charts-grid">
-            <ColumnChart
-              title={getSeriesTitle(content.lineReservationsTitle, activeView)}
-              items={charts.reservationsSeries}
-              emptyLabel={content.emptyChartLabel}
-              accent="orange"
-            />
-            <ColumnChart
-              title={getSeriesTitle(content.chartRevenueTitle, activeView)}
-              items={charts.revenueSeries}
-              emptyLabel={content.emptyChartLabel}
-              accent="revenue"
-              formatter={formatCurrency}
-            />
-            <LineChart
-              title={getSeriesTitle(content.lineVisitsTitle, activeView)}
-              items={charts.visitsSeries}
-              emptyLabel={content.emptyChartLabel}
-              accent="cyan"
-            />
-            <ColumnChart
-              title={content.barsTopVehiclesTitle}
-              items={charts.topVehicles}
-              emptyLabel={content.emptyChartLabel}
-              accent="dark"
-            />
-            <ColumnChart
-              title={content.barsWeekdayTitle}
-              items={charts.reservationsByWeekday}
-              emptyLabel={content.emptyChartLabel}
-              accent="light"
-            />
-            <SplitChart
-              title={content.chartFleetStatusTitle}
-              items={charts.fleetStatus}
-              emptyLabel={content.emptyChartLabel}
-            />
+              <section className="admin-dashboard-v2__insights-grid">
+                <InsightCard
+                  title={content.insightTopVehicleTitle}
+                  label={insights.topVehicle?.label || "-"}
+                  helper={insights.topVehicle?.helper || content.emptyChartLabel}
+                  iconClassName="far fa-star"
+                />
+                <InsightCard
+                  title={content.insightBusiestMonthTitle}
+                  label={insights.busiestMonth?.label || "-"}
+                  helper={insights.busiestMonth?.helper || content.emptyChartLabel}
+                  iconClassName="far fa-clock"
+                />
+                <InsightCard
+                  title={content.insightBusiestWeekdayTitle}
+                  label={insights.busiestWeekday?.label || "-"}
+                  helper={insights.busiestWeekday?.helper || content.emptyChartLabel}
+                  iconClassName="far fa-calendar-alt"
+                />
+              </section>
+
+              <section className="admin-dashboard-v2__lists-grid">
+                <RankedList
+                  title={content.barsTopVehiclesTitle}
+                  items={topVehicles}
+                  emptyLabel={content.emptyChartLabel}
+                />
+                <WeekdayList
+                  title={content.barsWeekdayTitle}
+                  items={weekdayItems}
+                  emptyLabel={content.emptyChartLabel}
+                />
+              </section>
+            </div>
+
+            <aside className="admin-dashboard-v2__side">
+              <FleetStatusCard title={content.chartFleetStatusTitle} items={fleetItems} />
+              <FocusCard
+                pendingCount={summary.pendingCount}
+                helper={content.summaryPendingHelper}
+                onClick={() => onNavigate?.("/reservations")}
+              />
+              <VisitorsCard
+                label={content.summaryVisitorsLabel}
+                helper={content.summaryVisitorsHelper}
+                value={visitorRangeSummary.totalVisitors}
+                filterValue={visitorRangeFilter}
+                onFilterChange={setVisitorRangeFilter}
+                labels={visitFilterItems}
+              />
+            </aside>
           </section>
         </>
       )}

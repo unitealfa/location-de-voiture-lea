@@ -30,6 +30,31 @@ export function getCachedAdminReservationById(id) {
   return readCachedValue(getAdminReservationDetailCacheKey(id), { maxAgeMs: 1000 * 60 * 5 });
 }
 
+function writeAdminReservationDetailCache(reservation) {
+  if (!reservation || !reservation.id) {
+    return;
+  }
+
+  writeCachedValue(getAdminReservationDetailCacheKey(reservation.id), reservation);
+}
+
+function writeAdminReservationListCache(scope, reservations) {
+  writeCachedValue(getAdminReservationListCacheKey(scope), reservations);
+  (reservations || []).forEach(writeAdminReservationDetailCache);
+}
+
+export async function preloadAdminReservationCaches() {
+  const [pendingReservations, acceptedReservations] = await Promise.all([
+    listAdminReservations({ scope: "pending" }),
+    listAdminReservations({ scope: "accepted" })
+  ]);
+
+  return {
+    pendingReservations,
+    acceptedReservations
+  };
+}
+
 function normalizePublicApiErrorMessage(message, fallbackMessage) {
   const normalizedMessage = String(message || "").toLowerCase();
 
@@ -164,7 +189,7 @@ export async function listAdminReservations({ scope = "pending" } = {}) {
   );
 
   const reservations = payload.reservations || [];
-  writeCachedValue(getAdminReservationListCacheKey(scope), reservations);
+  writeAdminReservationListCache(scope, reservations);
   return reservations;
 }
 
@@ -178,7 +203,7 @@ export async function getAdminReservationById(id) {
     "Impossible de charger cette reservation."
   );
 
-  writeCachedValue(getAdminReservationDetailCacheKey(id), payload.reservation);
+  writeAdminReservationDetailCache(payload.reservation);
   return payload.reservation;
 }
 
@@ -193,7 +218,7 @@ export async function acceptAdminReservation(id) {
     "Impossible d'accepter cette reservation."
   );
 
-  writeCachedValue(getAdminReservationDetailCacheKey(id), payload.reservation);
+  writeAdminReservationDetailCache(payload.reservation);
   return payload.reservation;
 }
 
@@ -221,6 +246,7 @@ export async function createAdminReservation(payload) {
     "Impossible de creer cette reservation."
   );
 
+  writeAdminReservationDetailCache(responsePayload.reservation);
   return responsePayload.reservation;
 }
 
@@ -236,6 +262,7 @@ export async function updateAdminReservation(id, payload) {
     "Impossible de modifier cette reservation."
   );
 
+  writeAdminReservationDetailCache(responsePayload.reservation);
   return responsePayload.reservation;
 }
 

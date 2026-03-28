@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+        }
+        .no-border { border: none !important; }
+        .carbon-gradient {
+            background: linear-gradient(45deg, #000000 0%, #3b3b3b 100%);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary-container": "#3b3b3b",
+                        "on-primary": "#e2e2e2",
+                        "tertiary-container": "#747474",
+                        "tertiary": "#3b3b3b",
+                        "surface-container-highest": "#e2e2e2",
+                        "tertiary-fixed": "#5e5e5e",
+                        "on-secondary": "#ffffff",
+                        "primary": "#000000",
+                        "error": "#ba1a1a",
+                        "surface-container": "#eeeeee",
+                        "surface": "#f9f9f9",
+                        "on-error-container": "#410002",
+                        "on-tertiary-container": "#ffffff",
+                        "surface-bright": "#f9f9f9",
+                        "on-background": "#1a1c1c",
+                        "inverse-primary": "#c6c6c6",
+                        "tertiary-fixed-dim": "#474747",
+                        "error-container": "#ffdad6",
+                        "on-secondary-container": "#1b1c1c",
+                        "surface-variant": "#e2e2e2",
+                        "background": "#f9f9f9",
+                        "surface-container-high": "#e8e8e8",
+                        "primary-fixed-dim": "#474747",
+                        "on-secondary-fixed-variant": "#3b3b3b",
+                        "on-error": "#ffffff",
+                        "secondary-container": "#d6d4d3",
+                        "inverse-on-surface": "#f1f1f1",
+                        "secondary": "#5f5e5e",
+                        "surface-container-low": "#f3f3f3",
+                        "on-secondary-fixed": "#1b1c1c",
+                        "on-tertiary-fixed": "#ffffff",
+                        "on-tertiary-fixed-variant": "#e2e2e2",
+                        "inverse-surface": "#2f3131",
+                        "on-surface": "#1a1c1c",
+                        "on-surface-variant": "#474747",
+                        "on-primary-fixed": "#ffffff",
+                        "surface-tint": "#5e5e5e",
+                        "outline-variant": "#c6c6c6",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-fixed": "#5e5e5e",
+                        "outline": "#777777",
+                        "secondary-fixed": "#c8c6c6",
+                        "secondary-fixed-dim": "#acabab",
+                        "on-tertiary": "#e2e2e2",
+                        "on-primary-fixed-variant": "#e2e2e2",
+                        "on-primary-container": "#ffffff",
+                        "surface-dim": "#dadada"
+                    },
+                    fontFamily: {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.375rem", "xl": "0.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- Main Content Canvas -->
+<main class="px-10 pb-20 bg-surface min-h-screen pt-12 max-w-7xl mx-auto">
+<!-- Welcome Header -->
+<header class="mb-12">
+<h2 class="font-headline font-bold text-4xl text-on-surface tracking-tight mb-2">Bienvenue, lea</h2>
+<p class="text-on-surface-variant max-w-2xl leading-relaxed">
+                Gardez une vue directe sur les demandes à traiter, les réservations confirmées, les visites du site et les tendances de location.
+            </p>
+</header>
+<!-- Summary Stats Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+<div class="bg-surface-container-lowest p-6 rounded shadow-sm hover:shadow-md transition-shadow">
+<span class="font-['Inter'] font-bold text-[0.6875rem] uppercase tracking-[0.05rem] text-on-surface-variant block mb-4">Vehicules suivis</span>
+<div class="flex items-baseline gap-2">
+<span class="text-4xl font-black text-primary">5</span>
+<span class="material-symbols-outlined text-primary/40" data-icon="directions_car">directions_car</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded shadow-sm hover:shadow-md transition-shadow">
+<span class="font-['Inter'] font-bold text-[0.6875rem] uppercase tracking-[0.05rem] text-on-surface-variant block mb-4">Demandes à traiter</span>
+<div class="flex items-baseline gap-2">
+<span class="text-4xl font-black text-primary">1</span>
+<span class="material-symbols-outlined text-error" data-icon="pending_actions">pending_actions</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded shadow-sm hover:shadow-md transition-shadow border-l-4 border-primary">
+<span class="font-['Inter'] font-bold text-[0.6875rem] uppercase tracking-[0.05rem] text-on-surface-variant block mb-4">Réservations confirmées</span>
+<div class="flex items-baseline gap-2">
+<span class="text-4xl font-black text-primary">4</span>
+<span class="material-symbols-outlined text-primary" data-icon="verified">verified</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded shadow-sm hover:shadow-md transition-shadow">
+<span class="font-['Inter'] font-bold text-[0.6875rem] uppercase tracking-[0.05rem] text-on-surface-variant block mb-4">Visibles ce mois</span>
+<div class="flex items-baseline gap-2">
+<span class="text-4xl font-black text-primary">4</span>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="visibility">visibility</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Left Column: Primary Analytics -->
+<div class="lg:col-span-8 space-y-8">
+<!-- Traffic Overview -->
+<section class="bg-surface-container-low p-8 rounded-lg">
+<div class="flex justify-between items-end mb-8">
+<div>
+<span class="font-['Inter'] font-bold text-[0.6875rem] uppercase tracking-[0.05rem] text-on-surface-variant">Performance Mars 2026</span>
+<h3 class="text-2xl font-black text-primary mt-1">Visites du site: 53</h3>
+</div>
+<div class="text-right">
+<span class="font-['Inter'] font-bold text-[0.6875rem] uppercase tracking-[0.05rem] text-on-surface-variant">Revenus Générés</span>
+<p class="text-2xl font-black text-primary mt-1">1,400 DZD</p>
+</div>
+</div>
+<!-- Simplified Visual Graph for Evolution -->
+<div class="h-64 flex items-end gap-4 px-4 pb-2 border-b border-outline-variant/40">
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-surface-container-highest h-8 rounded-t hover:bg-primary transition-colors"></div>
+<span class="text-[10px] font-bold text-on-surface-variant">SEM 1</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-surface-container-highest h-12 rounded-t hover:bg-primary transition-colors"></div>
+<span class="text-[10px] font-bold text-on-surface-variant">SEM 2</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-primary h-24 rounded-t"></div>
+<span class="text-[10px] font-bold text-primary">SEM 3 (1)</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-primary h-56 rounded-t relative">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-primary text-white text-[10px] px-2 py-1 rounded">3 Res.</div>
+</div>
+<span class="text-[10px] font-bold text-primary">SEM 4 (3)</span>
+</div>
+</div>
+</section>
+<!-- Insights Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-surface-container-lowest p-6 rounded shadow-sm border border-outline-variant/20">
+<span class="material-symbols-outlined text-primary mb-3" data-icon="stars">stars</span>
+<span class="font-['Inter'] font-bold text-[0.6875rem] uppercase tracking-[0.05rem] text-on-surface-variant block">Top Véhicule</span>
+<p class="text-lg font-bold text-primary">Audi R8</p>
+<p class="text-xs text-on-surface-variant mt-1">2 locations effectuées</p>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded shadow-sm border border-outline-variant/20">
+<span class="material-symbols-outlined text-primary mb-3" data-icon="schedule">schedule</span>
+<span class="font-['Inter'] font-bold text-[0.6875rem] uppercase tracking-[0.05rem] text-on-surface-variant block">Pic d'activité</span>
+<p class="text-lg font-bold text-primary">Mars 2026</p>
+<p class="text-xs text-on-surface-variant mt-1">4 réservations totales</p>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded shadow-sm border border-outline-variant/20">
+<span class="material-symbols-outlined text-primary mb-3" data-icon="event">event</span>
+<span class="font-['Inter'] font-bold text-[0.6875rem] uppercase tracking-[0.05rem] text-on-surface-variant block">Jour Premium</span>
+<p class="text-lg font-bold text-primary">Jeudi</p>
+<p class="text-xs text-on-surface-variant mt-1">1 départ moyen</p>
+</div>
+</div>
+<!-- Secondary Lists -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<section>
+<h4 class="font-['Inter'] font-bold text-[0.6875rem] uppercase tracking-[0.1rem] text-on-surface-variant mb-6 pb-2 border-b border-outline-variant/20">Véhicules les plus réservés</h4>
+<div class="space-y-4">
+<div class="flex items-center justify-between p-4 bg-surface-container-lowest rounded group hover:bg-primary transition-colors duration-200">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" data-icon="directions_car">directions_car</span>
+</div>
+<span class="font-bold text-sm group-hover:text-white">Audi R8</span>
+</div>
+<span class="text-sm font-black group-hover:text-white">2</span>
+</div>
+<div class="flex items-center justify-between p-4 bg-surface-container-lowest rounded group hover:bg-primary transition-colors duration-200">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" data-icon="directions_car">directions_car</span>
+</div>
+<span class="font-bold text-sm group-hover:text-white">Audi RS7</span>
+</div>
+<span class="text-sm font-black group-hover:text-white">1</span>
+</div>
+<div class="flex items-center justify-between p-4 bg-surface-container-lowest rounded group hover:bg-primary transition-colors duration-200">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" data-icon="directions_car">directions_car</span>
+</div>
+<span class="font-bold text-sm group-hover:text-white">Bentley Roadster</span>
+</div>
+<span class="text-sm font-black group-hover:text-white">1</span>
+</div>
+</div>
+</section>
+<section>
+<h4 class="font-['Inter'] font-bold text-[0.6875rem] uppercase tracking-[0.1rem] text-on-surface-variant mb-6 pb-2 border-b border-outline-variant/20">Répartition par jour</h4>
+<div class="space-y-4">
+<div class="flex items-center justify-between p-4 border-b border-outline-variant/10">
+<span class="text-sm font-medium">Mardi</span>
+<span class="text-sm font-black">1</span>
+</div>
+<div class="flex items-center justify-between p-4 border-b border-outline-variant/10">
+<span class="text-sm font-medium">Jeudi</span>
+<span class="text-sm font-black">1</span>
+</div>
+<div class="flex items-center justify-between p-4 border-b border-outline-variant/10">
+<span class="text-sm font-medium">Vendredi</span>
+<span class="text-sm font-black">1</span>
+</div>
+<div class="flex items-center justify-between p-4 border-b border-outline-variant/10">
+<span class="text-sm font-medium">Samedi</span>
+<span class="text-sm font-black">1</span>
+</div>
+</div>
+</section>
+</div>
+</div>
+<!-- Right Column: Operational Status & Focus -->
+<div class="lg:col-span-4 space-y-8">
+<!-- Fleet Status "Donut" Visual -->
+<section class="bg-primary text-white p-8 rounded-lg shadow-xl">
+<h4 class="font-['Inter'] font-bold text-[0.6875rem] uppercase tracking-[0.1rem] text-on-primary-fixed-variant mb-8">Statut de la flotte</h4>
+<div class="relative w-48 h-48 mx-auto mb-8">
+<!-- Abstract Donut Representation -->
+<div class="absolute inset-0 rounded-full border-[16px] border-surface-container-highest/20"></div>
+<div class="absolute inset-0 rounded-full border-[16px] border-white border-t-transparent border-r-transparent transform -rotate-45"></div>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-4xl font-black">5</span>
+<span class="text-[10px] uppercase tracking-widest opacity-60">Véhicules</span>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-white"></span>
+<span class="text-sm">Disponibles</span>
+</div>
+<span class="font-bold">3</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-white/40"></span>
+<span class="text-sm">Réservés</span>
+</div>
+<span class="font-bold">2</span>
+</div>
+<div class="flex items-center justify-between opacity-50">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full border border-white"></span>
+<span class="text-sm">Maintenance</span>
+</div>
+<span class="font-bold">0</span>
+</div>
+</div>
+</section>
+<!-- Actionable Insights Card -->
+<section class="bg-surface-container p-6 rounded-lg">
+<div class="mb-6">
+<span class="font-['Inter'] font-bold text-[0.6875rem] uppercase tracking-[0.05rem] text-on-surface-variant">Focus immédiat</span>
+<h4 class="text-xl font-black text-primary">Aujourd'hui</h4>
+</div>
+<div class="bg-surface-container-lowest p-4 rounded mb-4">
+<div class="flex items-center gap-3 mb-2">
+<span class="material-symbols-outlined text-primary text-lg" data-icon="notification_important">notification_important</span>
+<span class="text-sm font-bold">1 Demande en attente</span>
+</div>
+<p class="text-xs text-on-surface-variant">Vérifiez les documents pour la réservation de l'Audi R8.</p>
+<button class="mt-4 w-full carbon-gradient text-on-primary text-[0.6875rem] font-bold uppercase tracking-wider py-3 rounded">Consulter la demande</button>
+</div>
+</section>
+<!-- Traffic Summary Mini-Card -->
+<section class="bg-surface-container-low p-6 rounded-lg border border-outline-variant/30">
+<div class="flex items-center justify-between mb-4">
+<span class="font-['Inter'] font-bold text-[0.6875rem] uppercase tracking-[0.05rem] text-on-surface-variant">Visiteurs Uniques</span>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="person_search">person_search</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="text-3xl font-black text-primary">1</span>
+<span class="text-xs text-on-surface-variant">Visiteur actif</span>
+</div>
+</section>
+</div>
+</div>
+<!-- Floating Glass Action Bar -->
+<div class="fixed bottom-8 left-1/2 -translate-x-1/2 glass-card px-8 py-4 rounded-full shadow-2xl flex items-center gap-8 border border-white/40 z-50">
+<button class="flex flex-col items-center gap-1 group">
+<span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform" data-icon="add_circle">add_circle</span>
+<span class="text-[9px] font-black uppercase tracking-tighter">Ajouter Véhicule</span>
+</button>
+<div class="w-px h-8 bg-outline-variant/40"></div>
+<button class="flex flex-col items-center gap-1 group">
+<span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform" data-icon="download">download</span>
+<span class="text-[9px] font-black uppercase tracking-tighter">Exporter Rapport</span>
+</button>
+<div class="w-px h-8 bg-outline-variant/40"></div>
+<button class="flex flex-col items-center gap-1 group">
+<span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform" data-icon="support_agent">support_agent</span>
+<span class="text-[9px] font-black uppercase tracking-tighter">Support</span>
+</button>
+</div>
+</main>
+</body></html>

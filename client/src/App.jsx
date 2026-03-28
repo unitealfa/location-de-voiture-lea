@@ -35,7 +35,8 @@ import {
   getCachedAdminReservations,
   getCachedVehicleReservationAvailability,
   getVehicleReservationAvailability,
-  listAdminReservations
+  listAdminReservations,
+  preloadAdminReservationCaches
 } from "./services/reservationService";
 import {
   getAdminSession,
@@ -454,8 +455,20 @@ function App() {
     }
   }, [currentAdmin, currentPath, isAuthLoading]);
 
-  const handleAdminLoginSuccess = (admin) => {
+  const handleAdminLoginSuccess = async (admin) => {
     setCurrentAdmin(admin);
+
+    const today = new Date();
+    await Promise.allSettled([
+      preloadAdminReservationCaches(),
+      getAdminDashboardStats({
+        view: "month",
+        year: today.getFullYear(),
+        month: today.getMonth() + 1
+      }),
+      listVehicles()
+    ]);
+
     window.history.pushState({}, "", "/admin");
     window.scrollTo(0, 0);
     setCurrentPath("/admin");
@@ -694,7 +707,11 @@ function App() {
           onContactClick={() => navigateTo("/contact")}
         />
       ) : currentPath === "/admin" && currentAdmin ? (
-        <AdminAceulle content={content.adminAceulle} admin={currentAdmin} />
+        <AdminAceulle
+          content={content.adminAceulle}
+          admin={currentAdmin}
+          onNavigate={navigateTo}
+        />
       ) : (
         <Aceulle content={content.aceulle} onNavigate={navigateTo} />
       )}
