@@ -9,6 +9,7 @@ const {
 const LEGACY_CONTENT_STORAGE_PATH = path.resolve(__dirname, "../data/site-content.json");
 
 const VISUAL_SETTING_KEYS = {
+  browserTitle: "brand.browserTitle",
   faviconImagePath: "brand.faviconImagePath",
   headerLogoImagePath: "brand.logoImagePath",
   footerLogoImagePath: "footer.logoImagePath",

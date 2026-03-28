@@ -81,6 +81,30 @@ function getCurrentPath() {
   return normalizePath(window.location.pathname);
 }
 
+const ADMIN_REDIRECT_STORAGE_KEY = "admin:redirect-after-login";
+
+function storeAdminRedirectPath(path) {
+  try {
+    window.sessionStorage.setItem(ADMIN_REDIRECT_STORAGE_KEY, path);
+  } catch (error) {
+  }
+}
+
+function readAdminRedirectPath() {
+  try {
+    return window.sessionStorage.getItem(ADMIN_REDIRECT_STORAGE_KEY) || "";
+  } catch (error) {
+    return "";
+  }
+}
+
+function clearAdminRedirectPath() {
+  try {
+    window.sessionStorage.removeItem(ADMIN_REDIRECT_STORAGE_KEY);
+  } catch (error) {
+  }
+}
+
 function isAdminOnlyPath(path) {
   return (
     path === "/admin/profile" ||
@@ -375,6 +399,9 @@ function App() {
 
   useEffect(() => {
     const faviconHref = content?.brand?.faviconImagePath || content?.brand?.logoImagePath;
+    const browserTitle = content?.brand?.browserTitle || content?.brand?.name || "Lea Location";
+
+    document.title = browserTitle;
 
     if (!faviconHref) {
       return;
@@ -390,7 +417,7 @@ function App() {
 
     favicon.setAttribute("href", faviconHref);
     favicon.setAttribute("type", "image/jpeg");
-  }, [content?.brand?.faviconImagePath, content?.brand?.logoImagePath]);
+  }, [content?.brand?.browserTitle, content?.brand?.name, content?.brand?.faviconImagePath, content?.brand?.logoImagePath]);
 
   useEffect(() => {
     const loadAdminSession = async () => {
@@ -458,6 +485,7 @@ function App() {
         return;
       }
 
+      storeAdminRedirectPath(currentPath);
       window.history.replaceState({}, "", "/admin/login");
       setCurrentPath("/admin/login");
     }
@@ -469,8 +497,10 @@ function App() {
     }
 
     if (currentPath === "/admin/login" && currentAdmin) {
-      window.history.replaceState({}, "", "/admin");
-      setCurrentPath("/admin");
+      const redirectPath = normalizePath(readAdminRedirectPath() || "/admin");
+      clearAdminRedirectPath();
+      window.history.replaceState({}, "", redirectPath);
+      setCurrentPath(redirectPath);
     }
   }, [currentAdmin, currentPath, isAuthLoading]);
 
@@ -488,9 +518,11 @@ function App() {
       listVehicles()
     ]);
 
-    window.history.pushState({}, "", "/admin");
+    const redirectPath = normalizePath(readAdminRedirectPath() || "/admin");
+    clearAdminRedirectPath();
+    window.history.pushState({}, "", redirectPath);
     window.scrollTo(0, 0);
-    setCurrentPath("/admin");
+    setCurrentPath(redirectPath);
     setIsMenuOpen(false);
   };
 

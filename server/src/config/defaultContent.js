@@ -1,7 +1,8 @@
 const defaultContent = {
   brand: {
     name: "Lea Location",
-    logoText: "LEA"
+    logoText: "LEA",
+    browserTitle: "Lea Location"
   },
   header: {
     accountLabel: "Mon compte",

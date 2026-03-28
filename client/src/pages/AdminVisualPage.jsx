@@ -7,8 +7,17 @@ import {
 } from "../services/contentService";
 import { listVehicles, readCachedVehicleList } from "../services/vehicleService";
 import { useRef } from "react";
+import Footer from "../components/Footer";
+import FaqPage from "./FaqPage";
+import ContactPage from "./ContactPage";
+import {
+  formatVehicleName,
+  formatVehiclePrice,
+  getVehicleCardImageUrl
+} from "../utils/vehicleFormatters";
 
 const DEFAULT_FORM = {
+  browserTitle: "",
   faviconImagePath: "",
   headerLogoImagePath: "",
   footerLogoImagePath: "",
@@ -121,6 +130,7 @@ function buildInitialForm(settings, content) {
 
   return {
     ...DEFAULT_FORM,
+    browserTitle: brand.browserTitle || brand.name || "",
     faviconImagePath: brand.faviconImagePath || brand.logoImagePath || "",
     headerLogoImagePath: brand.logoImagePath || "",
     footerLogoImagePath: footer.logoImagePath || brand.logoImagePath || "",
@@ -262,6 +272,514 @@ function PreviewCard({ title, children }) {
   );
 }
 
+function FieldSection({ title, description, children }) {
+  return (
+    <section className="admin-visual-page__field-section">
+      <div className="admin-visual-page__field-section-head">
+        <h3>{title}</h3>
+        {description ? <p>{description}</p> : null}
+      </div>
+      <div className="admin-visual-page__field-section-body">{children}</div>
+    </section>
+  );
+}
+
+function VisualEditorSection({ title, preview, children }) {
+  return (
+    <section className="admin-visual-page__editor-section">
+      <div className="admin-visual-page__editor-preview">
+        <PreviewCard title={title}>{preview}</PreviewCard>
+      </div>
+      <div className="admin-visual-page__editor-fields">{children}</div>
+    </section>
+  );
+}
+
+function MiniCanvas({ children, className = "" }) {
+  return (
+    <div className={"admin-visual-page__mini-canvas-shell " + className}>
+      <div className="admin-visual-page__mini-canvas-scale">{children}</div>
+    </div>
+  );
+}
+
+function BrowserTabPreview({ icon, title }) {
+  return (
+    <MiniCanvas className="admin-visual-page__mini-canvas-shell--tab">
+      <div className="admin-visual-preview__browser-window">
+        <div className="admin-visual-preview__browser-toolbar">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <div className="admin-visual-preview__browser-tab-wrap">
+          <div className="admin-visual-preview__browser-tab">
+            <img src={icon} alt="Favicon" />
+            <span>{title}</span>
+          </div>
+        </div>
+      </div>
+    </MiniCanvas>
+  );
+}
+
+function MiniVehicleCardPreview({ vehicle, className = "" }) {
+  if (!vehicle) {
+    return null;
+  }
+
+  return (
+    <div className={className}>
+      <div className="vehica-car-card vehica-car-card-v1">
+        <div className="vehica-car-card__inner">
+          <span className="vehica-car-card-link" aria-hidden="true"></span>
+
+          <div className="vehica-car-card__image-bg">
+            <div className="vehica-car-card__image" style={{ paddingTop: "84.52380952381%" }}>
+              <img
+                src={
+                  vehicle.photoUrls && vehicle.photoUrls[0]
+                    ? getVehicleCardImageUrl(vehicle.photoUrls[0])
+                    : "/home/rentzo-hero.jpg"
+                }
+                alt={formatVehicleName(vehicle)}
+                loading="lazy"
+                decoding="async"
+              />
+
+              <div className="vehica-car-card__image-info">
+                <span className="vehica-car-card__image-info__photos">
+                  {vehicle.photoUrls ? vehicle.photoUrls.length : 0} photos
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="vehica-car-card__content">
+            <div className="vehica-car-card__name" title={formatVehicleName(vehicle)}>
+              {formatVehicleName(vehicle)}
+            </div>
+
+            <div className="vehica-car-card__price">
+              Prix journalier: {formatVehiclePrice(vehicle.dailyPrice)} / jour
+            </div>
+
+            <div className="vehica-car-card__separator"></div>
+
+            <div className="vehica-car-card__info">
+              <div className="vehica-car-card__info__single">{vehicle.seats} places</div>
+              <div className="vehica-car-card__info__single">{vehicle.transmission}</div>
+              <div className="vehica-car-card__info__single">{vehicle.fuelType}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function HeaderPreview({ brand, header }) {
+  const previewItems = [
+    { path: "/admin", label: header.dashboardLabel || "Dashboard" },
+    { path: "/", label: "ACCUEIL" }
+  ];
+
+  return (
+    <div className="admin-visual-page__flat-preview-shell admin-visual-page__flat-preview-shell--header">
+      <div className="admin-visual-preview__header-frame">
+        <div className="admin-visual-preview__header-row">
+          <div className="admin-visual-preview__header-brand">
+            <img src={brand.logoImagePath} alt={brand.name} />
+          </div>
+
+          <div className="admin-visual-preview__header-links">
+            {previewItems.map((item, index) => (
+              <span
+                key={item.path}
+                className={index === 0 ? "admin-visual-preview__header-link admin-visual-preview__header-link--active" : "admin-visual-preview__header-link"}
+              >
+                {item.label}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function HomeHeroPreview({
+  image,
+  eyebrow,
+  title,
+  rentalLabel,
+  rentalText,
+  contactLabel,
+  contactText,
+  fleetTitle,
+  vehicles
+}) {
+  return (
+    <MiniCanvas className="admin-visual-page__mini-canvas-shell--home">
+      <div className="admin-visual-page__live-preview">
+        <main className="rentzo-home">
+          <section className="rentzo-home__hero">
+            <div className="vehica-app">
+              <div className="vehica-slider vehica-swiper-container">
+                <div className="vehica-swiper-wrapper">
+                  <div className="vehica-slider__slide" style={{ backgroundImage: "url('" + image + "')" }}>
+                    <div className="vehica-slider__mask-additional"></div>
+                    <div className="vehica-slider__content">
+                      <div className="vehica-slider__content-inner">
+                        <div className="vehica-slider__title"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="rentzo-home__intro">
+            <div className="rentzo-home__container">
+              <div className="vehica-heading">
+                <div className="vehica-heading__title">{eyebrow}</div>
+                <h1 className="vehica-heading__text">
+                  <span>{title}</span>
+                </h1>
+              </div>
+
+              <div className="vehica-features">
+                <div className="vehica-features__feature">
+                  <div className="vehica-features__icon">
+                    <i className="far fa-calendar-alt" aria-hidden="true"></i>
+                  </div>
+                  <div className="vehica-features__content">
+                    <div className="vehica-features__label">{rentalLabel}</div>
+                    <div className="vehica-features__text">{rentalText}</div>
+                  </div>
+                </div>
+
+                <div className="vehica-features__feature">
+                  <div className="vehica-features__icon">
+                    <i className="fas fa-hotel" aria-hidden="true"></i>
+                  </div>
+                  <div className="vehica-features__content">
+                    <div className="vehica-features__label">{contactLabel}</div>
+                    <div className="vehica-features__text">{contactText}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="rentzo-home__catalog">
+            <div className="rentzo-home__container">
+              <div className="vehica-hero-v2-title">
+                <h2 className="elementor-heading-title elementor-size-default">{fleetTitle}</h2>
+              </div>
+
+              <div className="rentzo-home__grid-wrap">
+                <div className="vehica-grid">
+                  {vehicles.slice(0, 4).map((vehicle) => (
+                    <MiniVehicleCardPreview
+                      key={vehicle.id}
+                      vehicle={vehicle}
+                      className="vehica-grid__element vehica-grid__element--1of4 vehica-grid__element--tablet-1of2 vehica-grid__element--mobile-1of1"
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div className="rentzo-home__cta">
+                <div className="elementor-button-wrapper">
+                  <span className="elementor-button elementor-size-sm">
+                    <span className="elementor-button-content-wrapper">
+                      <span className="elementor-button-text">VOIR LES VÉHICULES DISPONIBLES</span>
+                    </span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </MiniCanvas>
+  );
+}
+
+function CarHotelPreview({ image, title, description, servicesTitle, services }) {
+  return (
+    <MiniCanvas>
+      <div className="admin-visual-page__live-preview">
+        <section className="rentzo-home__car-hotel is-visible">
+          <div className="rentzo-home__car-hotel-grid">
+            <div
+              className="rentzo-home__car-hotel-image"
+              aria-hidden="true"
+              style={{ backgroundImage: "url('" + image + "')" }}
+            ></div>
+
+            <div className="rentzo-home__car-hotel-content">
+              <h2 className="rentzo-home__car-hotel-title">{title}</h2>
+
+              <div className="rentzo-home__car-hotel-description">
+                <p>{description}</p>
+              </div>
+
+              <div className="rentzo-home__car-hotel-services-title">
+                <p>
+                  <strong>{servicesTitle}</strong>
+                </p>
+              </div>
+
+              <div className="rentzo-home__car-hotel-divider">
+                <span></span>
+              </div>
+
+              <ul className="rentzo-home__car-hotel-list">
+                {services.map((service) => (
+                  <li key={service} className="rentzo-home__car-hotel-item">
+                    <span className="rentzo-home__car-hotel-item-icon">
+                      <svg viewBox="0 0 512 512" aria-hidden="true">
+                        <path
+                          fill="currentColor"
+                          d="M256 512A256 256 0 1 1 256 0a256 256 0 1 1 0 512zM369 209L241 337c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47 111-111c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"
+                        />
+                      </svg>
+                    </span>
+                    <span className="rentzo-home__car-hotel-item-text">{service}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </section>
+      </div>
+    </MiniCanvas>
+  );
+}
+
+function TestimonialsPreview({ title, highlight, line1, line2, items }) {
+  return (
+    <MiniCanvas>
+      <div className="admin-visual-page__live-preview">
+        <section className="rentzo-home__testimonials is-visible">
+          <div className="rentzo-home__container">
+            <div className="vehica-heading rentzo-home__testimonials-heading">
+              <div className="vehica-heading__icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="34.011" height="29.76" viewBox="0 0 34.011 29.76" aria-hidden="true">
+                  <path
+                    fill="currentColor"
+                    d="M11.691-27.634h-7.44a4.086 4.086 0 0 0-2.989 1.262A4.086 4.086 0 0 0 0-23.383v8.5a4.086 4.086 0 0 0 1.262 2.989 4.086 4.086 0 0 0 2.989 1.262H8.5v1.594a3.58 3.58 0 0 1-1.1 2.624 3.58 3.58 0 0 1-2.624 1.1H3.72a2.571 2.571 0 0 0-1.893.764 2.571 2.571 0 0 0-.764 1.893v2.126a2.571 2.571 0 0 0 .764 1.893 2.571 2.571 0 0 0 1.893.764h1.063A10.925 10.925 0 0 0 10.4.631a11.112 11.112 0 0 0 4.052-4.052 10.925 10.925 0 0 0 1.495-5.613v-14.349a4.086 4.086 0 0 0-1.262-2.989 4.086 4.086 0 0 0-2.994-1.262zm2.126 18.6a8.652 8.652 0 0 1-1.229 4.517A9.354 9.354 0 0 1 9.3-1.229 8.652 8.652 0 0 1 4.783 0H3.72a.508.508 0 0 1-.365-.166.508.508 0 0 1-.166-.365v-2.126a.508.508 0 0 1 .166-.365.508.508 0 0 1 .365-.166h1.063A5.623 5.623 0 0 0 8.9-4.916a5.623 5.623 0 0 0 1.727-4.119v-3.72H4.251a2.043 2.043 0 0 1-1.495-.631 2.043 2.043 0 0 1-.631-1.495v-8.5a2.043 2.043 0 0 1 .631-1.495 2.043 2.043 0 0 1 1.495-.631h7.44a2.043 2.043 0 0 1 1.495.631 2.043 2.043 0 0 1 .631 1.495zm15.943-18.6h-7.44a4.086 4.086 0 0 0-2.989 1.262 4.086 4.086 0 0 0-1.262 2.989v8.5a4.086 4.086 0 0 0 1.262 2.989 4.086 4.086 0 0 0 2.989 1.262h4.251v1.594a3.58 3.58 0 0 1-1.1 2.624 3.58 3.58 0 0 1-2.624 1.1h-1.058a2.571 2.571 0 0 0-1.889.764 2.571 2.571 0 0 0-.764 1.893v2.126a2.571 2.571 0 0 0 .764 1.893 2.571 2.571 0 0 0 1.893.764h1.063A10.925 10.925 0 0 0 28.465.631a11.112 11.112 0 0 0 4.052-4.052 10.925 10.925 0 0 0 1.495-5.613v-14.349a4.086 4.086 0 0 0-1.262-2.989 4.086 4.086 0 0 0-2.99-1.262zm2.126 18.6a8.652 8.652 0 0 1-1.229 4.517 9.354 9.354 0 0 1-3.288 3.288A8.652 8.652 0 0 1 22.851 0h-1.062a.508.508 0 0 1-.365-.166.508.508 0 0 1-.166-.365v-2.126a.508.508 0 0 1 .166-.365.508.508 0 0 1 .365-.166h1.063a5.623 5.623 0 0 0 4.118-1.728 5.623 5.623 0 0 0 1.73-4.118v-3.72h-6.38a2.043 2.043 0 0 1-1.495-.631 2.043 2.043 0 0 1-.631-1.495v-8.5a2.043 2.043 0 0 1 .631-1.495 2.043 2.043 0 0 1 1.495-.631h7.44a2.043 2.043 0 0 1 1.495.631 2.043 2.043 0 0 1 .631 1.495z"
+                    transform="translate(0 27.634)"
+                  />
+                </svg>
+              </div>
+
+              <h3 className="vehica-heading__title">{title}</h3>
+
+              <div className="vehica-heading__text">
+                <span>{highlight}</span> {line1}
+                <br />
+                {line2}
+              </div>
+            </div>
+
+            <div className="vehica-app">
+              <div className="vehica-testimonial-carousel">
+                <div className="vehica-swiper-container">
+                  <div className="vehica-swiper-wrapper">
+                    {items.slice(0, 3).map((testimonial, index) => (
+                      <div
+                        key={testimonial.name + "-" + index}
+                        className={"vehica-swiper-slide" + (index === 0 ? " vehica-swiper-slide-active" : "")}
+                      >
+                        <div className="vehica-testimonial-carousel__testimonial">
+                          <div className="vehica-testimonial-carousel__content">
+                            <div className="vehica-testimonial-carousel__stars" aria-hidden="true">
+                              {Array.from({ length: 5 }).map((_, starIndex) => (
+                                <span key={testimonial.name + "-star-" + starIndex}>
+                                  <svg viewBox="0 0 576 512" aria-hidden="true">
+                                    <path
+                                      fill="currentColor"
+                                      d="M316.9 18.3c-5.5-11.7-22.3-11.7-27.8 0l-64 136.5-149.9 22.5c-12.9 1.9-18 17.8-8.6 27.2l108.6 105.7-25.7 149.1c-2.1 12.5 11 22 22.4 15.8L288 439.6l116.1 64.5c11.5 6.2 24.6-3.4 22.4-15.8l-25.7-149.1 108.6-105.7c9.4-9.4 4.3-25.3-8.6-27.2l-149.9-22.5-64-136.5z"
+                                    />
+                                  </svg>
+                                </span>
+                              ))}
+                            </div>
+
+                            <div className="vehica-testimonial-carousel__text">{testimonial.text}</div>
+                          </div>
+
+                          <div className="vehica-testimonial-carousel__footer">
+                            <div className="vehica-testimonial-carousel__name">{testimonial.name}</div>
+                            <div className="vehica-testimonial-carousel__title">{testimonial.title}</div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="vehica-testimonial-carousel__pagination">
+                    {items.slice(0, 3).map((_, index) => (
+                      <span
+                        key={"testimonial-page-" + index}
+                        className={"vehica-testimonial-carousel__bullet" + (index === 0 ? " is-active" : "")}
+                      ></span>
+                    ))}
+                  </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+    </MiniCanvas>
+  );
+}
+
+function VehiclePillPreview({ title, vehicles }) {
+  return (
+    <MiniCanvas>
+      <div className="admin-visual-page__live-preview">
+        <section className="rentzo-home__convertibles">
+          <div className="rentzo-home__container">
+            <div className="vehica-car-tabs-carousel vehica-car-tabs-carousel__arrows-outside">
+              <div className="vehica-tabs-top-v2">
+                <h3 className="vehica-tabs-top-v2__heading">{title}</h3>
+              </div>
+
+              <div className="vehica-carousel-v1 vehica-carousel-v1--cars-4">
+                <div className="vehica-carousel__swiper">
+                  <div className="vehica-swiper-wrapper" style={{ transform: "translate3d(0,0,0)" }}>
+                    {vehicles.slice(0, 4).map((vehicle) => (
+                      <div
+                        key={vehicle.id}
+                        className="vehica-swiper-slide vehica-carousel-v1__slide"
+                        style={{ width: "25%" }}
+                      >
+                        <div className="rentzo-home__convertibles-slide-inner">
+                          <MiniVehicleCardPreview
+                            vehicle={vehicle}
+                            className="admin-visual-page__mini-slide-card"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  className="rentzo-home__convertibles-nav rentzo-home__convertibles-nav--prev"
+                  aria-label="Voir les vehicules precedents"
+                >
+                  <svg viewBox="0 0 320 512" aria-hidden="true">
+                    <path
+                      fill="currentColor"
+                      d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"
+                    />
+                  </svg>
+                </button>
+
+                <button
+                  type="button"
+                  className="rentzo-home__convertibles-nav rentzo-home__convertibles-nav--next"
+                  aria-label="Voir les vehicules suivants"
+                >
+                  <svg viewBox="0 0 320 512" aria-hidden="true">
+                    <path
+                      fill="currentColor"
+                      d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="rentzo-home__convertibles-cta">
+                <div className="elementor-button-wrapper">
+                  <span className="elementor-button elementor-size-sm">
+                    <span className="elementor-button-content-wrapper">
+                      <span className="elementor-button-text">VOIR TOUT</span>
+                    </span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </MiniCanvas>
+  );
+}
+
+function FaqPreview({ image, title, subtitle, pageTitle, items }) {
+  return (
+    <MiniCanvas>
+      <div className="admin-visual-page__live-preview">
+        <FaqPage
+          content={{
+            heroImagePath: image,
+            heroTitleStart: title,
+            heroTitleAccent: "",
+            heroSubtitle: subtitle,
+            pageTitle,
+            contactButtonLabel: "Contact",
+            leftItems: items.slice(0, 6),
+            rightItems: items.slice(6, 12)
+          }}
+          onContactClick={() => {}}
+        />
+      </div>
+    </MiniCanvas>
+  );
+}
+
+function ContactPreview({ image, titleStart, titleAccent, subtitle, hoursTitle, hoursSubtitle, hoursItems, mapText }) {
+  return (
+    <MiniCanvas>
+      <div className="admin-visual-page__live-preview">
+        <ContactPage
+          content={{
+            heroImagePath: image,
+            heroTitleStart: titleStart,
+            heroTitleAccent: titleAccent,
+            heroSubtitle: subtitle,
+            pageTitle: "Contact",
+            shortInfo: "✔︎ Lea Location. Location de voitures de luxe à ALGER.",
+            socialTitle: "Suivez-nous",
+            hoursTitle,
+            hoursSubtitle,
+            hoursItems,
+            mapQuery: mapText
+          }}
+          footerContent={{
+            phoneValue: "0779 10 74 46",
+            emailValue: "lea@gmail.com",
+            locationValue: "Alger",
+            addressValue: "Alger\nLea Location",
+            facebookUrl: "#",
+            instagramUrl: "#"
+          }}
+          brand={{ name: "Lea Location" }}
+        />
+      </div>
+    </MiniCanvas>
+  );
+}
+
+function FooterPreview({ brand, content, header }) {
+  return (
+    <MiniCanvas className="admin-visual-page__mini-canvas-shell--footer">
+      <div className="admin-visual-page__live-preview">
+        <Footer brand={brand} content={content} header={header} onNavigate={() => {}} />
+      </div>
+    </MiniCanvas>
+  );
+}
+
 function ImageDropField({
   label,
   value,
@@ -337,6 +855,7 @@ function buildNextContent(currentContent, formValues) {
 
   nextContent.brand = {
     ...(nextContent.brand || {}),
+    browserTitle: formValues.browserTitle,
     logoImagePath: nextBrandLogo,
     faviconImagePath: formValues.faviconImagePath || nextBrandLogo
   };
@@ -691,7 +1210,18 @@ function AdminVisualPage({ content, brand, header, footer, onContentSaved }) {
       name: formValues.homeTestimonial5Name,
       title: formValues.homeTestimonial5Role
     }
-  ].filter((item) => item.text || item.name || item.title);
+    ].filter((item) => item.text || item.name || item.title);
+  const previewFooterContent = {
+    ...footer,
+    logoImagePath: previewFooterLogo,
+    shortInfo: previewFooterText,
+    phoneValue: formValues.footerPhoneValue || footer.phoneValue,
+    emailValue: formValues.footerEmailValue || footer.emailValue,
+    locationValue: formValues.footerLocationValue || footer.locationValue,
+    addressValue: previewFooterAddress,
+    facebookUrl: formValues.footerFacebookUrl || footer.facebookUrl,
+    instagramUrl: formValues.footerInstagramUrl || footer.instagramUrl
+  };
 
   if (isLoading) {
     return (
@@ -711,290 +1241,177 @@ function AdminVisualPage({ content, brand, header, footer, onContentSaved }) {
         </p>
       </section>
 
-      <div className="admin-visual-page__layout">
-        <div className="admin-visual-page__preview-grid">
-          <PreviewCard title="Favicon">
-            <div className="admin-visual-page__favicon-preview">
-              <img src={previewFavicon} alt="Favicon" />
-            </div>
-          </PreviewCard>
-
-          <PreviewCard title="Header">
-            <div className="admin-visual-page__header-preview">
-              <img src={previewHeaderLogo} alt={brand.name} />
-              <div className="admin-visual-page__header-links">
-                {header.navigationItems.map((item) => (
-                  <span key={item.path}>{item.label}</span>
-                ))}
-              </div>
-            </div>
-          </PreviewCard>
-
-          <PreviewCard title="Accueil">
-            <div className="admin-visual-page__home-preview">
-              <div
-                className="admin-visual-page__home-preview-media"
-                style={{ backgroundImage: "url('" + previewHomeHero + "')" }}
-              ></div>
-              <div className="admin-visual-page__home-preview-copy">
-                <strong>{formValues.homeEyebrow || content.aceulle?.eyebrow}</strong>
-                <h3>{formValues.homeTitle || content.aceulle?.title}</h3>
-                <div className="admin-visual-page__home-preview-feature">
-                  <p>{formValues.homeFeatureRentalLabel || content.aceulle?.featureRentalLabel}</p>
-                  <span>{formValues.homeFeatureRentalText || content.aceulle?.featureRentalText}</span>
-                </div>
-                <div className="admin-visual-page__home-preview-feature">
-                  <p>{formValues.homeFeatureContactLabel || content.aceulle?.featureContactLabel}</p>
-                  <span>{formValues.homeFeatureContactText || content.aceulle?.featureContactText}</span>
-                </div>
-                <em>{formValues.homeFleetTitle || content.aceulle?.fleetTitle}</em>
-              </div>
-            </div>
-          </PreviewCard>
-
-          <PreviewCard title="Hotel de voitures">
-            <div className="admin-visual-page__home-preview">
-              <div
-                className="admin-visual-page__home-preview-media"
-                style={{ backgroundImage: "url('" + previewCarHotelImage + "')" }}
-              ></div>
-              <div className="admin-visual-page__home-preview-copy">
-                <strong>{formValues.homeCarHotelTitle || content.aceulle?.carHotelTitle}</strong>
-                <span>{formValues.homeCarHotelDescription || content.aceulle?.carHotelDescription}</span>
-                <p>{formValues.homeCarHotelServicesTitle || content.aceulle?.carHotelServicesTitle}</p>
-                <div className="admin-visual-page__home-preview-feature">
-                  <span>{formValues.homeCarHotelService1 || content.aceulle?.carHotelServices?.[0]}</span>
-                  <span>{formValues.homeCarHotelService2 || content.aceulle?.carHotelServices?.[1]}</span>
-                  <span>{formValues.homeCarHotelService3 || content.aceulle?.carHotelServices?.[2]}</span>
-                  <span>{formValues.homeCarHotelService4 || content.aceulle?.carHotelServices?.[3]}</span>
-                </div>
-              </div>
-            </div>
-          </PreviewCard>
-
-          <PreviewCard title="Avis clients">
-            <div className="admin-visual-page__home-preview">
-              <div className="admin-visual-page__home-preview-copy">
-                <strong>{formValues.homeTestimonialsTitle || content.aceulle?.testimonialsTitle}</strong>
-                <h3>
-                  {formValues.homeTestimonialsHighlight || content.aceulle?.testimonialsHighlight}{" "}
-                  {formValues.homeTestimonialsTextLine1 || content.aceulle?.testimonialsTextLine1}
-                </h3>
-                <span>{formValues.homeTestimonialsTextLine2 || content.aceulle?.testimonialsTextLine2}</span>
-                <div className="admin-visual-page__testimonial-preview-list">
-                  {testimonialPreviewItems.map((item, index) => (
-                    <div key={item.name + "-" + index} className="admin-visual-page__testimonial-preview-item">
-                      <p>{item.text}</p>
-                      <strong>{item.name}</strong>
-                      <span>{item.title}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </PreviewCard>
-
-          <PreviewCard title="Cabriolets a louer">
-            <div className="admin-visual-page__home-preview">
-              <div className="admin-visual-page__home-preview-copy">
-                <strong>{formValues.homeConvertiblesTitle || content.aceulle?.convertiblesTitle}</strong>
-                <div className="admin-visual-page__vehicle-pill-list">
-                  {selectedConvertibleVehicles.length > 0 ? (
-                    selectedConvertibleVehicles.map((vehicle) => (
-                      <span key={vehicle.id} className="admin-visual-page__vehicle-pill">
-                        {vehicle.brand} {vehicle.model}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="admin-visual-page__preview-empty">Aucun vehicule selectionne.</span>
-                  )}
-                </div>
-              </div>
-            </div>
-          </PreviewCard>
-
-          <PreviewCard title="Foire aux questions">
-            <div className="admin-visual-page__home-preview">
-              <div
-                className="admin-visual-page__home-preview-media"
-                style={{ backgroundImage: "url('" + previewFaqHero + "')" }}
-              ></div>
-              <div className="admin-visual-page__home-preview-copy">
-                <strong>{formValues.faqHeroTitleStart || content.faqPage?.heroTitleStart}</strong>
-                <h3>{formValues.faqHeroSubtitle || content.faqPage?.heroSubtitle}</h3>
-                <p>{formValues.faqPageTitle || content.faqPage?.pageTitle}</p>
-                <div className="admin-visual-page__testimonial-preview-list">
-                  {[1, 2, 3].map((index) => (
-                    <div key={"faq-preview-" + index} className="admin-visual-page__testimonial-preview-item">
-                      <strong>{formValues["faqLeftQuestion" + index] || content.faqPage?.leftItems?.[index - 1]?.question}</strong>
-                      <span>{formValues["faqLeftAnswer" + index] || content.faqPage?.leftItems?.[index - 1]?.answer}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </PreviewCard>
-
-          <PreviewCard title="Contact - horaires et map">
-            <div className="admin-visual-page__home-preview">
-              <div
-                className="admin-visual-page__home-preview-media"
-                style={{ backgroundImage: "url('" + previewContactHero + "')" }}
-              ></div>
-              <div className="admin-visual-page__home-preview-copy">
-                <strong>
-                  {formValues.contactHeroTitleStart || content.contactPage?.heroTitleStart}{" "}
-                  {formValues.contactHeroTitleAccent || content.contactPage?.heroTitleAccent}
-                </strong>
-                <h3>{formValues.contactHeroSubtitle || content.contactPage?.heroSubtitle}</h3>
-                <strong>{formValues.contactHoursTitle || content.contactPage?.hoursTitle}</strong>
-                <span>{formValues.contactHoursSubtitle || content.contactPage?.hoursSubtitle}</span>
-                <div className="admin-visual-page__testimonial-preview-list">
-                  {contactHoursPreview.map((item, index) => (
-                    <div key={"contact-hours-preview-" + index} className="admin-visual-page__testimonial-preview-item">
-                      <strong>{item.day}</strong>
-                      <span>{item.value}</span>
-                    </div>
-                  ))}
-                </div>
-                <p>{formValues.contactMapLinkUrl || formValues.contactMapQuery || content.contactPage?.mapQuery}</p>
-                {formValues.contactMapLatitude || formValues.contactMapLongitude ? (
-                  <span>
-                    {formValues.contactMapLatitude || "?"}, {formValues.contactMapLongitude || "?"}
-                  </span>
-                ) : null}
-              </div>
-            </div>
-          </PreviewCard>
-
-          <PreviewCard title="Footer">
-            <div className="admin-visual-page__footer-preview">
-              <img src={previewFooterLogo} alt={brand.name} />
-              <p>{previewFooterText}</p>
-              <div className="admin-visual-page__footer-meta">
-                <span>{formValues.footerPhoneValue || footer.phoneValue}</span>
-                <span>{formValues.footerEmailValue || footer.emailValue}</span>
-                <span>{formValues.footerLocationValue || footer.locationValue}</span>
-                <span>{previewFooterAddress}</span>
-              </div>
-              <div className="admin-visual-page__footer-socials">
-                <span>Facebook</span>
-                <span>Instagram</span>
-              </div>
-            </div>
-          </PreviewCard>
-        </div>
-
-        <form className="admin-visual-page__form-card" onSubmit={handleSubmit}>
-          <h2>Elements modifiables</h2>
-
-          <ImageDropField
-            label="Logo de l'onglet navigateur"
-            value={formValues.faviconImagePath}
-            previewSrc={previewFavicon}
-            slot="favicon"
-            isUploading={uploadingSlot === "favicon"}
-            onUpload={handleUpload}
-          />
-
-          <ImageDropField
-            label="Logo du header"
-            value={formValues.headerLogoImagePath}
-            previewSrc={previewHeaderLogo}
-            slot="header-logo"
-            isUploading={uploadingSlot === "header-logo"}
-            onUpload={handleUpload}
-          />
-
-          <ImageDropField
-            label="Logo du footer"
-            value={formValues.footerLogoImagePath}
-            previewSrc={previewFooterLogo}
-            slot="footer-logo"
-            isUploading={uploadingSlot === "footer-logo"}
-            onUpload={handleUpload}
-          />
-
-          <ImageDropField
-            label="Image d'accueil"
-            value={formValues.homeHeroImagePath}
-            previewSrc={previewHomeHero}
-            slot="home-hero"
-            isUploading={uploadingSlot === "home-hero"}
-            onUpload={handleUpload}
-          />
-
-          <label className="login-form__field">
-            <span>Texte haut d'accueil</span>
-            <input
-              type="text"
-              value={formValues.homeEyebrow}
-              onChange={(event) => handleChange("homeEyebrow", event.target.value)}
+      <form className="admin-visual-page__layout" onSubmit={handleSubmit}>
+        <VisualEditorSection
+          title="Onglet navigateur"
+          preview={
+            <BrowserTabPreview
+              icon={previewFavicon}
+              title={formValues.browserTitle || brand.browserTitle || brand.name}
             />
-          </label>
-
-          <label className="login-form__field">
-            <span>Titre d'accueil</span>
-            <textarea
-              rows="3"
-              value={formValues.homeTitle}
-              onChange={(event) => handleChange("homeTitle", event.target.value)}
+          }
+        >
+          <FieldSection
+            title="Onglet navigateur"
+            description="Favicon et texte de l'onglet du navigateur."
+          >
+            <ImageDropField
+              label="Logo de l'onglet navigateur"
+              value={formValues.faviconImagePath}
+              previewSrc={previewFavicon}
+              slot="favicon"
+              isUploading={uploadingSlot === "favicon"}
+              onUpload={handleUpload}
             />
-          </label>
 
-          <label className="login-form__field">
-            <span>Titre bloc location</span>
-            <textarea
-              rows="2"
-              value={formValues.homeFeatureRentalLabel}
-              onChange={(event) => handleChange("homeFeatureRentalLabel", event.target.value)}
-            />
-          </label>
+            <label className="login-form__field">
+              <span>Texte de l'onglet navigateur</span>
+              <input
+                type="text"
+                value={formValues.browserTitle}
+                onChange={(event) => handleChange("browserTitle", event.target.value)}
+              />
+            </label>
+          </FieldSection>
+        </VisualEditorSection>
 
-          <label className="login-form__field">
-            <span>Texte bloc location</span>
-            <textarea
-              rows="3"
-              value={formValues.homeFeatureRentalText}
-              onChange={(event) => handleChange("homeFeatureRentalText", event.target.value)}
+        <VisualEditorSection
+          title="Header"
+          preview={<HeaderPreview brand={{ ...brand, logoImagePath: previewHeaderLogo }} header={header} />}
+        >
+          <FieldSection
+            title="Header"
+            description="Logo et rendu miniature du vrai header."
+          >
+            <ImageDropField
+              label="Logo du header"
+              value={formValues.headerLogoImagePath}
+              previewSrc={previewHeaderLogo}
+              slot="header-logo"
+              isUploading={uploadingSlot === "header-logo"}
+              onUpload={handleUpload}
             />
-          </label>
+          </FieldSection>
+        </VisualEditorSection>
 
-          <label className="login-form__field">
-            <span>Titre bloc contact</span>
-            <textarea
-              rows="2"
-              value={formValues.homeFeatureContactLabel}
-              onChange={(event) => handleChange("homeFeatureContactLabel", event.target.value)}
+        <VisualEditorSection
+          title="Accueil"
+          preview={
+            <HomeHeroPreview
+              image={previewHomeHero}
+              eyebrow={formValues.homeEyebrow || content.aceulle?.eyebrow}
+              title={formValues.homeTitle || content.aceulle?.title}
+              rentalLabel={formValues.homeFeatureRentalLabel || content.aceulle?.featureRentalLabel}
+              rentalText={formValues.homeFeatureRentalText || content.aceulle?.featureRentalText}
+              contactLabel={formValues.homeFeatureContactLabel || content.aceulle?.featureContactLabel}
+              contactText={formValues.homeFeatureContactText || content.aceulle?.featureContactText}
+              fleetTitle={formValues.homeFleetTitle || content.aceulle?.fleetTitle}
+              vehicles={vehicles}
             />
-          </label>
+          }
+        >
+          <FieldSection
+            title="Accueil"
+            description="Hero principal et blocs de presentation."
+          >
+            <ImageDropField
+              label="Image d'accueil"
+              value={formValues.homeHeroImagePath}
+              previewSrc={previewHomeHero}
+              slot="home-hero"
+              isUploading={uploadingSlot === "home-hero"}
+              onUpload={handleUpload}
+            />
 
-          <label className="login-form__field">
-            <span>Texte bloc contact</span>
-            <textarea
-              rows="3"
-              value={formValues.homeFeatureContactText}
-              onChange={(event) => handleChange("homeFeatureContactText", event.target.value)}
-            />
-          </label>
+            <label className="login-form__field">
+              <span>Texte haut d'accueil</span>
+              <input
+                type="text"
+                value={formValues.homeEyebrow}
+                onChange={(event) => handleChange("homeEyebrow", event.target.value)}
+              />
+            </label>
 
-          <label className="login-form__field">
-            <span>Titre flotte accueil</span>
-            <textarea
-              rows="2"
-              value={formValues.homeFleetTitle}
-              onChange={(event) => handleChange("homeFleetTitle", event.target.value)}
-            />
-          </label>
+            <label className="login-form__field">
+              <span>Titre d'accueil</span>
+              <textarea
+                rows="3"
+                value={formValues.homeTitle}
+                onChange={(event) => handleChange("homeTitle", event.target.value)}
+              />
+            </label>
 
-          <label className="login-form__field">
-            <span>Titre avis clients</span>
-            <input
-              type="text"
-              value={formValues.homeTestimonialsTitle}
-              onChange={(event) => handleChange("homeTestimonialsTitle", event.target.value)}
+            <label className="login-form__field">
+              <span>Titre bloc location</span>
+              <textarea
+                rows="2"
+                value={formValues.homeFeatureRentalLabel}
+                onChange={(event) => handleChange("homeFeatureRentalLabel", event.target.value)}
+              />
+            </label>
+
+            <label className="login-form__field">
+              <span>Texte bloc location</span>
+              <textarea
+                rows="3"
+                value={formValues.homeFeatureRentalText}
+                onChange={(event) => handleChange("homeFeatureRentalText", event.target.value)}
+              />
+            </label>
+
+            <label className="login-form__field">
+              <span>Titre bloc contact</span>
+              <textarea
+                rows="2"
+                value={formValues.homeFeatureContactLabel}
+                onChange={(event) => handleChange("homeFeatureContactLabel", event.target.value)}
+              />
+            </label>
+
+            <label className="login-form__field">
+              <span>Texte bloc contact</span>
+              <textarea
+                rows="3"
+                value={formValues.homeFeatureContactText}
+                onChange={(event) => handleChange("homeFeatureContactText", event.target.value)}
+              />
+            </label>
+
+            <label className="login-form__field">
+              <span>Titre flotte accueil</span>
+              <textarea
+                rows="2"
+                value={formValues.homeFleetTitle}
+                onChange={(event) => handleChange("homeFleetTitle", event.target.value)}
+              />
+            </label>
+          </FieldSection>
+        </VisualEditorSection>
+
+        <VisualEditorSection
+          title="Avis clients"
+          preview={
+            <TestimonialsPreview
+              title={formValues.homeTestimonialsTitle || content.aceulle?.testimonialsTitle}
+              highlight={formValues.homeTestimonialsHighlight || content.aceulle?.testimonialsHighlight}
+              line1={formValues.homeTestimonialsTextLine1 || content.aceulle?.testimonialsTextLine1}
+              line2={formValues.homeTestimonialsTextLine2 || content.aceulle?.testimonialsTextLine2}
+              items={testimonialPreviewItems}
             />
-          </label>
+          }
+        >
+          <FieldSection
+            title="Avis clients"
+            description="Texte d'introduction et cartes d'avis."
+          >
+            <label className="login-form__field">
+              <span>Titre avis clients</span>
+              <input
+                type="text"
+                value={formValues.homeTestimonialsTitle}
+                onChange={(event) => handleChange("homeTestimonialsTitle", event.target.value)}
+              />
+            </label>
 
           <label className="login-form__field">
             <span>Texte mis en avant avis</span>
@@ -1023,9 +1440,9 @@ function AdminVisualPage({ content, brand, header, footer, onContentSaved }) {
             />
           </label>
 
-          {[1, 2, 3, 4, 5].map((index) => (
-            <div key={"testimonial-editor-" + index} className="admin-visual-page__subsection">
-              <h3>Avis client {index}</h3>
+            {[1, 2, 3, 4, 5].map((index) => (
+              <div key={"testimonial-editor-" + index} className="admin-visual-page__subsection">
+                <h3>Avis client {index}</h3>
 
               <label className="login-form__field">
                 <span>Texte avis {index}</span>
@@ -1053,372 +1470,484 @@ function AdminVisualPage({ content, brand, header, footer, onContentSaved }) {
                   onChange={(event) => handleChange("homeTestimonial" + index + "Role", event.target.value)}
                 />
               </label>
-            </div>
-          ))}
-
-          <label className="login-form__field">
-            <span>Titre section cabriolets</span>
-            <input
-              type="text"
-              value={formValues.homeConvertiblesTitle}
-              onChange={(event) => handleChange("homeConvertiblesTitle", event.target.value)}
-            />
-          </label>
-
-          <div className="admin-visual-page__subsection">
-            <h3>Vehicules affiches sous les cabriolets</h3>
-            <div className="admin-visual-page__vehicle-selector">
-              {vehicles.map((vehicle) => {
-                const isSelected = formValues.homeConvertibleVehicleIds.includes(Number(vehicle.id));
-
-                return (
-                  <label
-                    key={vehicle.id}
-                    className={
-                      "admin-visual-page__vehicle-option" +
-                      (isSelected ? " admin-visual-page__vehicle-option--selected" : "")
-                    }
-                  >
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => handleConvertibleVehicleToggle(vehicle.id)}
-                    />
-                    <span>{vehicle.brand} {vehicle.model} {vehicle.version}</span>
-                  </label>
-                );
-              })}
-            </div>
-          </div>
-
-          <ImageDropField
-            label="Image hotel de voitures"
-            value={formValues.homeCarHotelImagePath}
-            previewSrc={previewCarHotelImage}
-            slot="home-car-hotel"
-            isUploading={uploadingSlot === "home-car-hotel"}
-            onUpload={handleUpload}
-          />
-
-          <ImageDropField
-            label="Image hero FAQ"
-            value={formValues.faqHeroImagePath}
-            previewSrc={previewFaqHero}
-            slot="faq-hero"
-            isUploading={uploadingSlot === "faq-hero"}
-            onUpload={handleUpload}
-          />
-
-          <label className="login-form__field">
-            <span>Titre hero FAQ</span>
-            <input
-              type="text"
-              value={formValues.faqHeroTitleStart}
-              onChange={(event) => handleChange("faqHeroTitleStart", event.target.value)}
-            />
-          </label>
-
-          <label className="login-form__field">
-            <span>Accent titre hero FAQ</span>
-            <input
-              type="text"
-              value={formValues.faqHeroTitleAccent}
-              onChange={(event) => handleChange("faqHeroTitleAccent", event.target.value)}
-            />
-          </label>
-
-          <label className="login-form__field">
-            <span>Sous-titre hero FAQ</span>
-            <textarea
-              rows="2"
-              value={formValues.faqHeroSubtitle}
-              onChange={(event) => handleChange("faqHeroSubtitle", event.target.value)}
-            />
-          </label>
-
-          <label className="login-form__field">
-            <span>Titre page FAQ</span>
-            <input
-              type="text"
-              value={formValues.faqPageTitle}
-              onChange={(event) => handleChange("faqPageTitle", event.target.value)}
-            />
-          </label>
-
-          <label className="login-form__field">
-            <span>Texte bouton contact FAQ</span>
-            <input
-              type="text"
-              value={formValues.faqContactButtonLabel}
-              onChange={(event) => handleChange("faqContactButtonLabel", event.target.value)}
-            />
-          </label>
-
-          <div className="admin-visual-page__subsection">
-            <h3>Questions gauche FAQ</h3>
-            {[1, 2, 3, 4, 5, 6].map((index) => (
-              <div key={"faq-left-" + index} className="admin-visual-page__faq-editor">
-                <label className="login-form__field">
-                  <span>Question gauche {index}</span>
-                  <textarea
-                    rows="2"
-                    value={formValues["faqLeftQuestion" + index]}
-                    onChange={(event) => handleChange("faqLeftQuestion" + index, event.target.value)}
-                  />
-                </label>
-
-                <label className="login-form__field">
-                  <span>Reponse gauche {index}</span>
-                  <textarea
-                    rows="3"
-                    value={formValues["faqLeftAnswer" + index]}
-                    onChange={(event) => handleChange("faqLeftAnswer" + index, event.target.value)}
-                  />
-                </label>
               </div>
             ))}
-          </div>
+          </FieldSection>
+        </VisualEditorSection>
 
-          <div className="admin-visual-page__subsection">
-            <h3>Questions droite FAQ</h3>
-            {[1, 2, 3, 4, 5, 6].map((index) => (
-              <div key={"faq-right-" + index} className="admin-visual-page__faq-editor">
-                <label className="login-form__field">
-                  <span>Question droite {index}</span>
-                  <textarea
-                    rows="2"
-                    value={formValues["faqRightQuestion" + index]}
-                    onChange={(event) => handleChange("faqRightQuestion" + index, event.target.value)}
-                  />
-                </label>
+        <VisualEditorSection
+          title="Cabriolets"
+          preview={
+            <VehiclePillPreview
+              title={formValues.homeConvertiblesTitle || content.aceulle?.convertiblesTitle}
+              vehicles={selectedConvertibleVehicles}
+            />
+          }
+        >
+          <FieldSection
+            title="Cabriolets"
+            description="Titre de section et vehicules affiches."
+          >
+            <label className="login-form__field">
+              <span>Titre section cabriolets</span>
+              <input
+                type="text"
+                value={formValues.homeConvertiblesTitle}
+                onChange={(event) => handleChange("homeConvertiblesTitle", event.target.value)}
+              />
+            </label>
 
-                <label className="login-form__field">
-                  <span>Reponse droite {index}</span>
-                  <textarea
-                    rows="3"
-                    value={formValues["faqRightAnswer" + index]}
-                    onChange={(event) => handleChange("faqRightAnswer" + index, event.target.value)}
-                  />
-                </label>
+            <div className="admin-visual-page__subsection">
+              <h3>Vehicules affiches sous les cabriolets</h3>
+              <div className="admin-visual-page__vehicle-selector">
+                {vehicles.map((vehicle) => {
+                  const isSelected = formValues.homeConvertibleVehicleIds.includes(Number(vehicle.id));
+
+                  return (
+                    <label
+                      key={vehicle.id}
+                      className={
+                        "admin-visual-page__vehicle-option" +
+                        (isSelected ? " admin-visual-page__vehicle-option--selected" : "")
+                      }
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => handleConvertibleVehicleToggle(vehicle.id)}
+                      />
+                      <span>{vehicle.brand} {vehicle.model} {vehicle.version}</span>
+                    </label>
+                  );
+                })}
               </div>
-            ))}
-          </div>
+            </div>
+          </FieldSection>
+        </VisualEditorSection>
 
-          <div className="admin-visual-page__subsection">
-            <h3>Contact - horaires et map</h3>
-
+        <VisualEditorSection
+          title="Hotel de voitures"
+          preview={
+            <CarHotelPreview
+              image={previewCarHotelImage}
+              title={formValues.homeCarHotelTitle || content.aceulle?.carHotelTitle}
+              description={formValues.homeCarHotelDescription || content.aceulle?.carHotelDescription}
+              servicesTitle={formValues.homeCarHotelServicesTitle || content.aceulle?.carHotelServicesTitle}
+              services={[
+                formValues.homeCarHotelService1 || content.aceulle?.carHotelServices?.[0],
+                formValues.homeCarHotelService2 || content.aceulle?.carHotelServices?.[1],
+                formValues.homeCarHotelService3 || content.aceulle?.carHotelServices?.[2],
+                formValues.homeCarHotelService4 || content.aceulle?.carHotelServices?.[3]
+              ].filter(Boolean)}
+            />
+          }
+        >
+          <FieldSection
+            title="Hotel de voitures"
+            description="Image, contenu et liste des services."
+          >
             <ImageDropField
-              label="Image hero contact"
-              value={formValues.contactHeroImagePath}
-              previewSrc={previewContactHero}
-              slot="contact-hero"
-              isUploading={uploadingSlot === "contact-hero"}
+              label="Image hotel de voitures"
+              value={formValues.homeCarHotelImagePath}
+              previewSrc={previewCarHotelImage}
+              slot="home-car-hotel"
+              isUploading={uploadingSlot === "home-car-hotel"}
               onUpload={handleUpload}
             />
 
             <label className="login-form__field">
-              <span>Titre hero contact</span>
-              <input
-                type="text"
-                value={formValues.contactHeroTitleStart}
-                onChange={(event) => handleChange("contactHeroTitleStart", event.target.value)}
-              />
-            </label>
-
-            <label className="login-form__field">
-              <span>Accent titre hero contact</span>
-              <input
-                type="text"
-                value={formValues.contactHeroTitleAccent}
-                onChange={(event) => handleChange("contactHeroTitleAccent", event.target.value)}
-              />
-            </label>
-
-            <label className="login-form__field">
-              <span>Sous-titre hero contact</span>
+              <span>Titre hotel de voitures</span>
               <textarea
                 rows="2"
-                value={formValues.contactHeroSubtitle}
-                onChange={(event) => handleChange("contactHeroSubtitle", event.target.value)}
+                value={formValues.homeCarHotelTitle}
+                onChange={(event) => handleChange("homeCarHotelTitle", event.target.value)}
               />
             </label>
 
             <label className="login-form__field">
-              <span>Titre horaires</span>
+              <span>Description hotel de voitures</span>
+              <textarea
+                rows="4"
+                value={formValues.homeCarHotelDescription}
+                onChange={(event) => handleChange("homeCarHotelDescription", event.target.value)}
+              />
+            </label>
+
+            <label className="login-form__field">
+              <span>Titre services hotel</span>
               <input
                 type="text"
-                value={formValues.contactHoursTitle}
-                onChange={(event) => handleChange("contactHoursTitle", event.target.value)}
+                value={formValues.homeCarHotelServicesTitle}
+                onChange={(event) => handleChange("homeCarHotelServicesTitle", event.target.value)}
               />
             </label>
 
             <label className="login-form__field">
-              <span>Sous-titre horaires</span>
+              <span>Service hotel 1</span>
+              <input
+                type="text"
+                value={formValues.homeCarHotelService1}
+                onChange={(event) => handleChange("homeCarHotelService1", event.target.value)}
+              />
+            </label>
+
+            <label className="login-form__field">
+              <span>Service hotel 2</span>
+              <input
+                type="text"
+                value={formValues.homeCarHotelService2}
+                onChange={(event) => handleChange("homeCarHotelService2", event.target.value)}
+              />
+            </label>
+
+            <label className="login-form__field">
+              <span>Service hotel 3</span>
+              <input
+                type="text"
+                value={formValues.homeCarHotelService3}
+                onChange={(event) => handleChange("homeCarHotelService3", event.target.value)}
+              />
+            </label>
+
+            <label className="login-form__field">
+              <span>Service hotel 4</span>
+              <input
+                type="text"
+                value={formValues.homeCarHotelService4}
+                onChange={(event) => handleChange("homeCarHotelService4", event.target.value)}
+              />
+            </label>
+          </FieldSection>
+        </VisualEditorSection>
+
+        <VisualEditorSection
+          title="Foire aux questions"
+          preview={
+            <FaqPreview
+              image={previewFaqHero}
+              title={
+                (formValues.faqHeroTitleStart || content.faqPage?.heroTitleStart) +
+                ((formValues.faqHeroTitleAccent || content.faqPage?.heroTitleAccent)
+                  ? " " + (formValues.faqHeroTitleAccent || content.faqPage?.heroTitleAccent)
+                  : "")
+              }
+              subtitle={formValues.faqHeroSubtitle || content.faqPage?.heroSubtitle}
+              pageTitle={formValues.faqPageTitle || content.faqPage?.pageTitle}
+              items={[
+                { question: formValues.faqLeftQuestion1 || content.faqPage?.leftItems?.[0]?.question, answer: formValues.faqLeftAnswer1 || content.faqPage?.leftItems?.[0]?.answer },
+                { question: formValues.faqLeftQuestion2 || content.faqPage?.leftItems?.[1]?.question, answer: formValues.faqLeftAnswer2 || content.faqPage?.leftItems?.[1]?.answer },
+                { question: formValues.faqLeftQuestion3 || content.faqPage?.leftItems?.[2]?.question, answer: formValues.faqLeftAnswer3 || content.faqPage?.leftItems?.[2]?.answer }
+              ]}
+            />
+          }
+        >
+          <FieldSection
+            title="Foire aux questions"
+            description="Hero FAQ, bouton et toutes les questions."
+          >
+            <ImageDropField
+              label="Image hero FAQ"
+              value={formValues.faqHeroImagePath}
+              previewSrc={previewFaqHero}
+              slot="faq-hero"
+              isUploading={uploadingSlot === "faq-hero"}
+              onUpload={handleUpload}
+            />
+
+            <label className="login-form__field">
+              <span>Titre hero FAQ</span>
+              <input
+                type="text"
+                value={formValues.faqHeroTitleStart}
+                onChange={(event) => handleChange("faqHeroTitleStart", event.target.value)}
+              />
+            </label>
+
+            <label className="login-form__field">
+              <span>Accent titre hero FAQ</span>
+              <input
+                type="text"
+                value={formValues.faqHeroTitleAccent}
+                onChange={(event) => handleChange("faqHeroTitleAccent", event.target.value)}
+              />
+            </label>
+
+            <label className="login-form__field">
+              <span>Sous-titre hero FAQ</span>
               <textarea
                 rows="2"
-                value={formValues.contactHoursSubtitle}
-                onChange={(event) => handleChange("contactHoursSubtitle", event.target.value)}
+                value={formValues.faqHeroSubtitle}
+                onChange={(event) => handleChange("faqHeroSubtitle", event.target.value)}
               />
             </label>
-
-            {[1, 2, 3, 4, 5, 6, 7].map((index) => (
-              <div key={"contact-hours-" + index} className="admin-visual-page__faq-editor">
-                <label className="login-form__field">
-                  <span>Jour {index}</span>
-                  <input
-                    type="text"
-                    value={formValues["contactHoursDay" + index]}
-                    onChange={(event) => handleChange("contactHoursDay" + index, event.target.value)}
-                  />
-                </label>
-
-                <label className="login-form__field">
-                  <span>Horaire {index}</span>
-                  <input
-                    type="text"
-                    value={formValues["contactHoursValue" + index]}
-                    onChange={(event) => handleChange("contactHoursValue" + index, event.target.value)}
-                  />
-                </label>
-              </div>
-            ))}
 
             <label className="login-form__field">
-              <span>Lien Google Maps exact</span>
+              <span>Titre page FAQ</span>
               <input
                 type="text"
-                value={formValues.contactMapLinkUrl}
-                onChange={(event) => handleChange("contactMapLinkUrl", event.target.value)}
-                placeholder="https://share.google/..."
+                value={formValues.faqPageTitle}
+                onChange={(event) => handleChange("faqPageTitle", event.target.value)}
               />
             </label>
-          </div>
 
-          <label className="login-form__field">
-            <span>Titre hotel de voitures</span>
-            <textarea
-              rows="2"
-              value={formValues.homeCarHotelTitle}
-              onChange={(event) => handleChange("homeCarHotelTitle", event.target.value)}
+            <label className="login-form__field">
+              <span>Texte bouton contact FAQ</span>
+              <input
+                type="text"
+                value={formValues.faqContactButtonLabel}
+                onChange={(event) => handleChange("faqContactButtonLabel", event.target.value)}
+              />
+            </label>
+
+            <div className="admin-visual-page__subsection">
+              <h3>Questions gauche FAQ</h3>
+              {[1, 2, 3, 4, 5, 6].map((index) => (
+                <div key={"faq-left-" + index} className="admin-visual-page__faq-editor">
+                  <label className="login-form__field">
+                    <span>Question gauche {index}</span>
+                    <textarea
+                      rows="2"
+                      value={formValues["faqLeftQuestion" + index]}
+                      onChange={(event) => handleChange("faqLeftQuestion" + index, event.target.value)}
+                    />
+                  </label>
+
+                  <label className="login-form__field">
+                    <span>Reponse gauche {index}</span>
+                    <textarea
+                      rows="3"
+                      value={formValues["faqLeftAnswer" + index]}
+                      onChange={(event) => handleChange("faqLeftAnswer" + index, event.target.value)}
+                    />
+                  </label>
+                </div>
+              ))}
+            </div>
+
+            <div className="admin-visual-page__subsection">
+              <h3>Questions droite FAQ</h3>
+              {[1, 2, 3, 4, 5, 6].map((index) => (
+                <div key={"faq-right-" + index} className="admin-visual-page__faq-editor">
+                  <label className="login-form__field">
+                    <span>Question droite {index}</span>
+                    <textarea
+                      rows="2"
+                      value={formValues["faqRightQuestion" + index]}
+                      onChange={(event) => handleChange("faqRightQuestion" + index, event.target.value)}
+                    />
+                  </label>
+
+                  <label className="login-form__field">
+                    <span>Reponse droite {index}</span>
+                    <textarea
+                      rows="3"
+                      value={formValues["faqRightAnswer" + index]}
+                      onChange={(event) => handleChange("faqRightAnswer" + index, event.target.value)}
+                    />
+                  </label>
+                </div>
+              ))}
+            </div>
+          </FieldSection>
+        </VisualEditorSection>
+
+        <VisualEditorSection
+          title="Contact"
+          preview={
+            <ContactPreview
+              image={previewContactHero}
+              titleStart={formValues.contactHeroTitleStart || content.contactPage?.heroTitleStart}
+              titleAccent={formValues.contactHeroTitleAccent || content.contactPage?.heroTitleAccent}
+              subtitle={formValues.contactHeroSubtitle || content.contactPage?.heroSubtitle}
+              hoursTitle={formValues.contactHoursTitle || content.contactPage?.hoursTitle}
+              hoursSubtitle={formValues.contactHoursSubtitle || content.contactPage?.hoursSubtitle}
+              hoursItems={contactHoursPreview}
+              mapText={formValues.contactMapLinkUrl || formValues.contactMapQuery || content.contactPage?.mapQuery}
             />
-          </label>
+          }
+        >
+          <FieldSection
+            title="Contact"
+            description="Hero contact, horaires et map."
+          >
+            <div className="admin-visual-page__subsection">
+              <h3>Contact - horaires et map</h3>
 
-          <label className="login-form__field">
-            <span>Description hotel de voitures</span>
-            <textarea
-              rows="4"
-              value={formValues.homeCarHotelDescription}
-              onChange={(event) => handleChange("homeCarHotelDescription", event.target.value)}
+              <ImageDropField
+                label="Image hero contact"
+                value={formValues.contactHeroImagePath}
+                previewSrc={previewContactHero}
+                slot="contact-hero"
+                isUploading={uploadingSlot === "contact-hero"}
+                onUpload={handleUpload}
+              />
+
+              <label className="login-form__field">
+                <span>Titre hero contact</span>
+                <input
+                  type="text"
+                  value={formValues.contactHeroTitleStart}
+                  onChange={(event) => handleChange("contactHeroTitleStart", event.target.value)}
+                />
+              </label>
+
+              <label className="login-form__field">
+                <span>Accent titre hero contact</span>
+                <input
+                  type="text"
+                  value={formValues.contactHeroTitleAccent}
+                  onChange={(event) => handleChange("contactHeroTitleAccent", event.target.value)}
+                />
+              </label>
+
+              <label className="login-form__field">
+                <span>Sous-titre hero contact</span>
+                <textarea
+                  rows="2"
+                  value={formValues.contactHeroSubtitle}
+                  onChange={(event) => handleChange("contactHeroSubtitle", event.target.value)}
+                />
+              </label>
+
+              <label className="login-form__field">
+                <span>Titre horaires</span>
+                <input
+                  type="text"
+                  value={formValues.contactHoursTitle}
+                  onChange={(event) => handleChange("contactHoursTitle", event.target.value)}
+                />
+              </label>
+
+              <label className="login-form__field">
+                <span>Sous-titre horaires</span>
+                <textarea
+                  rows="2"
+                  value={formValues.contactHoursSubtitle}
+                  onChange={(event) => handleChange("contactHoursSubtitle", event.target.value)}
+                />
+              </label>
+
+              {[1, 2, 3, 4, 5, 6, 7].map((index) => (
+                <div key={"contact-hours-" + index} className="admin-visual-page__faq-editor">
+                  <label className="login-form__field">
+                    <span>Jour {index}</span>
+                    <input
+                      type="text"
+                      value={formValues["contactHoursDay" + index]}
+                      onChange={(event) => handleChange("contactHoursDay" + index, event.target.value)}
+                    />
+                  </label>
+
+                  <label className="login-form__field">
+                    <span>Horaire {index}</span>
+                    <input
+                      type="text"
+                      value={formValues["contactHoursValue" + index]}
+                      onChange={(event) => handleChange("contactHoursValue" + index, event.target.value)}
+                    />
+                  </label>
+                </div>
+              ))}
+
+              <label className="login-form__field">
+                <span>Lien Google Maps exact</span>
+                <input
+                  type="text"
+                  value={formValues.contactMapLinkUrl}
+                  onChange={(event) => handleChange("contactMapLinkUrl", event.target.value)}
+                  placeholder="https://share.google/..."
+                />
+              </label>
+            </div>
+          </FieldSection>
+        </VisualEditorSection>
+
+        <VisualEditorSection
+          title="Footer"
+          preview={
+            <FooterPreview
+              brand={{ ...brand, logoImagePath: previewHeaderLogo }}
+              content={previewFooterContent}
+              header={header}
             />
-          </label>
-
-          <label className="login-form__field">
-            <span>Titre services hotel</span>
-            <input
-              type="text"
-              value={formValues.homeCarHotelServicesTitle}
-              onChange={(event) => handleChange("homeCarHotelServicesTitle", event.target.value)}
+          }
+        >
+          <FieldSection
+            title="Footer"
+            description="Texte, coordonnees et liens sociaux."
+          >
+            <ImageDropField
+              label="Logo du footer"
+              value={formValues.footerLogoImagePath}
+              previewSrc={previewFooterLogo}
+              slot="footer-logo"
+              isUploading={uploadingSlot === "footer-logo"}
+              onUpload={handleUpload}
             />
-          </label>
 
-          <label className="login-form__field">
-            <span>Service hotel 1</span>
-            <input
-              type="text"
-              value={formValues.homeCarHotelService1}
-              onChange={(event) => handleChange("homeCarHotelService1", event.target.value)}
-            />
-          </label>
+            <label className="login-form__field">
+              <span>Texte footer</span>
+              <textarea
+                rows="4"
+                value={formValues.footerShortInfo}
+                onChange={(event) => handleChange("footerShortInfo", event.target.value)}
+              />
+            </label>
 
-          <label className="login-form__field">
-            <span>Service hotel 2</span>
-            <input
-              type="text"
-              value={formValues.homeCarHotelService2}
-              onChange={(event) => handleChange("homeCarHotelService2", event.target.value)}
-            />
-          </label>
+            <label className="login-form__field">
+              <span>Telephone</span>
+              <input
+                type="text"
+                value={formValues.footerPhoneValue}
+                onChange={(event) => handleChange("footerPhoneValue", event.target.value)}
+              />
+            </label>
 
-          <label className="login-form__field">
-            <span>Service hotel 3</span>
-            <input
-              type="text"
-              value={formValues.homeCarHotelService3}
-              onChange={(event) => handleChange("homeCarHotelService3", event.target.value)}
-            />
-          </label>
+            <label className="login-form__field">
+              <span>Email</span>
+              <input
+                type="text"
+                value={formValues.footerEmailValue}
+                onChange={(event) => handleChange("footerEmailValue", event.target.value)}
+              />
+            </label>
 
-          <label className="login-form__field">
-            <span>Service hotel 4</span>
-            <input
-              type="text"
-              value={formValues.homeCarHotelService4}
-              onChange={(event) => handleChange("homeCarHotelService4", event.target.value)}
-            />
-          </label>
+            <label className="login-form__field">
+              <span>Adresse / bloc bas</span>
+              <textarea
+                rows="3"
+                value={formValues.footerAddressValue}
+                onChange={(event) => handleChange("footerAddressValue", event.target.value)}
+              />
+            </label>
 
-          <label className="login-form__field">
-            <span>Texte footer</span>
-            <textarea
-              rows="4"
-              value={formValues.footerShortInfo}
-              onChange={(event) => handleChange("footerShortInfo", event.target.value)}
-            />
-          </label>
+            <label className="login-form__field">
+              <span>URL Facebook</span>
+              <input
+                type="text"
+                value={formValues.footerFacebookUrl}
+                onChange={(event) => handleChange("footerFacebookUrl", event.target.value)}
+              />
+            </label>
 
-          <label className="login-form__field">
-            <span>Telephone</span>
-            <input
-              type="text"
-              value={formValues.footerPhoneValue}
-              onChange={(event) => handleChange("footerPhoneValue", event.target.value)}
-            />
-          </label>
+            <label className="login-form__field">
+              <span>URL Instagram</span>
+              <input
+                type="text"
+                value={formValues.footerInstagramUrl}
+                onChange={(event) => handleChange("footerInstagramUrl", event.target.value)}
+              />
+            </label>
+          </FieldSection>
+        </VisualEditorSection>
 
-          <label className="login-form__field">
-            <span>Email</span>
-            <input
-              type="text"
-              value={formValues.footerEmailValue}
-              onChange={(event) => handleChange("footerEmailValue", event.target.value)}
-            />
-          </label>
+        {errorMessage ? <p className="login-form__message login-form__message--error">{errorMessage}</p> : null}
+        {successMessage ? <p className="login-form__message login-form__message--success">{successMessage}</p> : null}
 
-          <label className="login-form__field">
-            <span>Adresse / bloc bas</span>
-            <textarea
-              rows="3"
-              value={formValues.footerAddressValue}
-              onChange={(event) => handleChange("footerAddressValue", event.target.value)}
-            />
-          </label>
-
-          <label className="login-form__field">
-            <span>URL Facebook</span>
-            <input
-              type="text"
-              value={formValues.footerFacebookUrl}
-              onChange={(event) => handleChange("footerFacebookUrl", event.target.value)}
-            />
-          </label>
-
-          <label className="login-form__field">
-            <span>URL Instagram</span>
-            <input
-              type="text"
-              value={formValues.footerInstagramUrl}
-              onChange={(event) => handleChange("footerInstagramUrl", event.target.value)}
-            />
-          </label>
-
-          {errorMessage ? <p className="login-form__message login-form__message--error">{errorMessage}</p> : null}
-          {successMessage ? <p className="login-form__message login-form__message--success">{successMessage}</p> : null}
-
-          <button type="submit" className="login-form__submit" disabled={isSaving}>
-            {isSaving ? "Enregistrement..." : "Enregistrer"}
-          </button>
-        </form>
-      </div>
+        <button type="submit" className="login-form__submit" disabled={isSaving}>
+          {isSaving ? "Enregistrement..." : "Enregistrer"}
+        </button>
+      </form>
     </main>
   );
 }
