@@ -34,6 +34,7 @@ const {
   DATABASE_RETRY_DELAY_MS
 } = require("./services/databaseBootstrapService");
 const { resolveUploadsRoot } = require("./services/storagePathService");
+const { createUploadsFallbackMiddleware } = require("./middleware/uploadsFallbackMiddleware");
 
 const PORT = process.env.PORT || 4000;
 const HOST = process.env.HOST || "127.0.0.1";
@@ -105,6 +106,7 @@ async function createApp() {
       maxAge: "30d"
     })
   );
+  app.use("/uploads", createUploadsFallbackMiddleware());
 
   app.get("/api/health", (request, response) => {
     const runtimeState = getRuntimeState();

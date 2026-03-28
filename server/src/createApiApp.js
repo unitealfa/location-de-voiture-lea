@@ -19,6 +19,7 @@ const {
 const { getTargetDatabaseName } = require("./config/databaseConfig");
 const { getRuntimeState } = require("./services/runtimeStateService");
 const { resolveUploadsRoot } = require("./services/storagePathService");
+const { createUploadsFallbackMiddleware } = require("./middleware/uploadsFallbackMiddleware");
 
 const uploadsRoot = resolveUploadsRoot();
 
@@ -39,6 +40,7 @@ function createApiApp() {
       maxAge: "30d"
     })
   );
+  app.use("/uploads", createUploadsFallbackMiddleware());
 
   app.get("/api/health", (request, response) => {
     const runtimeState = getRuntimeState();

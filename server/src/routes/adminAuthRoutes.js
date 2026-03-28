@@ -3,10 +3,7 @@ const {
   createAuthenticatedAdminSession,
   revokeAdminSession
 } = require("../services/adminAuthService");
-const {
-  hydrateAdminRequest,
-  requireAdminApiAuth
-} = require("../middleware/adminAuthMiddleware");
+const { hydrateAdminRequest } = require("../middleware/adminAuthMiddleware");
 const {
   clearAdminSessionCookie,
   readAdminSessionToken,
@@ -50,8 +47,8 @@ router.post("/login", async (request, response) => {
   }
 });
 
-router.get("/session", hydrateAdminRequest, requireAdminApiAuth, (request, response) => {
-  return response.json({ admin: request.admin });
+router.get("/session", hydrateAdminRequest, (request, response) => {
+  return response.json({ admin: request.admin || null });
 });
 
 router.post("/logout", async (request, response) => {
