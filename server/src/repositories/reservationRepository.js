@@ -36,6 +36,10 @@ function mapReservation(row) {
   };
 }
 
+function normalizeDbParameter(value, fallbackValue = null) {
+  return value === undefined ? fallbackValue : value;
+}
+
 async function createReservation(reservation) {
   const pool = getPool();
   const [result] = await pool.execute(
@@ -65,25 +69,25 @@ async function createReservation(reservation) {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `,
     [
-      reservation.vehicleId,
-      reservation.vehicleBrand,
-      reservation.vehicleModel,
-      reservation.vehicleVersion,
-      reservation.vehiclePhotoUrl,
-      reservation.firstName,
-      reservation.lastName,
-      reservation.drivingLicensePhotoUrl,
-      reservation.email,
-      reservation.phone,
-      reservation.comment,
-      reservation.pickupLocationType,
-      reservation.returnLocationType,
-      reservation.pickupDatetime,
-      reservation.returnDatetime,
-      reservation.totalPrice,
-      reservation.priceRateType || "daily",
+      normalizeDbParameter(reservation.vehicleId),
+      normalizeDbParameter(reservation.vehicleBrand, ""),
+      normalizeDbParameter(reservation.vehicleModel, ""),
+      normalizeDbParameter(reservation.vehicleVersion, ""),
+      normalizeDbParameter(reservation.vehiclePhotoUrl, DEFAULT_VEHICLE_IMAGE_URL),
+      normalizeDbParameter(reservation.firstName, ""),
+      normalizeDbParameter(reservation.lastName, ""),
+      normalizeDbParameter(reservation.drivingLicensePhotoUrl, ""),
+      normalizeDbParameter(reservation.email),
+      normalizeDbParameter(reservation.phone, ""),
+      normalizeDbParameter(reservation.comment, ""),
+      normalizeDbParameter(reservation.pickupLocationType, ""),
+      normalizeDbParameter(reservation.returnLocationType, ""),
+      normalizeDbParameter(reservation.pickupDatetime, null),
+      normalizeDbParameter(reservation.returnDatetime, null),
+      normalizeDbParameter(reservation.totalPrice),
+      normalizeDbParameter(reservation.priceRateType, "daily"),
       reservation.priceManualOverride ? 1 : 0,
-      reservation.status || "pending",
+      normalizeDbParameter(reservation.status, "pending"),
       reservation.privacyPolicyAccepted ? 1 : 0
     ]
   );
@@ -236,25 +240,25 @@ async function updateReservation(id, reservation) {
       WHERE id = ?
     `,
     [
-      reservation.vehicleId,
-      reservation.vehicleBrand,
-      reservation.vehicleModel,
-      reservation.vehicleVersion,
-      reservation.vehiclePhotoUrl,
-      reservation.firstName,
-      reservation.lastName,
-      reservation.drivingLicensePhotoUrl,
-      reservation.email,
-      reservation.phone,
-      reservation.comment,
-      reservation.pickupLocationType,
-      reservation.returnLocationType,
-      reservation.pickupDatetime,
-      reservation.returnDatetime,
-      reservation.totalPrice,
-      reservation.priceRateType || "daily",
+      normalizeDbParameter(reservation.vehicleId),
+      normalizeDbParameter(reservation.vehicleBrand, ""),
+      normalizeDbParameter(reservation.vehicleModel, ""),
+      normalizeDbParameter(reservation.vehicleVersion, ""),
+      normalizeDbParameter(reservation.vehiclePhotoUrl, DEFAULT_VEHICLE_IMAGE_URL),
+      normalizeDbParameter(reservation.firstName, ""),
+      normalizeDbParameter(reservation.lastName, ""),
+      normalizeDbParameter(reservation.drivingLicensePhotoUrl, ""),
+      normalizeDbParameter(reservation.email),
+      normalizeDbParameter(reservation.phone, ""),
+      normalizeDbParameter(reservation.comment, ""),
+      normalizeDbParameter(reservation.pickupLocationType, ""),
+      normalizeDbParameter(reservation.returnLocationType, ""),
+      normalizeDbParameter(reservation.pickupDatetime, null),
+      normalizeDbParameter(reservation.returnDatetime, null),
+      normalizeDbParameter(reservation.totalPrice),
+      normalizeDbParameter(reservation.priceRateType, "daily"),
       reservation.priceManualOverride ? 1 : 0,
-      reservation.status,
+      normalizeDbParameter(reservation.status, "pending"),
       reservation.privacyPolicyAccepted ? 1 : 0,
       id
     ]

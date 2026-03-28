@@ -1,8 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { listVehicles } from "../services/vehicleService";
+import {
+  hasCachedVehicleList,
+  listVehicles,
+  readCachedVehicleList
+} from "../services/vehicleService";
 import {
   createAdminReservation,
+  getCachedAdminReservationById,
+  getCachedAdminReservations,
   getAdminReservationById,
+  hasCachedAdminReservationById,
+  hasCachedAdminReservations,
   listAdminReservations,
   updateAdminReservation
 } from "../services/reservationService";
@@ -269,17 +277,32 @@ function AdminReservationFormPage({
   onBackClick,
   onSaved
 }) {
-  const [vehicles, setVehicles] = useState([]);
-  const [acceptedReservations, setAcceptedReservations] = useState([]);
-  const [currentReservation, setCurrentReservation] = useState(null);
-  const [formValues, setFormValues] = useState(() => buildInitialFormValues(initialVehicleId));
+  const cachedVehicles = readCachedVehicleList({ adminView: true });
+  const cachedAcceptedReservations = getCachedAdminReservations("accepted");
+  const cachedReservation =
+    mode === "edit" && reservationId ? getCachedAdminReservationById(reservationId) : null;
+  const hasBootstrappedCache =
+    hasCachedVehicleList({ adminView: true }) &&
+    hasCachedAdminReservations("accepted") &&
+    (mode === "edit" ? hasCachedAdminReservationById(reservationId) : true);
+  const [vehicles, setVehicles] = useState(() => cachedVehicles);
+  const [acceptedReservations, setAcceptedReservations] = useState(() => cachedAcceptedReservations);
+  const [currentReservation, setCurrentReservation] = useState(() => cachedReservation || null);
+  const [formValues, setFormValues] = useState(() =>
+    cachedReservation ? mapReservationToFormValues(cachedReservation) : buildInitialFormValues(initialVehicleId)
+  );
   const [drivingLicensePhotos, setDrivingLicensePhotos] = useState([]);
-  const [licensePreviewUrls, setLicensePreviewUrls] = useState([]);
+  const [licensePreviewUrls, setLicensePreviewUrls] = useState(() =>
+    cachedReservation?.drivingLicensePhotoUrls ||
+    (cachedReservation?.drivingLicensePhotoUrl ? [cachedReservation.drivingLicensePhotoUrl] : [])
+  );
   const [errorMessage, setErrorMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(() => !hasBootstrappedCache);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLicenseDragActive, setIsLicenseDragActive] = useState(false);
-  const [isManualPriceEdited, setIsManualPriceEdited] = useState(false);
+  const [isManualPriceEdited, setIsManualPriceEdited] = useState(() =>
+    Boolean(cachedReservation?.priceManualOverride)
+  );
   const [calendarMonthDate, setCalendarMonthDate] = useState(() => createMonthReference(new Date()));
   const drivingLicenseInputRef = useRef(null);
 
@@ -310,7 +333,12 @@ function AdminReservationFormPage({
     let isActive = true;
 
     const loadFormData = async () => {
-      setIsLoading(true);
+      setIsLoading(
+        () =>
+          !hasCachedVehicleList({ adminView: true }) ||
+          !hasCachedAdminReservations("accepted") ||
+          (mode === "edit" ? !hasCachedAdminReservationById(reservationId) : false)
+      );
       setErrorMessage("");
 
       try {

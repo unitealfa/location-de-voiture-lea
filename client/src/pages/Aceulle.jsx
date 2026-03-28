@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { listVehicles, readCachedVehicleList } from "../services/vehicleService";
+import {
+  hasCachedVehicleList,
+  listVehicles,
+  readCachedVehicleList
+} from "../services/vehicleService";
 import {
   formatVehicleName,
   formatVehiclePrice,
@@ -517,13 +521,13 @@ function TestimonialsSection({ content }) {
 
 function Aceulle({ content, onNavigate }) {
   const [vehicles, setVehicles] = useState(() => readCachedVehicleList());
-  const [isLoading, setIsLoading] = useState(() => readCachedVehicleList().length === 0);
+  const [isLoading, setIsLoading] = useState(() => !hasCachedVehicleList());
 
   useEffect(() => {
     let isActive = true;
 
     const loadVehicles = async () => {
-      setIsLoading(() => vehicles.length === 0);
+      setIsLoading(() => !hasCachedVehicleList());
 
       try {
         const nextVehicles = await listVehicles();

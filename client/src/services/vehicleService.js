@@ -101,6 +101,10 @@ export function readCachedVehicleList({ adminView = false } = {}) {
   return Array.isArray(vehicles) ? vehicles : [];
 }
 
+export function hasCachedVehicleList({ adminView = false } = {}) {
+  return readCachedValue(getVehicleListCacheKey(adminView)) !== null;
+}
+
 export function readCachedVehicleById(id, { adminView = false } = {}) {
   if (!Number.isInteger(Number(id))) {
     return null;

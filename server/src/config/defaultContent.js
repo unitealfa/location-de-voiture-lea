@@ -373,7 +373,7 @@ const defaultContent = {
     reservationAvailabilitySelectVehicleLabel:
       "Sélectionnez un véhicule pour afficher son calendrier de réservation.",
     reservationSuccessMessage:
-      "Demande de réservation envoyée avec succès",
+      "Merci, votre réservation a bien été envoyée.",
     reservationSuccessDetailMessage:
       "Notre équipe vérifie votre demande et vous recontactera rapidement par téléphone, e-mail ou WhatsApp.",
     reservationErrorMessage: "La réservation n'a pas pu être envoyée.",

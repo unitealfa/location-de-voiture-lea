@@ -21,13 +21,25 @@ export function getCachedVehicleReservationAvailability(vehicleId) {
   return Array.isArray(value) ? value : [];
 }
 
+export function hasCachedVehicleReservationAvailability(vehicleId) {
+  return readCachedValue(getAvailabilityCacheKey(vehicleId), { maxAgeMs: 1000 * 60 * 5 }) !== null;
+}
+
 export function getCachedAdminReservations(scope = "pending") {
   const value = readCachedValue(getAdminReservationListCacheKey(scope), { maxAgeMs: 1000 * 60 * 5 });
   return Array.isArray(value) ? value : [];
 }
 
+export function hasCachedAdminReservations(scope = "pending") {
+  return readCachedValue(getAdminReservationListCacheKey(scope), { maxAgeMs: 1000 * 60 * 5 }) !== null;
+}
+
 export function getCachedAdminReservationById(id) {
   return readCachedValue(getAdminReservationDetailCacheKey(id), { maxAgeMs: 1000 * 60 * 5 });
+}
+
+export function hasCachedAdminReservationById(id) {
+  return readCachedValue(getAdminReservationDetailCacheKey(id), { maxAgeMs: 1000 * 60 * 5 }) !== null;
 }
 
 function writeAdminReservationDetailCache(reservation) {

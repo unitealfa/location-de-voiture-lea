@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   createVehicleReservation,
+  getCachedVehicleReservationAvailability,
   getVehicleReservationAvailability
 } from "../services/reservationService";
+import { hasCachedVehicleReservationAvailability } from "../services/reservationService";
 import { extractAcceptedFilesFromDrop, isAcceptedMediaFile } from "../utils/dropFiles";
 import { handleImageFallback } from "../utils/imageFallback";
 import { calculateReservationPricing, getReservationRateLabel } from "../utils/reservationPricing";
@@ -223,8 +225,12 @@ function VehicleReservationForm({ content, vehicle, hideActionButtons = false, h
   const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [availabilityErrorMessage, setAvailabilityErrorMessage] = useState("");
-  const [isAvailabilityLoading, setIsAvailabilityLoading] = useState(true);
-  const [reservedSlots, setReservedSlots] = useState([]);
+  const [isAvailabilityLoading, setIsAvailabilityLoading] = useState(
+    () => !hasCachedVehicleReservationAvailability(vehicle.id)
+  );
+  const [reservedSlots, setReservedSlots] = useState(
+    () => getCachedVehicleReservationAvailability(vehicle.id)
+  );
   const [pickupDate, setPickupDate] = useState("");
   const [returnDate, setReturnDate] = useState("");
   const [calendarMonthDate, setCalendarMonthDate] = useState(() =>
@@ -245,7 +251,7 @@ function VehicleReservationForm({ content, vehicle, hideActionButtons = false, h
     let isActive = true;
 
     const loadAvailability = async () => {
-      setIsAvailabilityLoading(true);
+      setIsAvailabilityLoading(() => !hasCachedVehicleReservationAvailability(vehicle.id));
       setAvailabilityErrorMessage("");
 
       try {

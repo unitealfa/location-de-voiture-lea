@@ -38,7 +38,7 @@ function getPublicReservationErrorMessage(error) {
     return "Ajoutez une image valide du permis de conduire.";
   }
 
-  return error?.message || "Reservation impossible.";
+  return "La reservation n'a pas pu etre envoyee. Merci de reessayer.";
 }
 
 router.get("/", async (request, response) => {

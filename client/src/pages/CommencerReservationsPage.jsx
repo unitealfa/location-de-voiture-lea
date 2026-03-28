@@ -1,18 +1,22 @@
 import { useEffect, useState } from "react";
-import { getCachedAdminReservations, listAdminReservations } from "../services/reservationService";
+import {
+  getCachedAdminReservations,
+  hasCachedAdminReservations,
+  listAdminReservations
+} from "../services/reservationService";
 import { formatReservationDateTime } from "../utils/reservationFormatters";
 import { handleImageFallback } from "../utils/imageFallback";
 
 function CommencerReservationsPage({ content, onReservationClick }) {
   const [reservations, setReservations] = useState(() => getCachedAdminReservations("pending"));
   const [errorMessage, setErrorMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(() => getCachedAdminReservations("pending").length === 0);
+  const [isLoading, setIsLoading] = useState(() => !hasCachedAdminReservations("pending"));
 
   useEffect(() => {
     let isActive = true;
 
     const loadReservations = async () => {
-      setIsLoading(() => reservations.length === 0);
+      setIsLoading(() => !hasCachedAdminReservations("pending"));
       setErrorMessage("");
 
       try {

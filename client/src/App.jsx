@@ -18,6 +18,7 @@ import ReservationDetailPage from "./pages/ReservationDetailPage";
 import ClientsCalendarPage from "./pages/ClientsCalendarPage";
 import AdminReservationFormPage from "./pages/AdminReservationFormPage";
 import {
+  getAdminVisualSettings,
   getCachedHomePageContent,
   getHomePageContent
 } from "./services/contentService";
@@ -215,6 +216,128 @@ function BootLoader({ progress, isExiting }) {
   );
 }
 
+function getBootTargetProgress({
+  hasContent,
+  isAuthResolved,
+  isRouteDataReady,
+  hasWindowLoaded
+}) {
+  let value = 8;
+
+  if (hasContent) {
+    value += 36;
+  }
+
+  if (isAuthResolved) {
+    value += 18;
+  }
+
+  if (isRouteDataReady) {
+    value += 27;
+  }
+
+  if (hasWindowLoaded) {
+    value += 10;
+  }
+
+  return Math.min(99, value);
+}
+
+function buildBootPreloadTasks({ currentPath, currentAdmin }) {
+  const tasks = [];
+  const taskKeys = new Set();
+  const vehicleDetailId = getVehicleDetailId(currentPath);
+  const vehicleEditId = getVehicleEditId(currentPath);
+  const vehicleReserveId = getVehicleReserveId(currentPath);
+  const reservationDetailId = getReservationDetailId(currentPath);
+  const reservationEditId = getReservationEditId(currentPath);
+  const isAdmin = Boolean(currentAdmin);
+  const today = new Date();
+
+  const pushTask = (key, taskFactory) => {
+    if (taskKeys.has(key)) {
+      return;
+    }
+
+    taskKeys.add(key);
+    tasks.push(Promise.resolve().then(taskFactory).catch(() => null));
+  };
+
+  if (currentPath === "/" || currentPath === "/compare") {
+    pushTask("vehicles:public:list", () => listVehicles());
+  }
+
+  if (currentPath === "/location-de-voitures") {
+    pushTask(`vehicles:${isAdmin ? "admin" : "public"}:list`, () =>
+      listVehicles({ adminView: isAdmin })
+    );
+  }
+
+  if (vehicleDetailId) {
+    pushTask(`vehicles:${isAdmin ? "admin" : "public"}:list`, () =>
+      listVehicles({ adminView: isAdmin })
+    );
+    pushTask(`vehicle:${isAdmin ? "admin" : "public"}:${vehicleDetailId}`, () =>
+      getVehicleById(vehicleDetailId, { adminView: isAdmin })
+    );
+    pushTask(`vehicle:availability:${vehicleDetailId}`, () =>
+      getVehicleReservationAvailability(vehicleDetailId)
+    );
+  }
+
+  if (isAdmin) {
+    pushTask("admin:dashboard:default", () =>
+      getAdminDashboardStats({
+        view: "month",
+        year: today.getFullYear(),
+        month: today.getMonth() + 1
+      })
+    );
+    pushTask("admin:reservations:pending", () => listAdminReservations({ scope: "pending" }));
+    pushTask("admin:reservations:accepted", () => listAdminReservations({ scope: "accepted" }));
+  }
+
+  if (currentPath === "/admin/visuelle" && isAdmin) {
+    pushTask("admin:visual-settings", () => getAdminVisualSettings());
+    pushTask("vehicles:admin:list", () => listVehicles({ adminView: true }));
+  }
+
+  if (vehicleEditId && isAdmin) {
+    pushTask(`vehicle:admin:${vehicleEditId}`, () =>
+      getVehicleById(vehicleEditId, { adminView: true })
+    );
+  }
+
+  if (vehicleReserveId && isAdmin) {
+    pushTask("vehicles:admin:list", () => listVehicles({ adminView: true }));
+    pushTask(`vehicle:admin:${vehicleReserveId}`, () =>
+      getVehicleById(vehicleReserveId, { adminView: true })
+    );
+    pushTask("admin:reservations:accepted", () => listAdminReservations({ scope: "accepted" }));
+  }
+
+  if (currentPath === "/reservations/creer" && isAdmin) {
+    pushTask("vehicles:admin:list", () => listVehicles({ adminView: true }));
+    pushTask("admin:reservations:accepted", () => listAdminReservations({ scope: "accepted" }));
+  }
+
+  if (reservationDetailId && isAdmin) {
+    pushTask(`admin:reservation:${reservationDetailId}`, () =>
+      getAdminReservationById(reservationDetailId)
+    );
+  }
+
+  if (reservationEditId && isAdmin) {
+    pushTask("vehicles:admin:list", () => listVehicles({ adminView: true }));
+    pushTask("admin:reservations:accepted", () => listAdminReservations({ scope: "accepted" }));
+    pushTask(`admin:reservation:${reservationEditId}`, () =>
+      getAdminReservationById(reservationEditId)
+    );
+  }
+
+  return tasks;
+}
+
 function App() {
   const [content, setContent] = useState(() => getCachedHomePageContent());
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -229,7 +352,8 @@ function App() {
   const [bootProgress, setBootProgress] = useState(0);
   const [isBootVisible, setIsBootVisible] = useState(true);
   const [isBootExiting, setIsBootExiting] = useState(false);
-  const [isBootDataReady, setIsBootDataReady] = useState(() => Boolean(getCachedHomePageContent()));
+  const [isBootDataReady, setIsBootDataReady] = useState(false);
+  const [hasWindowLoaded, setHasWindowLoaded] = useState(() => document.readyState === "complete");
 
   useEffect(() => {
     let isActive = true;
@@ -269,117 +393,39 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (!isBootVisible) {
+    if (!isBootVisible || hasWindowLoaded) {
       return undefined;
     }
 
-    let animationFrameId = 0;
-    let exitTimerId = 0;
-    let hideTimerId = 0;
-    let hasWindowLoaded = document.readyState === "complete";
-
     const handleWindowLoad = () => {
-      hasWindowLoaded = true;
-    };
-
-    const getTargetProgress = () => {
-      let value = 12;
-
-      if (content) {
-        value += 38;
-      }
-
-      if (!isAuthLoading) {
-        value += 15;
-      }
-
-      if (isBootDataReady) {
-        value += 35;
-      }
-
-      if (hasWindowLoaded) {
-        value += 25;
-      }
-
-      return Math.min(100, value);
-    };
-
-    const isReadyToReveal = () => Boolean(content) && !isAuthLoading && isBootDataReady && hasWindowLoaded;
-
-    const tick = () => {
-      setBootProgress((currentValue) => {
-        const targetValue = getTargetProgress();
-        const nextValue = currentValue + Math.max(1, Math.ceil((targetValue - currentValue) * 0.12));
-        return nextValue >= targetValue ? targetValue : nextValue;
-      });
-
-      if (isReadyToReveal()) {
-        setBootProgress(100);
-        setIsBootExiting(true);
-        exitTimerId = window.setTimeout(() => {
-          setIsBootVisible(false);
-        }, 1150);
-        return;
-      }
-
-      animationFrameId = window.setTimeout(tick, 32);
+      setHasWindowLoaded(true);
     };
 
     window.addEventListener("load", handleWindowLoad, { once: true });
-    hideTimerId = window.setTimeout(tick, 120);
 
     return () => {
       window.removeEventListener("load", handleWindowLoad);
-      window.clearTimeout(animationFrameId);
-      window.clearTimeout(exitTimerId);
-      window.clearTimeout(hideTimerId);
     };
-  }, [content, isAuthLoading, isBootDataReady, isBootVisible]);
+  }, [hasWindowLoaded, isBootVisible]);
 
   useEffect(() => {
-    if (!content || isAuthLoading) {
+    if (!isBootVisible || !content || isAuthLoading) {
       return undefined;
     }
 
     let isActive = true;
 
     const preloadSiteData = async () => {
-      const preloadTasks = [listVehicles().catch(() => null)];
-      const normalizedPath = currentPath;
-      const vehicleDetailId = getVehicleDetailId(normalizedPath);
-      const reservationDetailId = getReservationDetailId(normalizedPath);
+      const preloadTasks = buildBootPreloadTasks({
+        currentPath,
+        currentAdmin
+      });
 
-      if (vehicleDetailId) {
-        preloadTasks.push(getVehicleById(vehicleDetailId, { adminView: Boolean(currentAdmin) }).catch(() => null));
-
-        if (!getCachedVehicleReservationAvailability(vehicleDetailId).length) {
-          preloadTasks.push(getVehicleReservationAvailability(vehicleDetailId).catch(() => null));
+      if (preloadTasks.length === 0) {
+        if (isActive) {
+          setIsBootDataReady(true);
         }
-      }
-
-      if (currentAdmin) {
-        const today = new Date();
-        const defaultDashboardFilters = {
-          view: "month",
-          year: today.getFullYear(),
-          month: today.getMonth() + 1
-        };
-
-        if (!getCachedAdminDashboardStats(defaultDashboardFilters)) {
-          preloadTasks.push(getAdminDashboardStats(defaultDashboardFilters).catch(() => null));
-        }
-
-        if (!getCachedAdminReservations("pending").length) {
-          preloadTasks.push(listAdminReservations({ scope: "pending" }).catch(() => null));
-        }
-
-        if (!getCachedAdminReservations("accepted").length) {
-          preloadTasks.push(listAdminReservations({ scope: "accepted" }).catch(() => null));
-        }
-
-        if (reservationDetailId && !getCachedAdminReservationById(reservationDetailId)) {
-          preloadTasks.push(getAdminReservationById(reservationDetailId).catch(() => null));
-        }
+        return;
       }
 
       await Promise.allSettled(preloadTasks);
@@ -395,7 +441,67 @@ function App() {
     return () => {
       isActive = false;
     };
-  }, [content, currentAdmin, currentPath, isAuthLoading]);
+  }, [content, currentAdmin, currentPath, isAuthLoading, isBootVisible]);
+
+  const isBootReadyToReveal =
+    Boolean(content) && !isAuthLoading && isBootDataReady && hasWindowLoaded;
+
+  useEffect(() => {
+    if (!isBootVisible) {
+      return undefined;
+    }
+
+    if (isBootReadyToReveal) {
+      setBootProgress(100);
+      return undefined;
+    }
+
+    let timerId = 0;
+
+    const tick = () => {
+      setBootProgress((currentValue) => {
+        const targetValue = getBootTargetProgress({
+          hasContent: Boolean(content),
+          isAuthResolved: !isAuthLoading,
+          isRouteDataReady: isBootDataReady,
+          hasWindowLoaded
+        });
+
+        if (targetValue <= currentValue) {
+          return currentValue;
+        }
+
+        const nextValue = currentValue + Math.max(1, Math.ceil((targetValue - currentValue) * 0.12));
+        return nextValue >= targetValue ? targetValue : nextValue;
+      });
+
+      timerId = window.setTimeout(tick, 32);
+    };
+
+    timerId = window.setTimeout(tick, 120);
+
+    return () => {
+      window.clearTimeout(timerId);
+    };
+  }, [content, hasWindowLoaded, isAuthLoading, isBootDataReady, isBootReadyToReveal, isBootVisible]);
+
+  useEffect(() => {
+    if (!isBootVisible || isBootExiting || !isBootReadyToReveal || bootProgress < 100) {
+      return undefined;
+    }
+
+    const exitTimerId = window.setTimeout(() => {
+      setIsBootExiting(true);
+    }, 120);
+    const hideTimerId = window.setTimeout(() => {
+      setIsBootVisible(false);
+    }, 1120);
+
+    return () => {
+      window.clearTimeout(exitTimerId);
+      window.clearTimeout(hideTimerId);
+    };
+  }, [bootProgress, isBootExiting, isBootReadyToReveal, isBootVisible]);
 
   useEffect(() => {
     const faviconHref = content?.brand?.faviconImagePath || content?.brand?.logoImagePath;
@@ -589,6 +695,7 @@ function App() {
       isAdminOnlyPath(currentPath));
 
   const shouldRenderApp = Boolean(content) && (!isProtectedPath || !isAuthLoading || Boolean(currentAdmin));
+  const shouldRenderBootedApp = shouldRenderApp && (!isBootVisible || isBootExiting);
 
   return (
     <>
@@ -597,7 +704,7 @@ function App() {
         <main className="page-shell page-shell--centered">
           <p className="status-message">{errorMessage}</p>
         </main>
-      ) : shouldRenderApp ? (
+      ) : shouldRenderBootedApp ? (
         <div className={isHomePage ? "page-shell home" : "page-shell"}>
       <Header
         brand={content.brand}

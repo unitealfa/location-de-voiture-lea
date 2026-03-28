@@ -1,5 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { getCachedAdminReservations, listAdminReservations } from "../services/reservationService";
+import {
+  getCachedAdminReservations,
+  hasCachedAdminReservations,
+  listAdminReservations
+} from "../services/reservationService";
 import { formatReservationDateTime } from "../utils/reservationFormatters";
 import { handleImageFallback } from "../utils/imageFallback";
 
@@ -96,13 +100,17 @@ function ClientsCalendarPage({ content, onCreateClick, onReservationClick }) {
   const [acceptedReservations, setAcceptedReservations] = useState(() => getCachedAdminReservations("accepted"));
   const [monthDate, setMonthDate] = useState(() => createMonthReference(new Date()));
   const [errorMessage, setErrorMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(() => getCachedAdminReservations("pending").length === 0 && getCachedAdminReservations("accepted").length === 0);
+  const [isLoading, setIsLoading] = useState(
+    () => !hasCachedAdminReservations("pending") || !hasCachedAdminReservations("accepted")
+  );
 
   useEffect(() => {
     let isActive = true;
 
     const loadReservations = async () => {
-      setIsLoading(() => pendingReservations.length === 0 && acceptedReservations.length === 0);
+      setIsLoading(
+        () => !hasCachedAdminReservations("pending") || !hasCachedAdminReservations("accepted")
+      );
       setErrorMessage("");
 
       try {

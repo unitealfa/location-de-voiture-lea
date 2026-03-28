@@ -3,6 +3,10 @@ const path = require("path");
 const crypto = require("crypto");
 const multer = require("multer");
 const sharp = require("sharp");
+const {
+  createVehicleMediaAsset,
+  deleteVehicleMediaAsset
+} = require("../repositories/vehicleMediaAssetRepository");
 const { resolveUploadsRoot } = require("../services/storagePathService");
 
 const uploadsRoot = resolveUploadsRoot();
@@ -67,6 +71,10 @@ function buildManagedUrl(filename) {
   return `/uploads/vehicles/${filename}`;
 }
 
+function buildDbManagedUrl(assetId) {
+  return `/api/media/vehicles/${assetId}`;
+}
+
 function buildManagedPath(filename) {
   return path.resolve(vehicleUploadsRoot, filename);
 }
@@ -82,53 +90,96 @@ function buildOptimizedFilename(filename) {
 }
 
 async function optimizeUploadedPhoto(file) {
-  const optimizedFilename = buildOptimizedFilename(file.filename);
-  const thumbnailFilename = buildThumbnailFilename(file.filename);
-  const optimizedPath = buildManagedPath(optimizedFilename);
-  const thumbnailPath = buildManagedPath(thumbnailFilename);
-
   try {
-    await sharp(file.path)
-      .rotate()
-      .resize({
-        width: 1600,
-        height: 1600,
-        fit: "inside",
-        withoutEnlargement: true
-      })
-      .webp({
-        quality: 72
-      })
-      .toFile(optimizedPath);
+    const sourceBuffer = await fs.readFile(file.path);
+    let optimizedBuffer = sourceBuffer;
+    let optimizedContentType = file.mimetype || "application/octet-stream";
+    let optimizedExtension = path.extname(file.originalname || "").toLowerCase() || ".bin";
+    let thumbnailBuffer = null;
+    let thumbnailContentType = null;
 
-    await sharp(file.path)
-      .rotate()
-      .resize({
-        width: 560,
-        height: 560,
-        fit: "inside",
-        withoutEnlargement: true
-      })
-      .webp({
-        quality: 66
-      })
-      .toFile(thumbnailPath);
+    try {
+      optimizedBuffer = await sharp(sourceBuffer)
+        .rotate()
+        .resize({
+          width: 1600,
+          height: 1600,
+          fit: "inside",
+          withoutEnlargement: true
+        })
+        .webp({
+          quality: 72
+        })
+        .toBuffer();
+
+      thumbnailBuffer = await sharp(sourceBuffer)
+        .rotate()
+        .resize({
+          width: 560,
+          height: 560,
+          fit: "inside",
+          withoutEnlargement: true
+        })
+        .webp({
+          quality: 66
+        })
+        .toBuffer();
+
+      optimizedContentType = "image/webp";
+      optimizedExtension = ".webp";
+      thumbnailContentType = "image/webp";
+    } catch (error) {
+      thumbnailBuffer = null;
+      thumbnailContentType = null;
+    }
+
+    const asset = await createVehicleMediaAsset({
+      contentType: optimizedContentType,
+      originalFileName: file.originalname || file.filename,
+      originalExtension: optimizedExtension,
+      binaryData: optimizedBuffer,
+      thumbnailContentType,
+      thumbnailBinaryData: thumbnailBuffer
+    });
 
     await fs.unlink(file.path).catch(() => {});
 
-    return buildManagedUrl(optimizedFilename);
+    return buildDbManagedUrl(asset.id);
   } catch (error) {
-    return buildManagedUrl(file.filename);
+    await fs.unlink(file.path).catch(() => {});
+    throw error;
   }
 }
 
 async function mapUploadedVehicleMedia(files) {
-  const photoUrls = await Promise.all(
-    (files?.photos || []).map((file) => optimizeUploadedPhoto(file))
-  );
-  const videoUrl = files?.video?.[0]
-    ? buildManagedUrl(files.video[0].filename)
-    : "";
+  const photoUrls = [];
+  let videoUrl = "";
+
+  try {
+    for (const photoFile of files?.photos || []) {
+      photoUrls.push(await optimizeUploadedPhoto(photoFile));
+    }
+
+    const videoFile = files?.video?.[0];
+
+    if (videoFile) {
+      const sourceBuffer = await fs.readFile(videoFile.path);
+      const asset = await createVehicleMediaAsset({
+        contentType: videoFile.mimetype || "application/octet-stream",
+        originalFileName: videoFile.originalname || videoFile.filename,
+        originalExtension: path.extname(videoFile.originalname || "").toLowerCase() || ".bin",
+        binaryData: sourceBuffer,
+        thumbnailContentType: null,
+        thumbnailBinaryData: null
+      });
+
+      await fs.unlink(videoFile.path).catch(() => {});
+      videoUrl = buildDbManagedUrl(asset.id);
+    }
+  } catch (error) {
+    await removeStoredVehicleMedia([...photoUrls, videoUrl].filter(Boolean));
+    throw error;
+  }
 
   return {
     photoUrls,
@@ -142,6 +193,17 @@ async function removeUploadedFiles(files) {
       fs.unlink(file.path).catch(() => {})
     )
   );
+}
+
+function toDbManagedAssetId(url) {
+  const match = String(url || "").match(/^\/api\/media\/vehicles\/(\d+)(?:\/thumb)?$/);
+
+  if (!match) {
+    return null;
+  }
+
+  const assetId = Number(match[1]);
+  return Number.isInteger(assetId) && assetId > 0 ? assetId : null;
 }
 
 function toManagedUploadPath(url) {
@@ -164,6 +226,18 @@ function toManagedThumbnailPath(url) {
 }
 
 async function removeStoredVehicleMedia(urls) {
+  const dbManagedAssetIds = [
+    ...new Set(
+      (urls || [])
+        .map((url) => toDbManagedAssetId(url))
+        .filter((assetId) => Number.isInteger(assetId) && assetId > 0)
+    )
+  ];
+
+  await Promise.all(
+    dbManagedAssetIds.map((assetId) => deleteVehicleMediaAsset(assetId).catch(() => {}))
+  );
+
   await Promise.all(
     (urls || [])
       .filter(Boolean)

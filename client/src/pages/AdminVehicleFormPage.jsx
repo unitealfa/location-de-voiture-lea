@@ -3,6 +3,7 @@ import VehicleVideo from "../components/VehicleVideo";
 import {
   createVehicle,
   getVehicleById,
+  readCachedVehicleById,
   updateVehicle
 } from "../services/vehicleService";
 import { extractAcceptedFilesFromDrop, isAcceptedMediaFile } from "../utils/dropFiles";
@@ -82,14 +83,20 @@ function AdminVehicleFormPage({
   onBackClick,
   onSaved
 }) {
-  const [formValues, setFormValues] = useState(buildInitialFormValues);
+  const cachedVehicle =
+    mode === "edit" && vehicleId
+      ? readCachedVehicleById(vehicleId, { adminView: true })
+      : null;
+  const [formValues, setFormValues] = useState(() =>
+    cachedVehicle ? mapVehicleToFormValues(cachedVehicle) : buildInitialFormValues()
+  );
   const [errorMessage, setErrorMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(mode === "edit");
+  const [isLoading, setIsLoading] = useState(() => mode === "edit" && !cachedVehicle);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [photoFiles, setPhotoFiles] = useState([]);
   const [videoFile, setVideoFile] = useState(null);
-  const [existingPhotoUrls, setExistingPhotoUrls] = useState([]);
-  const [existingVideoUrl, setExistingVideoUrl] = useState("");
+  const [existingPhotoUrls, setExistingPhotoUrls] = useState(() => cachedVehicle?.photoUrls || []);
+  const [existingVideoUrl, setExistingVideoUrl] = useState(() => cachedVehicle?.videoUrl || "");
   const [photoPreviewUrls, setPhotoPreviewUrls] = useState([]);
   const [videoPreviewUrl, setVideoPreviewUrl] = useState("");
   const [activeDropZone, setActiveDropZone] = useState("");
@@ -112,7 +119,7 @@ function AdminVehicleFormPage({
     let isActive = true;
 
     const loadVehicle = async () => {
-      setIsLoading(true);
+      setIsLoading(() => !readCachedVehicleById(vehicleId, { adminView: true }));
       setErrorMessage("");
 
       try {

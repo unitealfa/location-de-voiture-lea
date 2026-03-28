@@ -19,6 +19,7 @@ const {
   getPublicVehicleById,
   syncVehicleAvailabilityForVehicle
 } = require("./vehicleService");
+const { DEFAULT_VEHICLE_IMAGE_URL } = require("./mediaUrlService");
 const { calculateReservationPricing } = require("../utils/reservationPricing");
 
 const LOCATION_TYPES = new Set(["bureau", "aeroport", "commentaire"]);
@@ -263,7 +264,9 @@ function mapVehicleToReservationSnapshot(vehicle) {
     vehicleBrand: vehicle.brand,
     vehicleModel: vehicle.model,
     vehicleVersion: vehicle.version,
-    vehiclePhotoUrl: vehicle.photoUrls[0]
+    vehiclePhotoUrl:
+      (Array.isArray(vehicle.photoUrls) && vehicle.photoUrls[0]) ||
+      DEFAULT_VEHICLE_IMAGE_URL
   };
 }
 

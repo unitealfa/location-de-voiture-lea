@@ -19,6 +19,13 @@ export function formatVehicleMeta(vehicle, seatsSuffix) {
 export function getVehicleCardImageUrl(photoUrl) {
   if (
     typeof photoUrl === "string" &&
+    /^\/api\/media\/vehicles\/\d+$/.test(photoUrl)
+  ) {
+    return `${photoUrl}/thumb`;
+  }
+
+  if (
+    typeof photoUrl === "string" &&
     photoUrl.startsWith("/uploads/vehicles/") &&
     photoUrl.endsWith(".webp") &&
     !photoUrl.endsWith("--thumb.webp")
