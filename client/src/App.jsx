@@ -374,6 +374,25 @@ function App() {
   }, [content, currentAdmin, currentPath, isAuthLoading]);
 
   useEffect(() => {
+    const faviconHref = content?.brand?.faviconImagePath || content?.brand?.logoImagePath;
+
+    if (!faviconHref) {
+      return;
+    }
+
+    let favicon = document.querySelector("link[rel='icon']");
+
+    if (!favicon) {
+      favicon = document.createElement("link");
+      favicon.setAttribute("rel", "icon");
+      document.head.appendChild(favicon);
+    }
+
+    favicon.setAttribute("href", faviconHref);
+    favicon.setAttribute("type", "image/jpeg");
+  }, [content?.brand?.faviconImagePath, content?.brand?.logoImagePath]);
+
+  useEffect(() => {
     const loadAdminSession = async () => {
       try {
         clearLegacyAdminClientState();
@@ -479,6 +498,14 @@ function App() {
     setCurrentAdmin(admin);
   };
 
+  const handleContentSaved = (nextContent) => {
+    if (!nextContent) {
+      return;
+    }
+
+    setContent(JSON.parse(JSON.stringify(nextContent)));
+  };
+
   const persistCompareIds = (nextVehicleIds) => {
     const persistedVehicleIds = persistCompareVehicleIds(nextVehicleIds);
     setCompareVehicleIds(persistedVehicleIds);
@@ -571,7 +598,13 @@ function App() {
           onBackClick={() => navigateTo("/admin")}
         />
       ) : currentPath === "/admin/visuelle" && currentAdmin ? (
-        <AdminVisualPage />
+        <AdminVisualPage
+          content={content}
+          brand={content.brand}
+          header={content.header}
+          footer={content.footer}
+          onContentSaved={handleContentSaved}
+        />
       ) : currentPath === "/reservations/creer" && currentAdmin ? (
         <AdminReservationFormPage
           content={content.reservations}

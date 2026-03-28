@@ -133,6 +133,15 @@ async function ensureSchema() {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
   `);
 
+  await pool.execute(`
+    CREATE TABLE IF NOT EXISTS site_settings (
+      setting_key VARCHAR(191) NOT NULL,
+      setting_value LONGTEXT NOT NULL,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      PRIMARY KEY (setting_key)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  `);
+
   const [roleColumnRows] = await pool.execute(`
     SHOW COLUMNS FROM admin_users LIKE 'role'
   `);

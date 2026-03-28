@@ -1,8 +1,7 @@
 const defaultContent = {
   brand: {
     name: "Lea Location",
-    logoText: "LEA",
-    logoImagePath: "/home/rentzo-logo.jpg"
+    logoText: "LEA"
   },
   header: {
     accountLabel: "Mon compte",
@@ -670,17 +669,11 @@ const defaultContent = {
     contactTitle: "Contact",
     phoneCtaLabel: "Appelez-nous",
     phoneLabel: "Numero de tel",
-    phoneValue: "0779 10 74 46",
-    emailValue: "lea@gmail.com",
     locationLabel: "Localisation",
     locationValue: "Alger",
-    addressValue: "Alger\nLea Location",
     mapUrl: "https://maps.google.com/?q=Alger%2C+Algerie",
     brandLabel: "Nom",
     brandValue: "Lea Location",
-    shortInfo: "✔︎ Lea Location. Location de voitures de luxe à ALGER.",
-    facebookUrl: "#",
-    instagramUrl: "#",
     youtubeUrl: "#",
     copyrightText: "Copyright ©. Tous les droits reserves.",
     legalText: "Lea Location"

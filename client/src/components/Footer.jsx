@@ -42,6 +42,7 @@ function SocialIcon({ href, label, children }) {
 function Footer({ brand, content, header, onNavigate }) {
   const telHref = "tel:" + content.phoneValue.replace(/[^+\d]/g, "");
   const mailHref = content.emailValue ? "mailto:" + content.emailValue : "#";
+  const footerLogoPath = content.logoImagePath || brand.logoImagePath;
   const shortInfo =
     content.shortInfo ||
     "✔︎ " + brand.name + ".\nLocation de voitures de luxe à " + content.locationValue + ".";
@@ -63,7 +64,7 @@ function Footer({ brand, content, header, onNavigate }) {
                 onClick={() => onNavigate("/")}
                 aria-label={brand.name}
               >
-                <img src={brand.logoImagePath} alt={brand.name} />
+                <img src={footerLogoPath} alt={brand.name} />
               </button>
             </div>
 
