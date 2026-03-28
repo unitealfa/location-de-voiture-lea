@@ -13,7 +13,22 @@ export const IMAGE_FALLBACK_SRC =
 export function handleImageFallback(event) {
   const target = event?.currentTarget;
 
-  if (!target || target.dataset.fallbackApplied === "true") {
+  if (!target) {
+    return;
+  }
+
+  const currentSource = String(target.getAttribute("src") || "");
+
+  if (
+    target.dataset.originalSrcTried !== "true" &&
+    currentSource.includes("--thumb.webp")
+  ) {
+    target.dataset.originalSrcTried = "true";
+    target.src = currentSource.replace("--thumb.webp", ".webp");
+    return;
+  }
+
+  if (target.dataset.fallbackApplied === "true") {
     return;
   }
 

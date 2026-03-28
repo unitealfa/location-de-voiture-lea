@@ -395,7 +395,8 @@ const defaultContent = {
     reservationBirthDatePlaceholder: "Date de naissance*",
     reservationDrivingLicensePlaceholder: "Ajoutez la photo du permis de conduire*",
     reservationDrivingLicenseEmptyLabel: "Aucun fichier choisi",
-    reservationDrivingLicenseInvalidMessage: "Ajoutez une image valide du permis de conduire.",
+    reservationDrivingLicenseInvalidMessage:
+      "Format non accepte. Utilisez JPG, JPEG, PNG, WEBP, GIF, BMP, SVG, AVIF, HEIC, HEIF ou JFIF.",
     reservationEmailPlaceholder: "E-mail (optionnel)",
     reservationPhonePlaceholder: "Téléphone*",
     reservationCommentPlaceholder: "Écrivez votre message",
@@ -442,6 +443,8 @@ const defaultContent = {
       "Les conditions de location s'appliquent a l'ensemble du catalogue et vous seront confirmees lors de votre demande de reservation.",
     createSubmitLabel: "Creer le vehicule",
     editSubmitLabel: "Enregistrer les modifications",
+    createSubmittingLabel: "Creation en cours...",
+    editSubmittingLabel: "Modification en cours...",
     backToListLabel: "Retour a la liste",
     backToVehicleLabel: "Retour au vehicule",
     loadErrorMessage: "Impossible de charger les vehicules.",
@@ -535,8 +538,10 @@ const defaultContent = {
     mediaSelectedPhotoSingularLabel: "photo selectionnee",
     mediaSelectedPhotoPluralLabel: "photos selectionnees",
     mediaDropActiveLabel: "Relachez pour ajouter le fichier",
-    invalidVideoDropMessage: "Deposez uniquement un fichier video dans cette zone.",
-    invalidPhotoDropMessage: "Deposez uniquement des images dans cette zone.",
+    invalidVideoDropMessage:
+      "Format non accepte. Utilisez MP4, WEBM, MOV, M4V, OGG ou OGV.",
+    invalidPhotoDropMessage:
+      "Format non accepte. Utilisez JPG, JPEG, PNG, WEBP, GIF, BMP, SVG, AVIF, HEIC, HEIF ou JFIF.",
     yesLabel: "Oui",
     noLabel: "Non",
     detailPriceTitle: "PRIX DE LOCATION",
@@ -618,7 +623,8 @@ const defaultContent = {
     formDrivingLicenseReplaceLabel: "Remplacer le permis de conduire",
     formDrivingLicenseOptionalLabel: "Permis de conduire (optionnel)",
     formCurrentLicenseLabel: "Permis actuel",
-    formDrivingLicenseInvalidMessage: "Ajoutez une image valide pour le permis de conduire.",
+    formDrivingLicenseInvalidMessage:
+      "Format non accepte. Utilisez JPG, JPEG, PNG, WEBP, GIF, BMP, SVG, AVIF, HEIC, HEIF ou JFIF.",
     formSaveErrorMessage: "Impossible d'enregistrer cette reservation.",
     formDeleteErrorMessage: "Impossible de supprimer cette reservation.",
     formLoadErrorMessage: "Impossible de charger le formulaire de reservation.",

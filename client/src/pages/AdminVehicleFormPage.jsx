@@ -790,9 +790,13 @@ function AdminVehicleFormPage({
                     className="login-form__submit vehicle-form-page__submit"
                     disabled={isSubmitting}
                   >
-                    {mode === "edit"
-                      ? content.editSubmitLabel
-                      : content.createSubmitLabel}
+                    {isSubmitting
+                      ? mode === "edit"
+                        ? content.editSubmittingLabel || "Modification en cours..."
+                        : content.createSubmittingLabel || "Creation en cours..."
+                      : mode === "edit"
+                        ? content.editSubmitLabel
+                        : content.createSubmitLabel}
                   </button>
                 </div>
               </div>
