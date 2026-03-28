@@ -13246,3 +13246,315 @@ a {
     min-width: 100%;
   }
 }
+
+.vehicle-form-page,
+.vehicle-form-page__body,
+.vehicle-form-page__container,
+.vehicle-form-page__layout,
+.vehicle-form-page__main,
+.vehicle-form-page__sidebar,
+.vehicle-form-page__panel,
+.vehicle-form-page .vehicle-form__grid,
+.vehicle-form-page__media-grid,
+.vehicle-form-page .vehicle-form__gallery,
+.vehicle-form-page .vehicle-form__media,
+.vehicle-form-page .vehicle-form__dropzone,
+.vehicle-form-page .vehicle-form__dropzone-copy,
+.vehicle-form-page .vehicle-form__option-group-grid {
+  min-width: 0;
+}
+
+.vehicle-form-page {
+  overflow-x: hidden;
+}
+
+.vehicle-form-page .vehicle-form__option-group-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr));
+}
+
+.vehicle-form-page__summary-item span,
+.vehicle-form-page__summary-item strong,
+.vehicle-form-page .vehicle-form__dropzone-copy strong,
+.vehicle-form-page .vehicle-form__dropzone-copy span {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 899px) {
+  .vehicle-form-page,
+  .vehicle-form-page__body {
+    overflow-x: clip;
+  }
+
+  .vehicle-form-page__layout {
+    gap: 20px;
+  }
+
+  .vehicle-form-page__summary-item {
+    align-items: flex-start;
+  }
+
+  .vehicle-form-page__summary-item strong {
+    text-align: right;
+  }
+}
+
+@media (max-width: 767px) {
+  .vehicle-form-page .vehicle-form__option-group-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .vehicle-form-page .vehicle-form__dropzone,
+  .vehicle-form-page .vehicle-form__gallery,
+  .vehicle-form-page .vehicle-form__media,
+  .vehicle-form-page__summary-card,
+  .vehicle-form-page__panel {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .vehicle-form-page__submit {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+.reservation-admin-page,
+.reservation-admin-page__body,
+.reservation-admin-page__container,
+.reservation-admin-page__layout,
+.reservation-admin-page__main,
+.reservation-admin-page__sidebar,
+.reservation-admin-page__panel,
+.reservation-admin-page .reservation-admin-form__pricing-shell,
+.reservation-admin-page .reservation-admin-form__pricing-actions,
+.reservation-admin-page .reservation-admin-form__datetime-layout,
+.reservation-admin-page .reservation-admin-form__datetime-head,
+.reservation-admin-page .reservation-admin-form__datetime-grid,
+.reservation-admin-page .reservation-admin-form__calendar-summary,
+.reservation-admin-page .reservation-admin-form__calendar-summary-card,
+.reservation-admin-page .reservation-calendar--admin,
+.reservation-admin-page .reservation-admin-form__license-grid,
+.reservation-admin-page .reservation-admin-form__license-card,
+.reservation-admin-page .reservation-admin-form__summary-card {
+  min-width: 0;
+}
+
+.reservation-admin-page {
+  overflow-x: hidden;
+}
+
+@media (max-width: 899px) {
+  .reservation-admin-page,
+  .reservation-admin-page__body {
+    overflow-x: clip;
+  }
+
+  .reservation-admin-page .reservation-admin-form__calendar-summary {
+    display: none;
+  }
+
+  .reservation-admin-page .reservation-admin-form__pricing-actions,
+  .reservation-admin-page .reservation-admin-form__datetime-head,
+  .reservation-admin-page .reservation-admin-form__datetime-grid,
+  .reservation-admin-page .reservation-admin-form__license-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .reservation-admin-page .reservation-admin-form__license-trigger,
+  .reservation-admin-page .reservation-admin-form__license-card,
+  .reservation-admin-page .reservation-admin-form__summary-card,
+  .reservation-admin-page .reservation-calendar--admin,
+  .reservation-admin-page .reservation-admin-form__panel,
+  .reservation-admin-page .reservation-admin-form__pricing-hero,
+  .reservation-admin-page .reservation-admin-form__pricing-card {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .reservation-admin-page .reservation-admin-form__submit {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+
+.admin-home__summary-head-side {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  min-width: 0;
+}
+
+.admin-home__summary-mini-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid rgba(15, 142, 165, 0.14);
+  border-radius: 999px;
+  background: rgba(15, 142, 165, 0.08);
+}
+
+.admin-home__summary-mini-pill {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #5a7180;
+  font: inherit;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 8px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-home__summary-mini-pill:hover,
+.admin-home__summary-mini-pill:focus-visible {
+  outline: none;
+  color: #0f8ea5;
+}
+
+.admin-home__summary-mini-pill--active {
+  background: linear-gradient(135deg, #54c7d9 0%, #0f8ea5 100%);
+  color: #ffffff;
+  box-shadow: 0 10px 18px rgba(15, 142, 165, 0.22);
+}
+
+@media (max-width: 767px) {
+  .admin-home__summary-head {
+    align-items: flex-start;
+  }
+
+  .admin-home__summary-head-side {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+  }
+
+  .admin-home__summary-mini-filter {
+    gap: 2px;
+    padding: 3px;
+  }
+
+  .admin-home__summary-mini-pill {
+    font-size: 10px;
+    padding: 7px 9px;
+  }
+}
+
+
+@media (max-width: 899px) {
+  .reservation-admin-page,
+  .reservation-admin-page .vehicle-form-page__container,
+  .reservation-admin-page .vehicle-form-page__layout,
+  .reservation-admin-page .vehicle-form,
+  .reservation-admin-page .vehicle-form-page__panel,
+  .reservation-admin-page .vehicle-form-page__summary-card,
+  .reservation-admin-page .login-form__field,
+  .reservation-admin-page .login-form__field input,
+  .reservation-admin-page .login-form__field select,
+  .reservation-admin-page .login-form__field textarea,
+  .reservation-admin-page .reservation-admin-form__pricing-shell,
+  .reservation-admin-page .reservation-admin-form__pricing-actions,
+  .reservation-admin-page .reservation-admin-form__pricing-side,
+  .reservation-admin-page .reservation-admin-form__price-field,
+  .reservation-admin-page .reservation-admin-form__datetime-card,
+  .reservation-admin-page .reservation-admin-form__datetime-layout,
+  .reservation-admin-page .reservation-admin-form__datetime-grid,
+  .reservation-admin-page .reservation-admin-form__license-upload,
+  .reservation-admin-page .reservation-admin-form__license-trigger,
+  .reservation-admin-page .reservation-admin-form__license-card,
+  .reservation-admin-page .reservation-admin-form__license-grid,
+  .reservation-admin-page .reservation-calendar--admin,
+  .reservation-admin-page .reservation-calendar__toolbar,
+  .reservation-admin-page .reservation-calendar__grid {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .reservation-admin-page .vehicle-form-page__container,
+  .reservation-admin-page .vehicle-form-page__panel,
+  .reservation-admin-page .vehicle-form-page__summary-card,
+  .reservation-admin-page .reservation-admin-form__datetime-card,
+  .reservation-admin-page .reservation-admin-form__pricing-hero,
+  .reservation-admin-page .reservation-admin-form__pricing-card,
+  .reservation-admin-page .reservation-admin-form__license-card,
+  .reservation-admin-page .reservation-calendar--admin {
+    overflow-x: hidden;
+  }
+
+  .reservation-admin-page .reservation-calendar__toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .reservation-admin-page .reservation-calendar__toolbar strong {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: center;
+  }
+
+  .reservation-admin-page .reservation-calendar__nav {
+    min-width: 0;
+    max-width: 100%;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
+
+
+html.reservation-admin-page-lock,
+body.reservation-admin-page-lock {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden !important;
+  overscroll-behavior-x: none;
+}
+
+@media (max-width: 899px) {
+  html.reservation-admin-page-lock,
+  body.reservation-admin-page-lock {
+    position: relative;
+    touch-action: pan-y;
+  }
+
+  body.reservation-admin-page-lock .reservation-admin-page,
+  body.reservation-admin-page-lock .vehicle-form-page__body,
+  body.reservation-admin-page-lock .vehicle-form-page__container,
+  body.reservation-admin-page-lock .vehicle-form-page__layout,
+  body.reservation-admin-page-lock .vehicle-form,
+  body.reservation-admin-page-lock .vehicle-form-page__main,
+  body.reservation-admin-page-lock .vehicle-form-page__sidebar,
+  body.reservation-admin-page-lock .vehicle-form-page__panel,
+  body.reservation-admin-page-lock .vehicle-form-page__summary-card,
+  body.reservation-admin-page-lock .reservation-admin-form__meta-grid,
+  body.reservation-admin-page-lock .reservation-admin-form__datetime-layout,
+  body.reservation-admin-page-lock .reservation-admin-form__datetime-head,
+  body.reservation-admin-page-lock .reservation-admin-form__datetime-grid,
+  body.reservation-admin-page-lock .reservation-admin-form__pricing-shell,
+  body.reservation-admin-page-lock .reservation-admin-form__pricing-actions,
+  body.reservation-admin-page-lock .reservation-admin-form__pricing-side,
+  body.reservation-admin-page-lock .reservation-admin-form__license-upload,
+  body.reservation-admin-page-lock .reservation-admin-form__license-grid,
+  body.reservation-admin-page-lock .reservation-calendar--admin,
+  body.reservation-admin-page-lock .reservation-calendar__toolbar,
+  body.reservation-admin-page-lock .reservation-calendar__grid {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: clip;
+    box-sizing: border-box;
+  }
+}

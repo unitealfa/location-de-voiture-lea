@@ -282,6 +282,19 @@ function AdminReservationFormPage({
   const drivingLicenseInputRef = useRef(null);
 
   useEffect(() => {
+    const body = document.body;
+    const documentElement = document.documentElement;
+
+    body.classList.add("reservation-admin-page-lock");
+    documentElement.classList.add("reservation-admin-page-lock");
+
+    return () => {
+      body.classList.remove("reservation-admin-page-lock");
+      documentElement.classList.remove("reservation-admin-page-lock");
+    };
+  }, []);
+
+  useEffect(() => {
     return () => {
       licensePreviewUrls.forEach((previewUrl) => {
         if (previewUrl?.startsWith("blob:")) {

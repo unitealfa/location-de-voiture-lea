@@ -40,6 +40,44 @@ function endOfWeek(date) {
   return next;
 }
 
+function startOfDay(date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
+}
+
+function addDays(date, amount) {
+  const next = new Date(date);
+  next.setDate(next.getDate() + amount);
+  return next;
+}
+
+async function getVisitRangeSummaries(now = new Date()) {
+  const todayStart = startOfDay(now);
+  const tomorrowStart = addDays(todayStart, 1);
+  const weekStart = addDays(todayStart, -6);
+  const monthStart = startOfMonth(now.getFullYear(), now.getMonth());
+
+  const [dayStats, weekStats, monthStats] = await Promise.all([
+    getSiteVisitDashboardStats({ startDate: todayStart, endDate: tomorrowStart }),
+    getSiteVisitDashboardStats({ startDate: weekStart, endDate: tomorrowStart }),
+    getSiteVisitDashboardStats({ startDate: monthStart, endDate: tomorrowStart })
+  ]);
+
+  return {
+    day: {
+      totalVisits: dayStats.totalVisits,
+      totalVisitors: dayStats.totalVisitors
+    },
+    week: {
+      totalVisits: weekStats.totalVisits,
+      totalVisitors: weekStats.totalVisitors
+    },
+    month: {
+      totalVisits: monthStats.totalVisits,
+      totalVisitors: monthStats.totalVisitors
+    }
+  };
+}
+
 function formatDateKey(date) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -466,10 +504,13 @@ async function getAdminDashboardStats(filters = {}) {
 
   const allReservations = [...pendingReservations, ...acceptedReservations];
   const normalizedFilters = normalizeDashboardFilters(filters, allReservations);
-  const rawSiteVisits = await getSiteVisitDashboardStats({
-    startDate: normalizedFilters.view === "all" ? null : normalizedFilters.startDate,
-    endDate: normalizedFilters.view === "all" ? null : normalizedFilters.endDate
-  });
+  const [rawSiteVisits, visitRangeSummaries] = await Promise.all([
+    getSiteVisitDashboardStats({
+      startDate: normalizedFilters.view === "all" ? null : normalizedFilters.startDate,
+      endDate: normalizedFilters.view === "all" ? null : normalizedFilters.endDate
+    }),
+    getVisitRangeSummaries()
+  ]);
 
   const filteredPendingReservations = pendingReservations.filter((reservation) =>
     normalizedFilters.view === "all"
@@ -548,7 +589,8 @@ async function getAdminDashboardStats(filters = {}) {
       totalRevenue,
       totalVisits: filteredVisitTotal,
       totalVisitors: rawSiteVisits.totalVisitors,
-      vehicleCount: vehicles.length
+      vehicleCount: vehicles.length,
+      visitRanges: visitRangeSummaries
     },
     insights: {
       topVehicle: buildTopVehicleInsight(topVehicles),

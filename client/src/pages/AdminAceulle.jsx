@@ -42,12 +42,23 @@ function getSeriesTitle(baseLabel, view) {
   return `${baseLabel} par an`;
 }
 
-function SummaryCard({ label, value, helper, accent, formatter = formatNumber }) {
+function SummaryCard({
+  label,
+  value,
+  helper,
+  accent,
+  formatter = formatNumber,
+  kicker = "Synthese",
+  headerExtra = null
+}) {
   return (
     <article className={`admin-home__summary-card admin-home__summary-card--${accent}`}>
       <div className="admin-home__summary-head">
-        <span className="admin-home__summary-kicker">Synthese</span>
-        <span className="admin-home__summary-accent" />
+        <span className="admin-home__summary-kicker">{kicker}</span>
+        <div className="admin-home__summary-head-side">
+          {headerExtra}
+          <span className="admin-home__summary-accent" />
+        </div>
       </div>
       <span className="admin-home__summary-label">{label}</span>
       <strong className="admin-home__summary-value">{formatter(value)}</strong>
@@ -302,6 +313,8 @@ function AdminAceulle({ content, admin }) {
   const [stats, setStats] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [visitRangeFilter, setVisitRangeFilter] = useState("month");
+  const [visitorRangeFilter, setVisitorRangeFilter] = useState("month");
 
   useEffect(() => {
     let isActive = true;
@@ -345,6 +358,64 @@ function AdminAceulle({ content, admin }) {
   const activeView = stats?.filters?.view || filters.view;
   const activeYear = stats?.filters?.year || filters.year;
   const activeMonth = stats?.filters?.month || filters.month;
+  const visitRangeSummary = summary?.visitRanges?.[visitRangeFilter] || {
+    totalVisits: summary?.totalVisits || 0,
+    totalVisitors: summary?.totalVisitors || 0
+  };
+  const visitorRangeSummary = summary?.visitRanges?.[visitorRangeFilter] || {
+    totalVisits: summary?.totalVisits || 0,
+    totalVisitors: summary?.totalVisitors || 0
+  };
+  const visitFilterControls = (
+    <div className="admin-home__summary-mini-filter">
+      <button
+        type="button"
+        className={"admin-home__summary-mini-pill" + (visitRangeFilter === "day" ? " admin-home__summary-mini-pill--active" : "")}
+        onClick={() => setVisitRangeFilter("day")}
+      >
+        {content.summaryVisitsFilterDayLabel}
+      </button>
+      <button
+        type="button"
+        className={"admin-home__summary-mini-pill" + (visitRangeFilter === "week" ? " admin-home__summary-mini-pill--active" : "")}
+        onClick={() => setVisitRangeFilter("week")}
+      >
+        {content.summaryVisitsFilterWeekLabel}
+      </button>
+      <button
+        type="button"
+        className={"admin-home__summary-mini-pill" + (visitRangeFilter === "month" ? " admin-home__summary-mini-pill--active" : "")}
+        onClick={() => setVisitRangeFilter("month")}
+      >
+        {content.summaryVisitsFilterMonthLabel}
+      </button>
+    </div>
+  );
+  const visitorFilterControls = (
+    <div className="admin-home__summary-mini-filter">
+      <button
+        type="button"
+        className={"admin-home__summary-mini-pill" + (visitorRangeFilter === "day" ? " admin-home__summary-mini-pill--active" : "")}
+        onClick={() => setVisitorRangeFilter("day")}
+      >
+        {content.summaryVisitsFilterDayLabel}
+      </button>
+      <button
+        type="button"
+        className={"admin-home__summary-mini-pill" + (visitorRangeFilter === "week" ? " admin-home__summary-mini-pill--active" : "")}
+        onClick={() => setVisitorRangeFilter("week")}
+      >
+        {content.summaryVisitsFilterWeekLabel}
+      </button>
+      <button
+        type="button"
+        className={"admin-home__summary-mini-pill" + (visitorRangeFilter === "month" ? " admin-home__summary-mini-pill--active" : "")}
+        onClick={() => setVisitorRangeFilter("month")}
+      >
+        {content.summaryVisitsFilterMonthLabel}
+      </button>
+    </div>
+  );
 
   return (
     <main className="admin-home">
@@ -445,8 +516,22 @@ function AdminAceulle({ content, admin }) {
             <SummaryCard label={content.summaryPendingLabel} value={summary.pendingCount} helper={content.summaryPendingHelper} accent="pending" />
             <SummaryCard label={content.summaryAcceptedLabel} value={summary.acceptedCount} helper={content.summaryAcceptedHelper} accent="accepted" />
             <SummaryCard label={content.summaryVisibleLabel} value={summary.visibleThisMonthCount} helper={content.summaryVisibleHelper} accent="visible" />
-            <SummaryCard label={content.summaryVisitsLabel} value={summary.totalVisits} helper={content.summaryVisitsHelper} accent="visits" />
-            <SummaryCard label={content.summaryVisitorsLabel} value={summary.totalVisitors} helper={content.summaryVisitorsHelper} accent="visitors" />
+            <SummaryCard
+              label={content.summaryVisitsLabel}
+              value={visitRangeSummary.totalVisits}
+              helper={content.summaryVisitsHelper}
+              accent="visits"
+              kicker={content.summaryVisitsFilterLabel}
+              headerExtra={visitFilterControls}
+            />
+            <SummaryCard
+              label={content.summaryVisitorsLabel}
+              value={visitorRangeSummary.totalVisitors}
+              helper={content.summaryVisitorsHelper}
+              accent="visitors"
+              kicker={content.summaryVisitsFilterLabel}
+              headerExtra={visitorFilterControls}
+            />
             <SummaryCard label={content.summaryRevenueLabel} value={summary.totalRevenue} helper={content.summaryRevenueHelper} accent="revenue" formatter={formatCurrency} />
             <SummaryCard
               label={content.summaryRangeLabel}
