@@ -211,10 +211,10 @@ const defaultContent = {
     }
   },
   faqPage: {
-    heroTitleStart: "Questions",
-    heroTitleAccent: "fréquentes",
+    heroTitleStart: "Questions fréquentes",
+    heroTitleAccent: "",
     heroSubtitle: "Nous répondrons à toutes vos questions",
-    pageTitle: "Questions fréquentes",
+    pageTitle: "Foire aux questions",
     contactButtonLabel: "Contact",
     leftItems: [
       {
@@ -272,7 +272,7 @@ const defaultContent = {
   contactPage: {
     heroTitleStart: "Contactez",
     heroTitleAccent: "nous",
-    heroSubtitle: "Nous serons ravis de vous repondre",
+    heroSubtitle: "Contactez-nous pour la location de voitures",
     pageTitle: "Contact",
     shortInfo: "✔︎ MON LOCATION LEA.\nLocation de voitures de luxe à ALGER.",
     socialTitle: "Suivez-nous",

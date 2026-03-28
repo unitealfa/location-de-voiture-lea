@@ -148,10 +148,10 @@ function AccordionColumn({ items, widgetClassName, columnKey }) {
 }
 
 function FaqPage({ content, onContactClick }) {
-  const heroTitleStart = content?.heroTitleStart || "Questions";
-  const heroTitleAccent = content?.heroTitleAccent || "fréquentes";
-  const heroSubtitle = content?.heroSubtitle || "Nous répondrons à toutes vos questions";
-  const pageTitle = content?.pageTitle || "Questions fréquentes";
+  const heroTitleStart = content?.heroTitleStart ?? "Questions";
+  const heroTitleAccent = content?.heroTitleAccent ?? "fréquentes";
+  const heroSubtitle = content?.heroSubtitle ?? "Nous répondrons à toutes vos questions";
+  const pageTitle = content?.pageTitle ?? "Questions fréquentes";
   const contactButtonLabel = content?.contactButtonLabel || "Contact";
   const leftItems = content?.leftItems || [];
   const rightItems = content?.rightItems || [];
@@ -170,7 +170,13 @@ function FaqPage({ content, onContactClick }) {
                 <div className="elementor-element elementor-element-c6a997d elementor-widget elementor-widget-heading">
                   <div className="elementor-widget-container">
                     <h1 className="elementor-heading-title elementor-size-default">
-                      {heroTitleStart} <span className="vehica-text-primary">{heroTitleAccent}</span>
+                      {heroTitleAccent ? (
+                        <>
+                          {heroTitleStart} <span className="vehica-text-primary">{heroTitleAccent}</span>
+                        </>
+                      ) : (
+                        heroTitleStart
+                      )}
                     </h1>
                   </div>
                 </div>

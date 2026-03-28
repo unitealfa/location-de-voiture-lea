@@ -1005,7 +1005,7 @@ a {
 }
 
 .vehica-logo-widget img {
-  max-width: 429px;
+  max-width: 252px;
   width: 100%;
   height: auto;
 }
@@ -2802,9 +2802,16 @@ a {
     display: none;
   }
 
+  .rentzo-faq-source .elementor-element-6509ce9 > .elementor-container,
+  .rentzo-faq-source .elementor-element-e1400f0 > .elementor-container {
+    max-width: 100%;
+  }
+
   .rentzo-faq-source .elementor-element-951cf7b > .elementor-widget-wrap {
     padding: 0 15px;
     justify-content: center;
+    align-content: center;
+    align-items: center;
   }
 
   .rentzo-faq-source .elementor-element-8de1214 {
@@ -2826,12 +2833,18 @@ a {
 
   .rentzo-faq-source .elementor-element-fe2ba6a > .elementor-widget-wrap {
     margin: 0 15px;
-    padding: 0 15px;
+    padding: 0 0;
+    border-radius: 0;
   }
 
   .rentzo-faq-source .elementor-element-bb3ded4 .elementor-spacer-inner,
   .rentzo-faq-source .elementor-element-361084c .elementor-spacer-inner {
     height: 30px;
+  }
+
+  .rentzo-faq-source .elementor-element-1031699,
+  .rentzo-faq-source .elementor-element-1031699 > .elementor-container {
+    display: block;
   }
 
   .rentzo-faq-source .elementor-element-fbcdc1b,
@@ -2848,20 +2861,85 @@ a {
     margin-top: 15px;
   }
 
+  .rentzo-faq-source .vehica-accordion {
+    margin: 0;
+  }
+
+  .rentzo-faq-source .elementor-accordion .elementor-accordion-item {
+    margin-bottom: 16px;
+    border: 0 solid transparent;
+  }
+
+  .rentzo-faq-source .elementor-accordion .elementor-accordion-item + .elementor-accordion-item {
+    border-block-start: 0;
+  }
+
   .rentzo-faq-source .elementor-tab-title {
     padding: 12px 15px;
+    border: 1px solid #e7edf3;
+    border-radius: 10px;
+    font-size: 17px;
+    font-weight: 500;
+    line-height: 25px;
+    transition: border-radius 0.1s linear, border-color 0.1s linear;
+  }
+
+  .rentzo-faq-source .elementor-tab-title.elementor-active {
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+    border-color: var(--primary);
+  }
+
+  .rentzo-faq-source .elementor-tab-title::after {
+    display: none;
+  }
+
+  .rentzo-faq-source .elementor-accordion-title {
+    padding-right: 12px;
+    font-size: 17px;
+    line-height: 25px;
   }
 
   .rentzo-faq-source .elementor-tab-title .elementor-accordion-icon {
     width: 1.2em;
+    position: relative;
+    top: 4px;
+    margin-left: 15px;
+  }
+
+  .rentzo-faq-source .elementor-tab-title .elementor-accordion-icon svg {
+    width: 1em;
+    height: 1em;
+  }
+
+  .rentzo-faq-source .elementor-tab-content-shell {
+    transition: max-height 0.28s ease;
   }
 
   .rentzo-faq-source .elementor-tab-content {
     padding: 7px 15px;
+    border: 1px solid #e7edf3;
+    border-top: 0 solid transparent;
+    border-bottom-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+  }
+
+  .rentzo-faq-source .elementor-tab-title.elementor-active + .elementor-tab-content-shell .elementor-tab-content,
+  .rentzo-faq-source .elementor-tab-content-shell--open .elementor-tab-content {
+    border-color: var(--primary);
+  }
+
+  .rentzo-faq-source .elementor-tab-content p {
+    font-size: 14px;
+    line-height: 24px;
   }
 
   .rentzo-faq-source .elementor-element-7faeb60 .elementor-spacer-inner {
     height: 15px;
+  }
+
+  .rentzo-faq-source .elementor-element-c32bc6f .elementor-button {
+    min-width: 230px;
   }
 
   .rentzo-faq-source .elementor-element-482807e .elementor-spacer-inner {
@@ -12473,5 +12551,435 @@ a {
     background: transparent;
     border-color: transparent;
     color: var(--primary) !important;
+  }
+}
+
+@media (max-width: 767px) {
+  body {
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  h1,
+  .rentzo-home-hero__title,
+  .rentzo-catalog-hero__title,
+  .rentzo-contact-hero__title,
+  .rentzo-faq-hero__title,
+  .login-form__title,
+  .vehicle-form-page__hero h1,
+  .admin-home__hero-copy h1,
+  .reservation-detail-theme__hero h1,
+  .reservation-form-page__hero h1 {
+    font-size: 30px !important;
+    line-height: 38px !important;
+    letter-spacing: -0.03em;
+  }
+
+  h2,
+  .rentzo-section-title,
+  .rentzo-faq-title,
+  .rentzo-contact-section__title,
+  .vehicle-detail__section-title,
+  .rentzo-single-car-page .elementor-heading-title,
+  .admin-home__chart-head h2,
+  .admin-home__feature-label,
+  .admin-home__summary-label {
+    font-size: 24px !important;
+    line-height: 32px !important;
+  }
+
+  h3,
+  .vehicle-card__title,
+  .rentzo-related-vehicles__title,
+  .login-form__subtitle,
+  .admin-home__feature-title,
+  .admin-home__summary-value,
+  .reservation-detail-theme__section-title,
+  .reservation-form-page__section-title,
+  .vehicle-form-page__section-title {
+    font-size: 20px !important;
+    line-height: 28px !important;
+  }
+
+  p,
+  li,
+  input,
+  select,
+  textarea,
+  button,
+  .vehica-mobile-menu__wrapper .vehica-mobile-menu__open .vehica-menu .vehica-menu__link,
+  .rentzo-mobile-menu__info-link,
+  .rentzo-account-menu__action,
+  .rentzo-mobile-menu__action,
+  .vehicle-card__meta,
+  .vehicle-card__spec,
+  .vehicle-detail__text,
+  .rentzo-single-car-page .vehica-car-description p,
+  .rentzo-single-car-page .vehica-car-description li,
+  .login-form__message,
+  .admin-home__summary-helper,
+  .admin-home__feature-helper,
+  .admin-home__line-meta,
+  .admin-home__column-label,
+  .admin-home__column-value,
+  .admin-home__split-item strong,
+  .admin-home__split-item small,
+  .reservation-detail-theme__meta,
+  .reservation-detail-theme__content,
+  .reservation-form-page,
+  .vehicle-form-page,
+  .footer,
+  .footer p,
+  .footer a {
+    font-size: 16px !important;
+    line-height: 24px !important;
+  }
+
+  .vehica-mobile-menu__wrapper .vehica-mobile-menu__open .vehica-menu .vehica-menu__link {
+    font-size: 20px !important;
+    line-height: 28px !important;
+  }
+
+  small,
+  .admin-home__eyebrow,
+  .admin-home__summary-kicker,
+  .admin-home__feature-axis span,
+  .admin-home__column-label--weekday,
+  .vehicle-card__badge,
+  .footer small,
+  .rentzo-mobile-menu__identity span,
+  .rentzo-account-menu__identity span {
+    font-size: 12px !important;
+    line-height: 16px !important;
+    letter-spacing: 0.08em;
+  }
+
+  .vehica-mobile-menu__wrapper .vehica-mobile-menu__logo img {
+    height: 30px;
+  }
+
+  .vehica-gallery-v3,
+  .rentzo-single-car__gallery,
+  .vehicle-detail__gallery,
+  .vehicle-detail__gallery-track,
+  .vehicle-detail__gallery-slide,
+  .vehicle-detail__hero-media {
+    height: 240px !important;
+  }
+
+  .admin-home__feature-media {
+    min-height: 200px;
+  }
+
+  .vehicle-card__image,
+  .vehicle-card__image img,
+  .rentzo-cabriolets__card-image,
+  .rentzo-home-vehicle-card__image,
+  .rentzo-related-vehicles .vehicle-card__image {
+    height: 220px !important;
+  }
+
+  .rentzo-contact-hero__media,
+  .rentzo-home-hero__media,
+  .rentzo-catalog-hero__media,
+  .rentzo-faq-hero__media {
+    min-height: 240px !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .rentzo-home-hero__title {
+    font-size: 22px !important;
+    line-height: 28px !important;
+  }
+
+  .rentzo-home-hero__eyebrow {
+    font-size: 46px !important;
+    line-height: 1 !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .rentzo-home__intro .vehica-heading__title {
+    font-size: 46px !important;
+    line-height: 1 !important;
+  }
+
+  .rentzo-home__intro .vehica-heading__text,
+  .rentzo-home__intro .vehica-heading__text span {
+    font-size: 22px !important;
+    line-height: 28px !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .rentzo-home__catalog .vehica-hero-v2-title .elementor-heading-title {
+    font-size: 28px !important;
+    line-height: 36px !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .vehica-mobile-menu__wrapper .vehica-mobile-menu__logo img {
+    height: 36px;
+  }
+}
+
+@media (max-width: 899px) {
+  .rentzo-faq-source .elementor-element-b224af9 {
+    display: none !important;
+  }
+}
+
+@media (max-width: 899px) {
+  .rentzo-faq-source .elementor-element-b224af9 {
+    display: block !important;
+    min-height: 280px;
+    background: url("/home/rentzo-contact-hero.jpg") center center / cover no-repeat;
+  }
+
+  .rentzo-faq-source .elementor-element-b224af9 > .elementor-background-overlay {
+    opacity: 0.58;
+  }
+
+  .rentzo-faq-source .elementor-element-b224af9 > .elementor-container {
+    min-height: 280px;
+    align-items: center;
+  }
+
+  .rentzo-faq-source .elementor-element-d380493 .elementor-spacer-inner {
+    height: 34px;
+  }
+
+  .rentzo-faq-source .elementor-element-c6a997d .elementor-heading-title {
+    font-size: 34px;
+    line-height: 40px;
+  }
+
+  .rentzo-faq-source .elementor-element-8a033d3 .elementor-heading-title {
+    font-size: 18px;
+    line-height: 28px;
+  }
+}
+
+@media (max-width: 899px) {
+  .rentzo-faq-source .elementor-element-b224af9 {
+    min-height: 168px;
+  }
+
+  .rentzo-faq-source .elementor-element-b224af9 > .elementor-container {
+    min-height: 168px;
+  }
+
+  .rentzo-faq-source .elementor-element-c6a997d .elementor-heading-title {
+    font-size: 30px;
+    line-height: 36px;
+  }
+
+  .rentzo-faq-source .elementor-element-8a033d3 .elementor-heading-title {
+    font-size: 17px;
+    line-height: 26px;
+  }
+
+  .rentzo-faq-source .elementor-element-e58b527 {
+    display: block;
+  }
+
+  .rentzo-faq-source .elementor-element-e58b527 .elementor-divider {
+    padding-block-start: 15px;
+    padding-block-end: 15px;
+  }
+
+  .rentzo-faq-source .elementor-element-e58b527 .elementor-divider-separator {
+    height: 20px;
+    background-color: #000000;
+  }
+}
+
+@media (max-width: 767px) {
+  .rentzo-contact-hero {
+    display: flex;
+    align-items: center;
+    min-height: 198px;
+    background: url("/home/rentzo-contact-hero.jpg") center center / cover no-repeat;
+  }
+
+  .rentzo-contact-hero__overlay {
+    opacity: 0.58;
+  }
+
+  .rentzo-contact-hero__inner {
+    align-items: center;
+    justify-content: center;
+    min-height: 198px;
+    padding: 24px 20px;
+  }
+
+  .rentzo-contact-hero__title {
+    color: #ffffff;
+    font-size: 30px !important;
+    line-height: 36px !important;
+  }
+
+  .rentzo-contact-hero__title .vehica-text-primary {
+    color: #ffffff;
+  }
+
+  .rentzo-contact-hero__subtitle {
+    color: #ffffff;
+    font-size: 18px !important;
+    line-height: 28px !important;
+    opacity: 1;
+  }
+}
+
+.rentzo-contact-main .vehica-social-profiles {
+  display: flex;
+  justify-content: center;
+}
+
+.rentzo-contact-main .vehica-social-profiles__v2 {
+  width: 100%;
+  text-align: center;
+}
+
+.rentzo-contact-main .vehica-social-profiles__v2__inner {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+}
+
+.rentzo-contact-main .vehica-social-profiles__v2__title {
+  width: 100%;
+  margin: 0 0 10px;
+  text-align: center;
+}
+
+@media (max-width: 1023px) {
+  .rentzo-catalog-page .vehica-inventory-v1__mobile-button-options {
+    display: block !important;
+    width: 100%;
+    background: #f2f5fb;
+    padding: 30px 15px;
+  }
+
+  .rentzo-catalog-page .vehica-inventory-v1__mobile-button-options button {
+    width: 100%;
+    height: 53px;
+    padding: 0 14px;
+    border: 1px solid #e7edf3;
+    border-radius: 10px;
+    background: #ffffff;
+    box-shadow: 1px 1px 0 0 rgba(196, 196, 196, 0.24);
+    color: #2f3b48;
+    font-size: 15px !important;
+    line-height: 19px !important;
+    font-weight: 600;
+    text-align: center;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  .rentzo-catalog-page .vehica-inventory-v1__mobile-button-options.vehica-inventory-v1__mobile-button-options--active button {
+    background: var(--primary-light);
+    color: var(--primary);
+    border-color: var(--primary);
+  }
+
+  .rentzo-catalog-page .vehica-results__fields__mobile-section-top {
+    display: block !important;
+    position: relative;
+  }
+
+  .rentzo-catalog-page .vehica-results__fields__mobile-section-top__title {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding-right: 80px;
+    color: #0f141e;
+    font-size: 30px !important;
+    line-height: 38px !important;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+  }
+
+  .rentzo-catalog-page .vehica-results__fields__mobile-section-top__subtitle {
+    margin: 0 0 20px;
+    padding-top: 20px;
+    border-top: 1px solid #dddddd;
+    font-size: 18px !important;
+    line-height: 22px !important;
+    font-weight: 900;
+    color: #2f3b48;
+  }
+
+  .rentzo-catalog-page .vehica-results__fields__mobile-section-top__subtitle__number {
+    color: var(--primary);
+  }
+
+  .rentzo-catalog-page .vehica-results__fields__mobile-section-top__subtitle__clear {
+    font-size: 18px !important;
+    line-height: 22px !important;
+    color: #2f3b48;
+  }
+
+  .rentzo-catalog-page .vehica-results__fields__mobile-section-top__close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: transparent;
+    border: 0;
+    color: #2f3b48;
+    font-size: 32px !important;
+    line-height: 32px !important;
+  }
+
+  .rentzo-catalog-page .rentzo-inventory-select {
+    height: 53px;
+    font-size: 15px !important;
+    line-height: 19px !important;
+    font-weight: 600;
+  }
+}
+
+@media (max-width: 1023px) {
+  .rentzo-catalog-page .vehica-inventory-v1 .vehica-results__fields.vehica-results__fields--mobile-open {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media only screen and (max-width: 899px) {
+  .rentzo-catalog-page .rentzo-catalog-hero.vehica-hide-mobile {
+    display: block !important;
+  }
+
+  .rentzo-catalog-page .rentzo-catalog-hero {
+    min-height: 198px;
+    background-position: center center;
+    background-size: cover;
+  }
+
+  .rentzo-catalog-page .rentzo-catalog-hero__inner {
+    max-width: 100%;
+    padding: 0 18px 24px;
+  }
+
+  .rentzo-catalog-page .rentzo-catalog-hero__spacer {
+    height: 42px;
+  }
+
+  .rentzo-catalog-page .rentzo-catalog-hero__title {
+    font-size: 30px !important;
+    line-height: 36px !important;
+  }
+
+  .rentzo-catalog-page .rentzo-catalog-hero__subtitle {
+    display: none;
   }
 }
