@@ -782,7 +782,7 @@ function App() {
           reservationId={reservationDetailId}
           detailScope={reservationDetailScope}
           onAccepted={() => navigateTo("/reservations")}
-          onRejected={() => navigateTo("/commencer")}
+          onRejected={() => navigateTo("/reservations")}
           onEditClick={() =>
             navigateTo(
               reservationDetailScope === "reservations"

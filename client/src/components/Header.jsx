@@ -62,7 +62,7 @@ function Header({
           label: header.dashboardLabel,
           path: "/admin"
         },
-        ...header.navigationItems,
+        ...header.navigationItems.filter((item) => item.path !== "/commencer"),
         {
           label: header.clientsLabel,
           path: "/reservations"
