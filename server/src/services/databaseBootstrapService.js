@@ -1,6 +1,7 @@
 const { pingDatabase } = require("../db/pool");
 const { initializeAdminAuth } = require("./adminAuthService");
 const { startReservationLicenseCleanupScheduler } = require("./reservationService");
+const { startVehicleMediaCleanupScheduler } = require("./vehicleMediaCleanupService");
 const {
   setAdminSeed,
   setDatabaseState
@@ -39,6 +40,7 @@ async function ensureDatabaseBootstrap() {
 
       if (!cleanupSchedulerStarted && !process.env.VERCEL) {
         startReservationLicenseCleanupScheduler();
+        startVehicleMediaCleanupScheduler();
         cleanupSchedulerStarted = true;
       }
 

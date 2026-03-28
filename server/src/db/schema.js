@@ -145,6 +145,18 @@ async function ensureSchema() {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
   `);
 
+  await pool.execute(`
+    CREATE TABLE IF NOT EXISTS vehicle_media_cleanup_jobs (
+      media_url TEXT NOT NULL,
+      media_url_hash CHAR(64) NOT NULL,
+      delete_after DATETIME NOT NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      PRIMARY KEY (media_url_hash),
+      KEY idx_vehicle_media_cleanup_jobs_delete_after (delete_after)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  `);
+
 
   await pool.execute(`
     CREATE TABLE IF NOT EXISTS site_visit_events (

@@ -10,8 +10,10 @@ const {
   listVehicleIdsWithFutureAcceptedReservations
 } = require("../repositories/reservationRepository");
 const {
-  removeStoredVehicleMedia
-} = require("../middleware/vehicleUploadMiddleware");
+  cancelVehicleMediaCleanup,
+  maybeCleanupExpiredVehicleMedia,
+  scheduleVehicleMediaCleanup
+} = require("./vehicleMediaCleanupService");
 
 const AVAILABILITY_STATUSES = new Set(["available", "maintenance", "reserved"]);
 const TRANSMISSION_OPTIONS = ["Automatique", "Manuelle"];
@@ -217,16 +219,19 @@ function normalizeVehiclePayload(payload, { isCreate, currentVehicle = null }) {
 }
 
 async function listPublicVehicles() {
+  await maybeCleanupExpiredVehicleMedia();
   await syncVehicleReservationAvailability();
   return listVehicles({ includeMaintenance: false });
 }
 
 async function listAdminVehicles() {
+  await maybeCleanupExpiredVehicleMedia();
   await syncVehicleReservationAvailability();
   return listVehicles({ includeMaintenance: true });
 }
 
 async function getPublicVehicleById(id) {
+  await maybeCleanupExpiredVehicleMedia();
   await syncVehicleReservationAvailability();
   const vehicle = await findVehicleById(id);
 
@@ -242,6 +247,7 @@ async function getPublicVehicleById(id) {
 }
 
 async function getAdminVehicleById(id) {
+  await maybeCleanupExpiredVehicleMedia();
   await syncVehicleAvailabilityForVehicle(id);
   return findVehicleById(id);
 }
@@ -252,7 +258,12 @@ async function createAdminVehicle(payload) {
     currentVehicle: null
   });
   vehicle.availabilityStatus = "available";
-  return createVehicle(vehicle);
+  const createdVehicle = await createVehicle(vehicle);
+  await cancelVehicleMediaCleanup([
+    ...(createdVehicle.photoUrls || []),
+    createdVehicle.videoUrl
+  ]);
+  return createdVehicle;
 }
 
 async function updateAdminVehicle(id, payload, currentVehicle) {
@@ -274,8 +285,13 @@ async function updateAdminVehicle(id, payload, currentVehicle) {
     removedMedia.push(currentVehicle.videoUrl);
   }
 
+  await cancelVehicleMediaCleanup([
+    ...(updatedVehicle.photoUrls || []),
+    updatedVehicle.videoUrl
+  ]);
+
   if (removedMedia.length > 0) {
-    await removeStoredVehicleMedia(removedMedia);
+    await scheduleVehicleMediaCleanup(removedMedia);
   }
 
   return updatedVehicle;
@@ -287,7 +303,7 @@ async function deleteAdminVehicle(id) {
   await deleteVehicle(id);
 
   if (currentVehicle) {
-    await removeStoredVehicleMedia([
+    await scheduleVehicleMediaCleanup([
       ...(currentVehicle.photoUrls || []),
       currentVehicle.videoUrl
     ]);
