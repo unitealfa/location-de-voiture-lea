@@ -15854,3 +15854,191 @@ body.reservation-admin-page-lock {
     width: 100%;
   }
 }
+
+@media (max-width: 767px) {
+  .admin-visual-page {
+    padding: 28px 14px 96px;
+  }
+
+  .admin-visual-page__hero {
+    margin-bottom: 18px;
+  }
+
+  .admin-visual-page__hero h1 {
+    font-size: 34px;
+    line-height: 1.02;
+  }
+
+  .admin-visual-page__preview-card,
+  .admin-visual-page__form-card {
+    padding: 14px;
+    border-radius: 14px;
+  }
+
+  .admin-visual-page__editor-section {
+    gap: 16px;
+  }
+
+  .admin-visual-page__field-section,
+  .admin-visual-page__subsection {
+    padding: 14px;
+  }
+
+  .admin-visual-page__field-section-head h3 {
+    font-size: 16px;
+  }
+
+  .admin-visual-page__mini-canvas-shell {
+    --admin-visual-scale: 0.255;
+    border-radius: 12px;
+  }
+
+  .admin-visual-page__mini-canvas-scale {
+    width: 1180px;
+    margin-bottom: calc((1 - var(--admin-visual-scale)) * -100% + 120px);
+  }
+
+  .admin-visual-page__mini-canvas-shell--header .admin-visual-page__mini-canvas-scale,
+  .admin-visual-page__mini-canvas-shell--footer .admin-visual-page__mini-canvas-scale {
+    margin-bottom: calc((1 - var(--admin-visual-scale)) * -100% + 84px);
+  }
+
+  .admin-visual-page__mini-canvas-shell--home .admin-visual-page__mini-canvas-scale {
+    margin-bottom: calc((1 - var(--admin-visual-scale)) * -100% - 48px);
+  }
+
+  .admin-visual-page__mini-canvas-shell--home {
+    max-height: 520px;
+  }
+
+  .admin-visual-page__mini-canvas-shell--tab .admin-visual-page__mini-canvas-scale {
+    width: 640px;
+    transform: scale(0.5);
+  }
+
+  .admin-visual-page__mini-canvas-shell .admin-visual-preview__header-frame {
+    min-height: 150px;
+    padding: 18px;
+  }
+
+  .admin-visual-page__mini-canvas-shell .admin-visual-preview__header-row {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .admin-visual-page__mini-canvas-shell .admin-visual-preview__header-brand img {
+    width: 180px;
+  }
+
+  .admin-visual-page__mini-canvas-shell .admin-visual-preview__header-links {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .admin-visual-page__mini-canvas-shell .admin-visual-preview__header-link {
+    font-size: 12px;
+  }
+
+  .admin-visual-page__mini-canvas-shell .admin-visual-preview__hero {
+    min-height: 280px;
+  }
+
+  .admin-visual-page__mini-canvas-shell .admin-visual-preview__hero--short {
+    min-height: 220px;
+  }
+
+  .admin-visual-page__mini-canvas-shell .admin-visual-preview__home-intro,
+  .admin-visual-page__mini-canvas-shell .admin-visual-preview__section,
+  .admin-visual-page__mini-canvas-shell .admin-visual-preview__contact-grid {
+    padding: 24px;
+  }
+
+  .admin-visual-page__mini-canvas-shell .admin-visual-preview__hero-title {
+    font-size: 30px;
+    line-height: 1.08;
+  }
+
+  .admin-visual-page__mini-canvas-shell .admin-visual-preview__feature-grid,
+  .admin-visual-page__mini-canvas-shell .admin-visual-preview__split,
+  .admin-visual-page__mini-canvas-shell .admin-visual-preview__contact-grid,
+  .admin-visual-page__mini-canvas-shell .admin-visual-preview__testimonial-grid,
+  .admin-visual-page__mini-canvas-shell .admin-visual-preview__faq-list {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-visual-page__mini-canvas-shell .admin-visual-preview__vehicle-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .admin-visual-page__mini-canvas-shell .admin-visual-preview__fleet-title {
+    font-size: 26px;
+  }
+
+  .admin-visual-page__mini-canvas-shell .admin-visual-preview__split-image {
+    min-height: 240px;
+  }
+
+  .admin-visual-page__mini-canvas-shell .admin-visual-preview__split-content {
+    padding: 24px;
+  }
+
+  .admin-visual-page__mini-canvas-shell .admin-visual-preview__split-content h3 {
+    font-size: 26px;
+  }
+
+  .admin-visual-page__mini-canvas-shell .admin-visual-preview__faq-overlay {
+    padding: 28px 24px;
+  }
+
+  .admin-visual-page__mini-canvas-shell .admin-visual-preview__faq-subtitle {
+    font-size: 18px;
+    line-height: 1.45;
+  }
+
+  .admin-visual-page__mini-canvas-shell .admin-visual-preview__map-card {
+    min-height: 220px;
+    padding: 26px;
+  }
+
+  .admin-visual-page__mini-canvas-shell .admin-visual-preview__footer {
+    padding: 24px 26px;
+  }
+
+  .admin-visual-page__mini-canvas-shell .admin-visual-preview__footer img {
+    width: 190px;
+  }
+
+  .admin-visual-page__mini-canvas-shell .vehica-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .admin-visual-page__mini-canvas-shell .vehica-grid__element,
+  .admin-visual-page__mini-canvas-shell .vehica-grid__element--1of4,
+  .admin-visual-page__mini-canvas-shell .vehica-grid__element--tablet-1of2,
+  .admin-visual-page__mini-canvas-shell .vehica-grid__element--mobile-1of1 {
+    width: auto !important;
+    max-width: none !important;
+    flex: initial !important;
+  }
+
+  .admin-visual-page__mini-canvas-shell .vehica-swiper-slide.vehica-carousel-v1__slide {
+    width: 50% !important;
+  }
+
+  .admin-visual-page__mini-canvas-shell .rentzo-home__convertibles-nav {
+    width: 38px;
+    height: 38px;
+  }
+
+  .admin-visual-page__mini-slide-card .vehica-car-card__content {
+    padding: 14px;
+  }
+
+  .admin-visual-page__mini-slide-card .vehica-car-card__name {
+    font-size: 16px;
+    line-height: 1.35;
+  }
+}
