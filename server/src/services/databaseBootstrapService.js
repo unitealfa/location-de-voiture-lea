@@ -3,6 +3,7 @@ const { initializeAdminAuth } = require("./adminAuthService");
 const { startReservationLicenseCleanupScheduler } = require("./reservationService");
 const { startVehicleMediaCleanupScheduler } = require("./vehicleMediaCleanupService");
 const {
+  getRuntimeState,
   setAdminSeed,
   setDatabaseState
 } = require("./runtimeStateService");
