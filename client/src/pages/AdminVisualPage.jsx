@@ -992,12 +992,19 @@ function buildNextContent(currentContent, formValues) {
 
 function AdminVisualPage({ content, brand, header, footer, onContentSaved }) {
   const [formValues, setFormValues] = useState(() => normalizeFormValues(getCachedVisualSettings(), content));
+  const [contentSnapshot, setContentSnapshot] = useState(() =>
+    JSON.parse(JSON.stringify(content || {}))
+  );
   const [isLoading, setIsLoading] = useState(() => !getCachedVisualSettings() && !content);
   const [isSaving, setIsSaving] = useState(false);
   const [uploadingSlot, setUploadingSlot] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [vehicles, setVehicles] = useState(() => readCachedVehicleList({ adminView: true }));
+
+  useEffect(() => {
+    setContentSnapshot(JSON.parse(JSON.stringify(content || {})));
+  }, [content]);
 
   useEffect(() => {
     let isActive = true;
@@ -1032,7 +1039,7 @@ function AdminVisualPage({ content, brand, header, footer, onContentSaved }) {
     return () => {
       isActive = false;
     };
-  }, []);
+  }, [content]);
 
   useEffect(() => {
     let isActive = true;
@@ -1063,7 +1070,9 @@ function AdminVisualPage({ content, brand, header, footer, onContentSaved }) {
   }, []);
 
   const syncRealtimeContent = (nextFormValues) => {
-    onContentSaved?.(buildNextContent(content, nextFormValues));
+    const nextContent = buildNextContent(contentSnapshot || content, nextFormValues);
+    setContentSnapshot(JSON.parse(JSON.stringify(nextContent)));
+    onContentSaved?.(nextContent);
   };
 
   const handleChange = (key, value) => {
@@ -1154,8 +1163,11 @@ function AdminVisualPage({ content, brand, header, footer, onContentSaved }) {
 
     try {
       const response = await saveAdminVisualSettings(formValues);
-      setFormValues(normalizeFormValues(response.settings, response.content || content));
-      onContentSaved?.(response.content || buildNextContent(content, formValues), response.revision);
+      const nextContent =
+        response.content || buildNextContent(contentSnapshot || content, formValues);
+      setContentSnapshot(JSON.parse(JSON.stringify(nextContent)));
+      setFormValues(normalizeFormValues(response.settings, nextContent));
+      onContentSaved?.(nextContent, response.revision);
       setSuccessMessage("Modifications enregistrees et appliquees directement sur le site.");
     } catch (error) {
       setErrorMessage(error.message || "Impossible d'enregistrer les reglages visuels.");
@@ -1164,13 +1176,18 @@ function AdminVisualPage({ content, brand, header, footer, onContentSaved }) {
     }
   };
 
-  const previewHeaderLogo = formValues.headerLogoImagePath || brand.logoImagePath;
-  const previewFooterLogo = formValues.footerLogoImagePath || footer.logoImagePath || previewHeaderLogo;
+  const liveBrand = contentSnapshot?.brand || brand;
+  const liveFooter = contentSnapshot?.footer || footer;
+  const liveAceulle = contentSnapshot?.aceulle || content.aceulle || {};
+  const liveFaqPage = contentSnapshot?.faqPage || content.faqPage || {};
+  const liveContactPage = contentSnapshot?.contactPage || content.contactPage || {};
+  const previewHeaderLogo = formValues.headerLogoImagePath || liveBrand.logoImagePath;
+  const previewFooterLogo = formValues.footerLogoImagePath || liveFooter.logoImagePath || previewHeaderLogo;
   const previewFavicon = formValues.faviconImagePath || previewHeaderLogo;
-  const previewHomeHero = formValues.homeHeroImagePath || content.aceulle?.heroImagePath || "/home/rentzo-hero.jpg";
-  const previewCarHotelImage = formValues.homeCarHotelImagePath || content.aceulle?.carHotelImagePath || "/home/rentzo-car-hotel.jpg";
-  const previewFaqHero = formValues.faqHeroImagePath || content.faqPage?.heroImagePath || "/home/rentzo-contact-hero.jpg";
-  const previewContactHero = formValues.contactHeroImagePath || content.contactPage?.heroImagePath || "/home/rentzo-contact-hero.jpg";
+  const previewHomeHero = formValues.homeHeroImagePath || liveAceulle.heroImagePath || "/home/rentzo-hero.jpg";
+  const previewCarHotelImage = formValues.homeCarHotelImagePath || liveAceulle.carHotelImagePath || "/home/rentzo-car-hotel.jpg";
+  const previewFaqHero = formValues.faqHeroImagePath || liveFaqPage.heroImagePath || "/home/rentzo-contact-hero.jpg";
+  const previewContactHero = formValues.contactHeroImagePath || liveContactPage.heroImagePath || "/home/rentzo-contact-hero.jpg";
   const contactHoursPreview = [
     { day: formValues.contactHoursDay1, value: formValues.contactHoursValue1 },
     { day: formValues.contactHoursDay2, value: formValues.contactHoursValue2 },
@@ -1180,13 +1197,13 @@ function AdminVisualPage({ content, brand, header, footer, onContentSaved }) {
     { day: formValues.contactHoursDay6, value: formValues.contactHoursValue6 },
     { day: formValues.contactHoursDay7, value: formValues.contactHoursValue7 }
   ].filter((item) => item.day || item.value);
-  const previewFooterBrand = footer.brandValue || brand.name;
+  const previewFooterBrand = liveFooter.brandValue || liveBrand.name;
   const previewFooterAddress =
-    formValues.footerAddressValue || [formValues.footerLocationValue || footer.locationValue, previewFooterBrand].filter(Boolean).join("\n");
+    formValues.footerAddressValue || [formValues.footerLocationValue || liveFooter.locationValue, previewFooterBrand].filter(Boolean).join("\n");
   const previewFooterText =
     formValues.footerShortInfo ||
-    footer.shortInfo ||
-    `✔︎ ${previewFooterBrand}. Location de voitures de luxe à ${formValues.footerLocationValue || footer.locationValue}.`;
+    liveFooter.shortInfo ||
+    `✔︎ ${previewFooterBrand}. Location de voitures de luxe à ${formValues.footerLocationValue || liveFooter.locationValue}.`;
   const selectedConvertibleVehicles = (Array.isArray(formValues.homeConvertibleVehicleIds)
     ? formValues.homeConvertibleVehicleIds
     : []
@@ -1221,15 +1238,16 @@ function AdminVisualPage({ content, brand, header, footer, onContentSaved }) {
     }
     ].filter((item) => item.text || item.name || item.title);
   const previewFooterContent = {
-    ...footer,
+    ...liveFooter,
     logoImagePath: previewFooterLogo,
     shortInfo: previewFooterText,
-    phoneValue: formValues.footerPhoneValue || footer.phoneValue,
-    emailValue: formValues.footerEmailValue || footer.emailValue,
-    locationValue: formValues.footerLocationValue || footer.locationValue,
+    phoneValue: formValues.footerPhoneValue || liveFooter.phoneValue,
+    whatsappNumber: formValues.footerWhatsappNumber || liveFooter.whatsappNumber,
+    emailValue: formValues.footerEmailValue || liveFooter.emailValue,
+    locationValue: formValues.footerLocationValue || liveFooter.locationValue,
     addressValue: previewFooterAddress,
-    facebookUrl: formValues.footerFacebookUrl || footer.facebookUrl,
-    instagramUrl: formValues.footerInstagramUrl || footer.instagramUrl
+    facebookUrl: formValues.footerFacebookUrl || liveFooter.facebookUrl,
+    instagramUrl: formValues.footerInstagramUrl || liveFooter.instagramUrl
   };
 
   if (isLoading) {

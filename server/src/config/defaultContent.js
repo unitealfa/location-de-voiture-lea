@@ -685,7 +685,7 @@ const defaultContent = {
     brandLabel: "Nom",
     brandValue: "Lea Location",
     youtubeUrl: "#",
-    copyrightText: "Copyright ©. Tous les droits reserves.",
+    copyrightText: "Copyright ©. Tous les droits reserves. unite.alpha",
     legalText: "Lea Location"
   }
 };
