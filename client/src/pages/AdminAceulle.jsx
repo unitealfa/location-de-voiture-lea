@@ -1,5 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { getAdminDashboardStats, getCachedAdminDashboardStats } from "../services/adminDashboardService";
+import {
+  getAdminDashboardStats,
+  getCachedAdminDashboardLiveVisits,
+  getCachedAdminDashboardStats,
+  getAdminDashboardLiveVisits
+} from "../services/adminDashboardService";
 import { handleImageFallback } from "../utils/imageFallback";
 
 const numberFormatter = new Intl.NumberFormat("fr-FR");
@@ -257,6 +262,7 @@ function AdminAceulle({ content, admin, onNavigate }) {
   const [stats, setStats] = useState(() => getCachedAdminDashboardStats(defaultFilters));
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(() => !getCachedAdminDashboardStats(defaultFilters));
+  const [liveVisitRanges, setLiveVisitRanges] = useState(() => getCachedAdminDashboardLiveVisits());
   const [visitRangeFilter, setVisitRangeFilter] = useState("month");
   const [visitorRangeFilter, setVisitorRangeFilter] = useState("month");
 
@@ -312,6 +318,40 @@ function AdminAceulle({ content, admin, onNavigate }) {
     };
   }, [content.errorMessage, filters]);
 
+  useEffect(() => {
+    let isActive = true;
+
+    const refreshLiveVisits = async () => {
+      if (document.visibilityState === "hidden") {
+        return;
+      }
+
+      try {
+        const nextVisitRanges = await getAdminDashboardLiveVisits();
+
+        if (!isActive) {
+          return;
+        }
+
+        setLiveVisitRanges(nextVisitRanges);
+      } catch (error) {
+      }
+    };
+
+    refreshLiveVisits();
+
+    const intervalId = window.setInterval(refreshLiveVisits, 5000);
+    window.addEventListener("focus", refreshLiveVisits);
+    document.addEventListener("visibilitychange", refreshLiveVisits);
+
+    return () => {
+      isActive = false;
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", refreshLiveVisits);
+      document.removeEventListener("visibilitychange", refreshLiveVisits);
+    };
+  }, []);
+
   const summary = stats?.summary || {};
   const insights = stats?.insights || {};
   const charts = stats?.charts || {};
@@ -319,11 +359,12 @@ function AdminAceulle({ content, admin, onNavigate }) {
   const activeView = stats?.filters?.view || filters.view;
   const activeYear = stats?.filters?.year || filters.year;
   const activeMonth = stats?.filters?.month || filters.month;
-  const visitRangeSummary = summary?.visitRanges?.[visitRangeFilter] || {
+  const effectiveVisitRanges = liveVisitRanges || summary?.visitRanges || {};
+  const visitRangeSummary = effectiveVisitRanges?.[visitRangeFilter] || {
     totalVisits: summary?.totalVisits || 0,
     totalVisitors: summary?.totalVisitors || 0
   };
-  const visitorRangeSummary = summary?.visitRanges?.[visitorRangeFilter] || {
+  const visitorRangeSummary = effectiveVisitRanges?.[visitorRangeFilter] || {
     totalVisits: summary?.totalVisits || 0,
     totalVisitors: summary?.totalVisitors || 0
   };

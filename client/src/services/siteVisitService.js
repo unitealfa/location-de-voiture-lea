@@ -61,6 +61,7 @@ export async function trackSiteVisit(pathname) {
   try {
     await fetch("/api/site-visits/track", {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json"
       },

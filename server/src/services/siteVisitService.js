@@ -8,6 +8,9 @@ const {
   listDailySiteVisitTotalsInRange
 } = require("../repositories/siteVisitRepository");
 
+const SITE_VISITOR_COOKIE_NAME = "lea_site_visitor";
+const SITE_VISITOR_COOKIE_MAX_AGE_MS = 1000 * 60 * 60 * 24 * 365 * 2;
+
 function parseCookies(cookieHeader = "") {
   return cookieHeader
     .split(";")
@@ -25,6 +28,14 @@ function parseCookies(cookieHeader = "") {
       cookies[key] = value;
       return cookies;
     }, {});
+}
+
+function createVisitorToken() {
+  return crypto.randomBytes(32).toString("hex");
+}
+
+function hashVisitorToken(token) {
+  return crypto.createHash("sha256").update(token).digest("hex");
 }
 
 function toDate(value) {
@@ -61,6 +72,16 @@ function createUtcDateKey(dateValue) {
   const month = String(date.getUTCMonth() + 1).padStart(2, "0");
   const day = String(date.getUTCDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+function setVisitorCookie(response, token) {
+  response.cookie(SITE_VISITOR_COOKIE_NAME, token, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    maxAge: SITE_VISITOR_COOKIE_MAX_AGE_MS,
+    path: "/"
+  });
 }
 
 function shouldSkipTracking(request) {
@@ -238,6 +259,7 @@ async function trackPublicSiteVisit(request, response, options = {}) {
     return false;
   }
 
+  const cookies = parseCookies(request.headers.cookie || "");
   const clientContext =
     options.clientContext && typeof options.clientContext === "object"
       ? options.clientContext
@@ -248,7 +270,16 @@ async function trackPublicSiteVisit(request, response, options = {}) {
     return false;
   }
 
-  const visitorHash = createEstimatedVisitorHash(request, clientContext);
+  let visitorToken = String(cookies[SITE_VISITOR_COOKIE_NAME] || "").trim();
+
+  if (!visitorToken) {
+    visitorToken = createVisitorToken();
+    setVisitorCookie(response, visitorToken);
+  }
+
+  const visitorHash = visitorToken
+    ? hashVisitorToken(visitorToken)
+    : createEstimatedVisitorHash(request, clientContext);
 
   await createSiteVisitEvent({
     visitorHash,
@@ -278,6 +309,7 @@ async function getSiteVisitDashboardStats({ startDate = null, endDate = null } =
 }
 
 module.exports = {
+  SITE_VISITOR_COOKIE_NAME,
   trackPublicSiteVisit,
   getSiteVisitDashboardStats,
   formatDateKey,

@@ -3,7 +3,8 @@ const {
   requireAdminApiAuth
 } = require("../middleware/adminAuthMiddleware");
 const {
-  getAdminDashboardStats
+  getAdminDashboardStats,
+  getAdminDashboardLiveVisitRanges
 } = require("../services/adminDashboardService");
 const {
   getVisualSettings,
@@ -105,6 +106,30 @@ router.get("/dashboard", async (request, response, next) => {
     if (error?.code === "ER_CON_COUNT_ERROR") {
       return response.status(503).json({
         message: "Le dashboard se resynchronise. Reessayez dans quelques secondes."
+      });
+    }
+
+    next(error);
+  }
+});
+
+router.get("/dashboard/live-visits", async (request, response, next) => {
+  try {
+    const cacheKey = `dashboard-live-visits:${request.admin?.id || "admin"}`;
+    const visitRanges = await getOrSetResponseCache(cacheKey, 1000 * 5, async () =>
+      getAdminDashboardLiveVisitRanges()
+    );
+
+    response.set("Cache-Control", "private, max-age=3, stale-while-revalidate=10");
+    response.json({
+      admin: request.admin,
+      visitRanges
+    });
+  } catch (error) {
+    console.error("Dashboard live visit error:", error);
+    if (error?.code === "ER_CON_COUNT_ERROR") {
+      return response.status(503).json({
+        message: "Les statistiques visiteurs se resynchronisent. Reessayez dans quelques secondes."
       });
     }
 

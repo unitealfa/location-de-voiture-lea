@@ -79,6 +79,10 @@ async function getVisitRangeSummaries(now = new Date()) {
   };
 }
 
+async function getAdminDashboardLiveVisitRanges() {
+  return getVisitRangeSummaries();
+}
+
 function formatDateKey(date) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -647,5 +651,6 @@ async function getAdminDashboardStats(filters = {}) {
 }
 
 module.exports = {
-  getAdminDashboardStats
+  getAdminDashboardStats,
+  getAdminDashboardLiveVisitRanges
 };

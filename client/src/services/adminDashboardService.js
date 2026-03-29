@@ -12,6 +12,10 @@ function getDashboardCacheKey(filters = {}) {
   return `admin-dashboard:${params.toString() || "default"}`;
 }
 
+function getLiveVisitsCacheKey() {
+  return "admin-dashboard:live-visits";
+}
+
 async function parseJsonResponse(response, fallbackMessage) {
   const rawText = await response.text();
   let payload = null;
@@ -57,4 +61,24 @@ export async function getAdminDashboardStats(filters = {}) {
 
   writeCachedValue(getDashboardCacheKey(filters), payload.stats);
   return payload.stats;
+}
+
+export function getCachedAdminDashboardLiveVisits() {
+  return readCachedValue(getLiveVisitsCacheKey(), {
+    maxAgeMs: 1000 * 30
+  });
+}
+
+export async function getAdminDashboardLiveVisits() {
+  const response = await fetch("/api/admin/protected/dashboard/live-visits", {
+    credentials: "include"
+  });
+
+  const payload = await parseJsonResponse(
+    response,
+    "Impossible de charger les statistiques visiteurs."
+  );
+
+  writeCachedValue(getLiveVisitsCacheKey(), payload.visitRanges);
+  return payload.visitRanges;
 }
