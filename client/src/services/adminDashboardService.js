@@ -1,4 +1,8 @@
 import { readCachedValue, writeCachedValue } from "./cacheService";
+import {
+  createAdminUnauthorizedError,
+  notifyAdminUnauthorized
+} from "./adminSessionGuard";
 
 function getDashboardCacheKey(filters = {}) {
   const params = new URLSearchParams();
@@ -17,6 +21,11 @@ function getLiveVisitsCacheKey() {
 }
 
 async function parseJsonResponse(response, fallbackMessage) {
+  if (response.status === 401) {
+    notifyAdminUnauthorized();
+    throw createAdminUnauthorizedError();
+  }
+
   const rawText = await response.text();
   let payload = null;
 

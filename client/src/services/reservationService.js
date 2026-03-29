@@ -1,4 +1,8 @@
 import { readCachedValue, writeCachedValue } from "./cacheService";
+import {
+  createAdminUnauthorizedError,
+  notifyAdminUnauthorized
+} from "./adminSessionGuard";
 
 const PUBLIC_AVAILABILITY_CACHE_PREFIX = "reservation-availability:";
 const ADMIN_RESERVATION_LIST_CACHE_PREFIX = "admin-reservations:";
@@ -99,6 +103,11 @@ function normalizePublicApiErrorMessage(message, fallbackMessage) {
 }
 
 async function parseJsonResponse(response, fallbackMessage, { publicFacing = false } = {}) {
+  if (response.status === 401) {
+    notifyAdminUnauthorized();
+    throw createAdminUnauthorizedError();
+  }
+
   const payload = await response.json().catch(() => ({
     message: "Reponse serveur invalide."
   }));
@@ -224,6 +233,11 @@ export async function listAdminReservations({ scope = "pending" } = {}) {
       credentials: "include"
     });
 
+    if (response.status === 401) {
+      notifyAdminUnauthorized();
+      throw createAdminUnauthorizedError();
+    }
+
     const payload = await parseJsonResponse(
       response,
       "Impossible de charger les reservations."
@@ -258,6 +272,11 @@ export async function getAdminReservationById(id) {
     const response = await fetch(`/api/admin/reservations/${id}`, {
       credentials: "include"
     });
+
+    if (response.status === 401) {
+      notifyAdminUnauthorized();
+      throw createAdminUnauthorizedError();
+    }
 
     const payload = await parseJsonResponse(
       response,

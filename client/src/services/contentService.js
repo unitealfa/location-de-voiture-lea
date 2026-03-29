@@ -1,4 +1,8 @@
 import { readCachedValue, writeCachedValue } from "./cacheService";
+import {
+  createAdminUnauthorizedError,
+  notifyAdminUnauthorized
+} from "./adminSessionGuard";
 
 const HOME_CONTENT_CACHE_KEY = "content:home";
 const VISUAL_SETTINGS_CACHE_KEY = "content:visual-settings";
@@ -74,6 +78,11 @@ export async function getAdminVisualSettings() {
       credentials: "include"
     });
 
+    if (response.status === 401) {
+      notifyAdminUnauthorized();
+      throw createAdminUnauthorizedError();
+    }
+
     if (!response.ok) {
       throw new Error("Impossible de charger les reglages visuels.");
     }
@@ -82,6 +91,10 @@ export async function getAdminVisualSettings() {
     writeCachedValue(VISUAL_SETTINGS_CACHE_KEY, payload.settings);
     return payload.settings;
   } catch (error) {
+    if (error?.adminUnauthorized) {
+      throw error;
+    }
+
     if (cachedSettings) {
       return cachedSettings;
     }
@@ -99,6 +112,11 @@ export async function saveAdminVisualSettings(payload) {
     },
     body: JSON.stringify(payload)
   });
+
+  if (response.status === 401) {
+    notifyAdminUnauthorized();
+    throw createAdminUnauthorizedError();
+  }
 
   const parsed = await response.json().catch(() => ({
     message: "Reponse serveur invalide."
@@ -136,6 +154,11 @@ export async function uploadAdminVisualImage({ file, slot, previousUrl = "" }) {
     credentials: "include",
     body: formData
   });
+
+  if (response.status === 401) {
+    notifyAdminUnauthorized();
+    throw createAdminUnauthorizedError();
+  }
 
   const parsed = await response.json().catch(() => ({
     message: "Reponse serveur invalide."

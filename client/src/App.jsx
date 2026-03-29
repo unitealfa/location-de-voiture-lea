@@ -45,6 +45,7 @@ import {
   getAdminSession,
   logoutAdmin
 } from "./services/adminAuthService";
+import { getAdminUnauthorizedEventName } from "./services/adminSessionGuard";
 import { clearLegacyAdminClientState } from "./services/clientSecurityService";
 import { trackSiteVisit } from "./services/siteVisitService";
 import {
@@ -607,6 +608,21 @@ function App() {
     };
 
     loadAdminSession();
+  }, []);
+
+  useEffect(() => {
+    const handleAdminUnauthorized = () => {
+      clearLegacyAdminClientState();
+      setCurrentAdmin(null);
+      setIsAuthLoading(false);
+    };
+
+    const eventName = getAdminUnauthorizedEventName();
+    window.addEventListener(eventName, handleAdminUnauthorized);
+
+    return () => {
+      window.removeEventListener(eventName, handleAdminUnauthorized);
+    };
   }, []);
 
   useEffect(() => {

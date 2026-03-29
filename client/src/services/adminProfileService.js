@@ -1,4 +1,14 @@
+import {
+  createAdminUnauthorizedError,
+  notifyAdminUnauthorized
+} from "./adminSessionGuard";
+
 async function parseApiResponse(response, fallbackMessage) {
+  if (response.status === 401) {
+    notifyAdminUnauthorized();
+    throw createAdminUnauthorizedError();
+  }
+
   const payload = await response.json().catch(() => ({
     message: "Reponse serveur invalide."
   }));

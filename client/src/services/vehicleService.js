@@ -3,6 +3,10 @@ import {
   removeCachedValue,
   writeCachedValue
 } from "./cacheService";
+import {
+  createAdminUnauthorizedError,
+  notifyAdminUnauthorized
+} from "./adminSessionGuard";
 
 const VEHICLE_CACHE_VERSION = "v2";
 const PUBLIC_VEHICLE_LIST_CACHE_KEY = `vehicles:${VEHICLE_CACHE_VERSION}:public:list`;
@@ -22,6 +26,11 @@ function normalizePublicApiErrorMessage(message, fallbackMessage) {
 }
 
 async function parseJsonResponse(response, fallbackMessage, { publicFacing = false } = {}) {
+  if (response.status === 401) {
+    notifyAdminUnauthorized();
+    throw createAdminUnauthorizedError();
+  }
+
   const payload = await response.json().catch(() => ({
     message: "Reponse serveur invalide."
   }));
@@ -195,6 +204,11 @@ export async function listVehicles({ adminView = false } = {}) {
       }
     );
 
+    if (adminView && response.status === 401) {
+      notifyAdminUnauthorized();
+      throw createAdminUnauthorizedError();
+    }
+
     if (!adminView && response.status === 503) {
       return cachedVehicles;
     }
@@ -210,6 +224,10 @@ export async function listVehicles({ adminView = false } = {}) {
 
     return vehicles;
   } catch (error) {
+    if (error?.adminUnauthorized) {
+      throw error;
+    }
+
     if (cachedVehicles.length > 0) {
       return cachedVehicles;
     }
@@ -229,6 +247,11 @@ export async function getVehicleById(id, { adminView = false } = {}) {
       }
     );
 
+    if (adminView && response.status === 401) {
+      notifyAdminUnauthorized();
+      throw createAdminUnauthorizedError();
+    }
+
     const payload = await parseJsonResponse(
       response,
       "Impossible de charger ce vehicule.",
@@ -239,6 +262,10 @@ export async function getVehicleById(id, { adminView = false } = {}) {
 
     return payload.vehicle;
   } catch (error) {
+    if (error?.adminUnauthorized) {
+      throw error;
+    }
+
     if (cachedVehicle) {
       return cachedVehicle;
     }
