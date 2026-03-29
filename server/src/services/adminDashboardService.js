@@ -7,6 +7,7 @@ const {
   toDate,
   isValidDate
 } = require("./siteVisitService");
+const { DEFAULT_VEHICLE_IMAGE_URL } = require("./mediaUrlService");
 
 const MONTH_LABEL_FORMATTER = new Intl.DateTimeFormat("fr-FR", {
   month: "short"
@@ -186,22 +187,54 @@ function reservationTouchesRange(reservation, startDate, endDate) {
   return true;
 }
 
-function buildTopVehiclesChart(acceptedReservations, limit = 6) {
+function buildVehiclePhotoMap(vehicles) {
+  const vehiclePhotoMap = new Map();
+
+  vehicles.forEach((vehicle) => {
+    const primaryPhotoUrl =
+      (Array.isArray(vehicle.photoUrls) && vehicle.photoUrls[0]) || "";
+
+    if (vehicle?.id && primaryPhotoUrl) {
+      vehiclePhotoMap.set(Number(vehicle.id), primaryPhotoUrl);
+    }
+  });
+
+  return vehiclePhotoMap;
+}
+
+function resolveDashboardVehiclePhotoUrl(reservation, vehiclePhotoMap) {
+  const vehicleId = Number(reservation.vehicleId || 0);
+  const currentVehiclePhotoUrl =
+    vehicleId > 0 ? vehiclePhotoMap.get(vehicleId) || "" : "";
+  const snapshotPhotoUrl =
+    reservation.vehiclePhotoUrl &&
+    reservation.vehiclePhotoUrl !== DEFAULT_VEHICLE_IMAGE_URL
+      ? reservation.vehiclePhotoUrl
+      : "";
+
+  return currentVehiclePhotoUrl || snapshotPhotoUrl || "";
+}
+
+function buildTopVehiclesChart(acceptedReservations, vehiclePhotoMap, limit = 6) {
   const vehicleMap = new Map();
 
   acceptedReservations.forEach((reservation) => {
     const label = [reservation.vehicleBrand, reservation.vehicleModel]
       .filter(Boolean)
       .join(" ") || `Vehicule #${reservation.vehicleId || reservation.id}`;
+    const resolvedPhotoUrl = resolveDashboardVehiclePhotoUrl(
+      reservation,
+      vehiclePhotoMap
+    );
     const current = vehicleMap.get(label) || {
       label,
       value: 0,
-      photoUrl: reservation.vehiclePhotoUrl || ""
+      photoUrl: resolvedPhotoUrl
     };
 
     current.value += 1;
-    if (!current.photoUrl && reservation.vehiclePhotoUrl) {
-      current.photoUrl = reservation.vehiclePhotoUrl;
+    if (!current.photoUrl && resolvedPhotoUrl) {
+      current.photoUrl = resolvedPhotoUrl;
     }
 
     vehicleMap.set(label, current);
@@ -571,7 +604,11 @@ async function getAdminDashboardStats(filters = {}) {
     (sum, item) => sum + Number(item.value || 0),
     0
   );
-  const topVehicles = buildTopVehiclesChart(filteredAcceptedReservations);
+  const vehiclePhotoMap = buildVehiclePhotoMap(vehicles);
+  const topVehicles = buildTopVehiclesChart(
+    filteredAcceptedReservations,
+    vehiclePhotoMap
+  );
   const weekdayChart = buildWeekdayChart(filteredAcceptedReservations);
   const periodDistribution = buildPeriodDistribution(filteredAcceptedReservations);
 
