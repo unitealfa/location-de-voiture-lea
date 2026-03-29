@@ -299,17 +299,34 @@ function VisualEditorSection({ title, preview, children }) {
   );
 }
 
-function MiniCanvas({ children, className = "" }) {
+function isMobileVisualViewport() {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  return window.innerWidth <= 767;
+}
+
+function MiniCanvas({ children, className = "", isMobilePreview = false }) {
   return (
-    <div className={"admin-visual-page__mini-canvas-shell " + className}>
+    <div
+      className={
+        "admin-visual-page__mini-canvas-shell " +
+        className +
+        (isMobilePreview ? " admin-visual-page__mini-canvas-shell--mobile-preview" : "")
+      }
+    >
       <div className="admin-visual-page__mini-canvas-scale">{children}</div>
     </div>
   );
 }
 
-function BrowserTabPreview({ icon, title }) {
+function BrowserTabPreview({ icon, title, isMobilePreview }) {
   return (
-    <MiniCanvas className="admin-visual-page__mini-canvas-shell--tab">
+    <MiniCanvas
+      className="admin-visual-page__mini-canvas-shell--tab"
+      isMobilePreview={isMobilePreview}
+    >
       <div className="admin-visual-preview__browser-window">
         <div className="admin-visual-preview__browser-toolbar">
           <span></span>
@@ -383,14 +400,19 @@ function MiniVehicleCardPreview({ vehicle, className = "" }) {
   );
 }
 
-function HeaderPreview({ brand, header }) {
+function HeaderPreview({ brand, header, isMobilePreview }) {
   const previewItems = [
     { path: "/admin", label: header.dashboardLabel || "Dashboard" },
     { path: "/", label: "ACCUEIL" }
   ];
 
   return (
-    <div className="admin-visual-page__flat-preview-shell admin-visual-page__flat-preview-shell--header">
+    <div
+      className={
+        "admin-visual-page__flat-preview-shell admin-visual-page__flat-preview-shell--header" +
+        (isMobilePreview ? " admin-visual-page__flat-preview-shell--mobile-preview" : "")
+      }
+    >
       <div className="admin-visual-preview__header-frame">
         <div className="admin-visual-preview__header-row">
           <div className="admin-visual-preview__header-brand">
@@ -422,11 +444,20 @@ function HomeHeroPreview({
   contactLabel,
   contactText,
   fleetTitle,
-  vehicles
+  vehicles,
+  isMobilePreview
 }) {
   return (
-    <MiniCanvas className="admin-visual-page__mini-canvas-shell--home">
-      <div className="admin-visual-page__live-preview">
+    <MiniCanvas
+      className="admin-visual-page__mini-canvas-shell--home"
+      isMobilePreview={isMobilePreview}
+    >
+      <div
+        className={
+          "admin-visual-page__live-preview" +
+          (isMobilePreview ? " admin-visual-page__live-preview--mobile-preview" : "")
+        }
+      >
         <main className="rentzo-home">
           <section className="rentzo-home__hero">
             <div className="vehica-app">
@@ -513,10 +544,22 @@ function HomeHeroPreview({
   );
 }
 
-function CarHotelPreview({ image, title, description, servicesTitle, services }) {
+function CarHotelPreview({
+  image,
+  title,
+  description,
+  servicesTitle,
+  services,
+  isMobilePreview
+}) {
   return (
-    <MiniCanvas>
-      <div className="admin-visual-page__live-preview">
+    <MiniCanvas isMobilePreview={isMobilePreview}>
+      <div
+        className={
+          "admin-visual-page__live-preview" +
+          (isMobilePreview ? " admin-visual-page__live-preview--mobile-preview" : "")
+        }
+      >
         <section className="rentzo-home__car-hotel is-visible">
           <div className="rentzo-home__car-hotel-grid">
             <div
@@ -565,10 +608,22 @@ function CarHotelPreview({ image, title, description, servicesTitle, services })
   );
 }
 
-function TestimonialsPreview({ title, highlight, line1, line2, items }) {
+function TestimonialsPreview({
+  title,
+  highlight,
+  line1,
+  line2,
+  items,
+  isMobilePreview
+}) {
   return (
-    <MiniCanvas>
-      <div className="admin-visual-page__live-preview">
+    <MiniCanvas isMobilePreview={isMobilePreview}>
+      <div
+        className={
+          "admin-visual-page__live-preview" +
+          (isMobilePreview ? " admin-visual-page__live-preview--mobile-preview" : "")
+        }
+      >
         <section className="rentzo-home__testimonials is-visible">
           <div className="rentzo-home__container">
             <div className="vehica-heading rentzo-home__testimonials-heading">
@@ -645,10 +700,15 @@ function TestimonialsPreview({ title, highlight, line1, line2, items }) {
   );
 }
 
-function VehiclePillPreview({ title, vehicles }) {
+function VehiclePillPreview({ title, vehicles, isMobilePreview }) {
   return (
-    <MiniCanvas>
-      <div className="admin-visual-page__live-preview">
+    <MiniCanvas isMobilePreview={isMobilePreview}>
+      <div
+        className={
+          "admin-visual-page__live-preview" +
+          (isMobilePreview ? " admin-visual-page__live-preview--mobile-preview" : "")
+        }
+      >
         <section className="rentzo-home__convertibles">
           <div className="rentzo-home__container">
             <div className="vehica-car-tabs-carousel vehica-car-tabs-carousel__arrows-outside">
@@ -720,10 +780,15 @@ function VehiclePillPreview({ title, vehicles }) {
   );
 }
 
-function FaqPreview({ image, title, subtitle, pageTitle, items }) {
+function FaqPreview({ image, title, subtitle, pageTitle, items, isMobilePreview }) {
   return (
-    <MiniCanvas>
-      <div className="admin-visual-page__live-preview">
+    <MiniCanvas isMobilePreview={isMobilePreview}>
+      <div
+        className={
+          "admin-visual-page__live-preview" +
+          (isMobilePreview ? " admin-visual-page__live-preview--mobile-preview" : "")
+        }
+      >
         <FaqPage
           content={{
             heroImagePath: image,
@@ -742,10 +807,25 @@ function FaqPreview({ image, title, subtitle, pageTitle, items }) {
   );
 }
 
-function ContactPreview({ image, titleStart, titleAccent, subtitle, hoursTitle, hoursSubtitle, hoursItems, mapText }) {
+function ContactPreview({
+  image,
+  titleStart,
+  titleAccent,
+  subtitle,
+  hoursTitle,
+  hoursSubtitle,
+  hoursItems,
+  mapText,
+  isMobilePreview
+}) {
   return (
-    <MiniCanvas>
-      <div className="admin-visual-page__live-preview">
+    <MiniCanvas isMobilePreview={isMobilePreview}>
+      <div
+        className={
+          "admin-visual-page__live-preview" +
+          (isMobilePreview ? " admin-visual-page__live-preview--mobile-preview" : "")
+        }
+      >
         <ContactPage
           content={{
             heroImagePath: image,
@@ -775,10 +855,18 @@ function ContactPreview({ image, titleStart, titleAccent, subtitle, hoursTitle, 
   );
 }
 
-function FooterPreview({ brand, content, header }) {
+function FooterPreview({ brand, content, header, isMobilePreview }) {
   return (
-    <MiniCanvas className="admin-visual-page__mini-canvas-shell--footer">
-      <div className="admin-visual-page__live-preview">
+    <MiniCanvas
+      className="admin-visual-page__mini-canvas-shell--footer"
+      isMobilePreview={isMobilePreview}
+    >
+      <div
+        className={
+          "admin-visual-page__live-preview" +
+          (isMobilePreview ? " admin-visual-page__live-preview--mobile-preview" : "")
+        }
+      >
         <Footer brand={brand} content={content} header={header} onNavigate={() => {}} />
       </div>
     </MiniCanvas>
@@ -1001,6 +1089,20 @@ function AdminVisualPage({ content, brand, header, footer, onContentSaved }) {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [vehicles, setVehicles] = useState(() => readCachedVehicleList({ adminView: true }));
+  const [isMobilePreview, setIsMobilePreview] = useState(() => isMobileVisualViewport());
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobilePreview(isMobileVisualViewport());
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   useEffect(() => {
     setContentSnapshot(JSON.parse(JSON.stringify(content || {})));
@@ -1275,6 +1377,7 @@ function AdminVisualPage({ content, brand, header, footer, onContentSaved }) {
             <BrowserTabPreview
               icon={previewFavicon}
               title={formValues.browserTitle || brand.browserTitle || brand.name}
+              isMobilePreview={isMobilePreview}
             />
           }
         >
@@ -1304,7 +1407,13 @@ function AdminVisualPage({ content, brand, header, footer, onContentSaved }) {
 
         <VisualEditorSection
           title="Header"
-          preview={<HeaderPreview brand={{ ...brand, logoImagePath: previewHeaderLogo }} header={header} />}
+          preview={
+            <HeaderPreview
+              brand={{ ...brand, logoImagePath: previewHeaderLogo }}
+              header={header}
+              isMobilePreview={isMobilePreview}
+            />
+          }
         >
           <FieldSection
             title="Header"
@@ -1334,6 +1443,7 @@ function AdminVisualPage({ content, brand, header, footer, onContentSaved }) {
               contactText={formValues.homeFeatureContactText || content.aceulle?.featureContactText}
               fleetTitle={formValues.homeFleetTitle || content.aceulle?.fleetTitle}
               vehicles={vehicles}
+              isMobilePreview={isMobilePreview}
             />
           }
         >
@@ -1424,6 +1534,7 @@ function AdminVisualPage({ content, brand, header, footer, onContentSaved }) {
               line1={formValues.homeTestimonialsTextLine1 || content.aceulle?.testimonialsTextLine1}
               line2={formValues.homeTestimonialsTextLine2 || content.aceulle?.testimonialsTextLine2}
               items={testimonialPreviewItems}
+              isMobilePreview={isMobilePreview}
             />
           }
         >
@@ -1508,6 +1619,7 @@ function AdminVisualPage({ content, brand, header, footer, onContentSaved }) {
             <VehiclePillPreview
               title={formValues.homeConvertiblesTitle || content.aceulle?.convertiblesTitle}
               vehicles={selectedConvertibleVehicles}
+              isMobilePreview={isMobilePreview}
             />
           }
         >
@@ -1566,6 +1678,7 @@ function AdminVisualPage({ content, brand, header, footer, onContentSaved }) {
                 formValues.homeCarHotelService3 || content.aceulle?.carHotelServices?.[2],
                 formValues.homeCarHotelService4 || content.aceulle?.carHotelServices?.[3]
               ].filter(Boolean)}
+              isMobilePreview={isMobilePreview}
             />
           }
         >
@@ -1665,6 +1778,7 @@ function AdminVisualPage({ content, brand, header, footer, onContentSaved }) {
                 { question: formValues.faqLeftQuestion2 || content.faqPage?.leftItems?.[1]?.question, answer: formValues.faqLeftAnswer2 || content.faqPage?.leftItems?.[1]?.answer },
                 { question: formValues.faqLeftQuestion3 || content.faqPage?.leftItems?.[2]?.question, answer: formValues.faqLeftAnswer3 || content.faqPage?.leftItems?.[2]?.answer }
               ]}
+              isMobilePreview={isMobilePreview}
             />
           }
         >
@@ -1790,6 +1904,7 @@ function AdminVisualPage({ content, brand, header, footer, onContentSaved }) {
               hoursSubtitle={formValues.contactHoursSubtitle || content.contactPage?.hoursSubtitle}
               hoursItems={contactHoursPreview}
               mapText={formValues.contactMapLinkUrl || formValues.contactMapQuery || content.contactPage?.mapQuery}
+              isMobilePreview={isMobilePreview}
             />
           }
         >
@@ -1896,6 +2011,7 @@ function AdminVisualPage({ content, brand, header, footer, onContentSaved }) {
               brand={{ ...brand, logoImagePath: previewHeaderLogo }}
               content={previewFooterContent}
               header={header}
+              isMobilePreview={isMobilePreview}
             />
           }
         >

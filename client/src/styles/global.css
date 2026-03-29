@@ -16042,3 +16042,203 @@ body.reservation-admin-page-lock {
     line-height: 1.35;
   }
 }
+
+.admin-visual-page__flat-preview-shell--mobile-preview .admin-visual-preview__header-frame {
+  min-height: auto;
+  padding: 14px 16px;
+}
+
+.admin-visual-page__flat-preview-shell--mobile-preview .admin-visual-preview__header-row {
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.admin-visual-page__flat-preview-shell--mobile-preview .admin-visual-preview__header-brand img {
+  width: 138px;
+}
+
+.admin-visual-page__flat-preview-shell--mobile-preview .admin-visual-preview__header-links {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-visual-page__flat-preview-shell--mobile-preview .admin-visual-preview__header-link {
+  font-size: 10px;
+}
+
+.admin-visual-page__mini-canvas-shell--mobile-preview {
+  --admin-visual-scale: 0.68;
+}
+
+.admin-visual-page__mini-canvas-shell--mobile-preview .admin-visual-page__mini-canvas-scale {
+  width: 430px;
+  margin-bottom: calc((1 - var(--admin-visual-scale)) * -100% + 18px);
+}
+
+.admin-visual-page__mini-canvas-shell--mobile-preview.admin-visual-page__mini-canvas-shell--home {
+  max-height: none;
+}
+
+.admin-visual-page__mini-canvas-shell--mobile-preview.admin-visual-page__mini-canvas-shell--home .admin-visual-page__mini-canvas-scale {
+  margin-bottom: calc((1 - var(--admin-visual-scale)) * -100% + 68px);
+}
+
+.admin-visual-page__mini-canvas-shell--mobile-preview.admin-visual-page__mini-canvas-shell--footer .admin-visual-page__mini-canvas-scale {
+  margin-bottom: calc((1 - var(--admin-visual-scale)) * -100% + 38px);
+}
+
+.admin-visual-page__mini-canvas-shell--mobile-preview.admin-visual-page__mini-canvas-shell--tab .admin-visual-page__mini-canvas-scale {
+  width: 430px;
+  transform: scale(0.74);
+  margin-bottom: 0;
+}
+
+.admin-visual-page__mini-canvas-shell--mobile-preview .admin-visual-preview__browser-window {
+  min-height: auto;
+  padding: 14px;
+}
+
+.admin-visual-page__mini-canvas-shell--mobile-preview .admin-visual-preview__browser-tab {
+  min-width: 0;
+  max-width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  gap: 10px;
+}
+
+.admin-visual-page__mini-canvas-shell--mobile-preview .admin-visual-preview__browser-tab img {
+  width: 22px;
+  height: 22px;
+}
+
+.admin-visual-page__mini-canvas-shell--mobile-preview .admin-visual-preview__browser-tab span {
+  font-size: 12px;
+}
+
+.admin-visual-page__live-preview--mobile-preview .rentzo-home__container,
+.admin-visual-page__live-preview--mobile-preview .vehica-contact__container,
+.admin-visual-page__live-preview--mobile-preview .vehica-questions__container {
+  padding-left: 18px;
+  padding-right: 18px;
+}
+
+.admin-visual-page__live-preview--mobile-preview .vehica-slider__content {
+  padding-left: 18px;
+  padding-right: 18px;
+}
+
+.admin-visual-page__live-preview--mobile-preview .rentzo-home__intro,
+.admin-visual-page__live-preview--mobile-preview .rentzo-home__catalog {
+  padding-top: 26px;
+  padding-bottom: 26px;
+}
+
+.admin-visual-page__live-preview--mobile-preview .vehica-heading .vehica-heading__title,
+.admin-visual-page__live-preview--mobile-preview .rentzo-home__testimonials .vehica-heading__title,
+.admin-visual-page__live-preview--mobile-preview .rentzo-home__convertibles .vehica-tabs-top-v2__heading {
+  font-size: 17px;
+  line-height: 1.25;
+}
+
+.admin-visual-page__live-preview--mobile-preview .vehica-heading .vehica-heading__text,
+.admin-visual-page__live-preview--mobile-preview .vehica-heading .vehica-heading__text span {
+  font-size: 28px;
+  line-height: 1.08;
+}
+
+.admin-visual-page__live-preview--mobile-preview .rentzo-home__intro .vehica-features .vehica-features__feature {
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.admin-visual-page__live-preview--mobile-preview .rentzo-home__intro .vehica-features .vehica-features__icon {
+  width: 58px;
+  height: 58px;
+}
+
+.admin-visual-page__live-preview--mobile-preview .vehica-grid {
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+.admin-visual-page__live-preview--mobile-preview .vehica-grid__element,
+.admin-visual-page__live-preview--mobile-preview .vehica-grid__element--1of4,
+.admin-visual-page__live-preview--mobile-preview .vehica-grid__element--tablet-1of2,
+.admin-visual-page__live-preview--mobile-preview .vehica-grid__element--mobile-1of1 {
+  width: auto !important;
+  max-width: none !important;
+  flex: initial !important;
+}
+
+.admin-visual-page__live-preview--mobile-preview .rentzo-home__car-hotel-grid,
+.admin-visual-page__live-preview--mobile-preview .admin-visual-preview__split,
+.admin-visual-page__live-preview--mobile-preview .admin-visual-preview__contact-grid,
+.admin-visual-page__live-preview--mobile-preview .admin-visual-preview__testimonial-grid,
+.admin-visual-page__live-preview--mobile-preview .admin-visual-preview__faq-list {
+  grid-template-columns: 1fr;
+}
+
+.admin-visual-page__live-preview--mobile-preview .rentzo-home__car-hotel-image,
+.admin-visual-page__live-preview--mobile-preview .admin-visual-preview__split-image {
+  min-height: 220px;
+}
+
+.admin-visual-page__live-preview--mobile-preview .rentzo-home__car-hotel-content,
+.admin-visual-page__live-preview--mobile-preview .admin-visual-preview__split-content,
+.admin-visual-page__live-preview--mobile-preview .admin-visual-preview__home-intro,
+.admin-visual-page__live-preview--mobile-preview .admin-visual-preview__section,
+.admin-visual-page__live-preview--mobile-preview .admin-visual-preview__contact-grid {
+  padding: 24px;
+}
+
+.admin-visual-page__live-preview--mobile-preview .rentzo-home__car-hotel-title,
+.admin-visual-page__live-preview--mobile-preview .admin-visual-preview__split-content h3,
+.admin-visual-page__live-preview--mobile-preview .admin-visual-preview__fleet-title {
+  font-size: 26px;
+  line-height: 1.08;
+}
+
+.admin-visual-page__live-preview--mobile-preview .vehica-testimonial-carousel .vehica-swiper-slide {
+  width: 100% !important;
+}
+
+.admin-visual-page__live-preview--mobile-preview .vehica-testimonial-carousel .vehica-testimonial-carousel__testimonial {
+  padding: 20px;
+}
+
+.admin-visual-page__live-preview--mobile-preview .vehica-testimonial-carousel .vehica-testimonial-carousel__text {
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.admin-visual-page__live-preview--mobile-preview .rentzo-home__convertibles .vehica-carousel-v1 .vehica-swiper-slide {
+  width: 100% !important;
+}
+
+.admin-visual-page__live-preview--mobile-preview .rentzo-home__convertibles-nav {
+  width: 40px;
+  height: 40px;
+}
+
+.admin-visual-page__live-preview--mobile-preview .admin-visual-preview__faq-overlay {
+  padding: 28px 22px;
+}
+
+.admin-visual-page__live-preview--mobile-preview .admin-visual-preview__faq-subtitle {
+  font-size: 18px;
+  line-height: 1.45;
+}
+
+.admin-visual-page__live-preview--mobile-preview .admin-visual-preview__map-card {
+  min-height: 220px;
+  padding: 24px;
+}
+
+.admin-visual-page__live-preview--mobile-preview .admin-visual-preview__footer {
+  padding: 24px;
+}
+
+.admin-visual-page__live-preview--mobile-preview .admin-visual-preview__footer img {
+  width: 180px;
+}
