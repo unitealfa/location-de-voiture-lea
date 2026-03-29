@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   getAdminDashboardStats,
-  getCachedAdminDashboardLiveVisits,
+  getCachedAdminDashboardLiveRequests,
   getCachedAdminDashboardStats,
-  getAdminDashboardLiveVisits
+  getAdminDashboardLiveRequests
 } from "../services/adminDashboardService";
 import { handleImageFallback } from "../utils/imageFallback";
 
@@ -262,9 +262,9 @@ function AdminAceulle({ content, admin, onNavigate }) {
   const [stats, setStats] = useState(() => getCachedAdminDashboardStats(defaultFilters));
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(() => !getCachedAdminDashboardStats(defaultFilters));
-  const [liveVisitRanges, setLiveVisitRanges] = useState(() => getCachedAdminDashboardLiveVisits());
-  const [visitRangeFilter, setVisitRangeFilter] = useState("month");
-  const [visitorRangeFilter, setVisitorRangeFilter] = useState("month");
+  const [liveRequestRanges, setLiveRequestRanges] = useState(() => getCachedAdminDashboardLiveRequests());
+  const [requestRangeFilter, setRequestRangeFilter] = useState("month");
+  const [clientRangeFilter, setClientRangeFilter] = useState("month");
 
   useEffect(() => {
     let isActive = true;
@@ -321,34 +321,34 @@ function AdminAceulle({ content, admin, onNavigate }) {
   useEffect(() => {
     let isActive = true;
 
-    const refreshLiveVisits = async () => {
+    const refreshLiveRequests = async () => {
       if (document.visibilityState === "hidden") {
         return;
       }
 
       try {
-        const nextVisitRanges = await getAdminDashboardLiveVisits();
+        const nextRequestRanges = await getAdminDashboardLiveRequests();
 
         if (!isActive) {
           return;
         }
 
-        setLiveVisitRanges(nextVisitRanges);
+        setLiveRequestRanges(nextRequestRanges);
       } catch (error) {
       }
     };
 
-    refreshLiveVisits();
+    refreshLiveRequests();
 
-    const intervalId = window.setInterval(refreshLiveVisits, 5000);
-    window.addEventListener("focus", refreshLiveVisits);
-    document.addEventListener("visibilitychange", refreshLiveVisits);
+    const intervalId = window.setInterval(refreshLiveRequests, 5000);
+    window.addEventListener("focus", refreshLiveRequests);
+    document.addEventListener("visibilitychange", refreshLiveRequests);
 
     return () => {
       isActive = false;
       window.clearInterval(intervalId);
-      window.removeEventListener("focus", refreshLiveVisits);
-      document.removeEventListener("visibilitychange", refreshLiveVisits);
+      window.removeEventListener("focus", refreshLiveRequests);
+      document.removeEventListener("visibilitychange", refreshLiveRequests);
     };
   }, []);
 
@@ -359,17 +359,17 @@ function AdminAceulle({ content, admin, onNavigate }) {
   const activeView = stats?.filters?.view || filters.view;
   const activeYear = stats?.filters?.year || filters.year;
   const activeMonth = stats?.filters?.month || filters.month;
-  const effectiveVisitRanges = liveVisitRanges || summary?.visitRanges || {};
-  const visitRangeSummary = effectiveVisitRanges?.[visitRangeFilter] || {
-    totalVisits: summary?.totalVisits || 0,
-    totalVisitors: summary?.totalVisitors || 0
+  const effectiveRequestRanges = liveRequestRanges || summary?.requestRanges || {};
+  const requestRangeSummary = effectiveRequestRanges?.[requestRangeFilter] || {
+    totalRequests: summary?.totalRequests || 0,
+    totalClients: summary?.totalClients || 0
   };
-  const visitorRangeSummary = effectiveVisitRanges?.[visitorRangeFilter] || {
-    totalVisits: summary?.totalVisits || 0,
-    totalVisitors: summary?.totalVisitors || 0
+  const clientRangeSummary = effectiveRequestRanges?.[clientRangeFilter] || {
+    totalRequests: summary?.totalRequests || 0,
+    totalClients: summary?.totalClients || 0
   };
   const performanceTitle = `Performance ${getRangeLabel(activeView, activeYear, activeMonth, content)}`;
-  const visitFilterItems = [
+  const requestFilterItems = [
     { value: "day", label: content.summaryVisitsFilterDayLabel },
     { value: "week", label: content.summaryVisitsFilterWeekLabel },
     { value: "month", label: content.summaryVisitsFilterMonthLabel }
@@ -378,7 +378,7 @@ function AdminAceulle({ content, admin, onNavigate }) {
   const weekdayItems = charts.reservationsByWeekday || [];
   const fleetItems = charts.fleetStatus || [];
   const overviewItems = useMemo(() => {
-    const source = charts.visitsSeries || [];
+    const source = charts.requestSeries || [];
 
     if (activeView === "year") {
       return source;
@@ -389,19 +389,19 @@ function AdminAceulle({ content, admin, onNavigate }) {
     }
 
     return source.slice(-4);
-  }, [activeView, charts.visitsSeries]);
+  }, [activeView, charts.requestSeries]);
   const overviewChartTitle =
     activeView === "month"
-      ? "Repartition des visites par semaine du mois"
+      ? "Repartition des demandes par semaine du mois"
       : activeView === "year"
-        ? "Repartition des visites par mois sur l'annee"
-        : "Repartition des visites par annee";
+        ? "Repartition des demandes par mois sur l'annee"
+        : "Repartition des demandes par annee";
   const overviewChartDescription =
     activeView === "month"
-      ? "Chaque colonne represente le nombre de visites detectees sur une semaine du mois selectionne."
+      ? "Chaque colonne represente le nombre de demandes de reservation recues sur une semaine du mois selectionne."
       : activeView === "year"
-        ? "Chaque colonne represente le nombre de visites detectees sur un mois de l'annee selectionnee."
-        : "Chaque colonne represente le nombre de visites detectees sur une annee complete.";
+        ? "Chaque colonne represente le nombre de demandes de reservation recues sur un mois de l'annee selectionnee."
+        : "Chaque colonne represente le nombre de demandes de reservation recues sur une annee complete.";
 
   return (
     <main className="admin-dashboard-v2">
@@ -509,10 +509,10 @@ function AdminAceulle({ content, admin, onNavigate }) {
                 <div className="admin-dashboard-v2__overview-head">
                   <div>
                     <span>{performanceTitle}</span>
-                    <h2>{content.summaryVisitsLabel}: {formatNumber(visitRangeSummary.totalVisits)}</h2>
+                    <h2>{content.summaryVisitsLabel}: {formatNumber(requestRangeSummary.totalRequests)}</h2>
                   </div>
                   <div className="admin-dashboard-v2__overview-right">
-                    <MiniFilter labels={visitFilterItems} value={visitRangeFilter} onChange={setVisitRangeFilter} />
+                    <MiniFilter labels={requestFilterItems} value={requestRangeFilter} onChange={setRequestRangeFilter} />
                     <div>
                       <span>{content.summaryRevenueLabel}</span>
                       <p>{formatCurrency(summary.totalRevenue)}</p>
@@ -571,10 +571,10 @@ function AdminAceulle({ content, admin, onNavigate }) {
               <VisitorsCard
                 label={content.summaryVisitorsLabel}
                 helper={content.summaryVisitorsHelper}
-                value={visitorRangeSummary.totalVisitors}
-                filterValue={visitorRangeFilter}
-                onFilterChange={setVisitorRangeFilter}
-                labels={visitFilterItems}
+                value={clientRangeSummary.totalClients}
+                filterValue={clientRangeFilter}
+                onFilterChange={setClientRangeFilter}
+                labels={requestFilterItems}
               />
             </aside>
           </section>

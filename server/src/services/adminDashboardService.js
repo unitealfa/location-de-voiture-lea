@@ -2,11 +2,6 @@ const {
   listReservations
 } = require("../repositories/reservationRepository");
 const { listAdminVehicles } = require("./vehicleService");
-const {
-  getSiteVisitDashboardStats,
-  toDate,
-  isValidDate
-} = require("./siteVisitService");
 const { DEFAULT_VEHICLE_IMAGE_URL } = require("./mediaUrlService");
 
 const MONTH_LABEL_FORMATTER = new Intl.DateTimeFormat("fr-FR", {
@@ -26,6 +21,25 @@ const WEEKDAY_LABELS = [
   "Dimanche"
 ];
 const PERIOD_OPTIONS = new Set(["month", "year", "all"]);
+
+function toDate(value) {
+  if (value instanceof Date) {
+    return new Date(value.getTime());
+  }
+
+  if (typeof value === "string" && value.trim()) {
+    const normalizedValue = value.includes("T")
+      ? value
+      : value.replace(" ", "T");
+    return new Date(normalizedValue);
+  }
+
+  return new Date(value);
+}
+
+function isValidDate(date) {
+  return date instanceof Date && !Number.isNaN(date.getTime());
+}
 
 function startOfMonth(year, monthIndex) {
   return new Date(year, monthIndex, 1, 0, 0, 0, 0);
@@ -51,36 +65,70 @@ function addDays(date, amount) {
   return next;
 }
 
-async function getVisitRangeSummaries(now = new Date()) {
+function normalizeClientContactValue(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function buildClientIdentityKey(reservation) {
+  const email = normalizeClientContactValue(reservation.email);
+  const phone = normalizeClientContactValue(reservation.phone).replace(/\s+/g, "");
+  const firstName = normalizeClientContactValue(reservation.firstName);
+  const lastName = normalizeClientContactValue(reservation.lastName);
+
+  if (email) {
+    return `email:${email}`;
+  }
+
+  if (phone) {
+    return `phone:${phone}`;
+  }
+
+  const fullName = [firstName, lastName].filter(Boolean).join(":");
+  return fullName ? `name:${fullName}` : `reservation:${reservation.id}`;
+}
+
+function getRequestRangeStats(reservations, startDate, endDate) {
+  const filteredReservations = reservations.filter((reservation) =>
+    reservationCreatedInRange(reservation, startDate, endDate)
+  );
+  const uniqueClients = new Set(
+    filteredReservations.map(buildClientIdentityKey).filter(Boolean)
+  );
+
+  return {
+    totalRequests: filteredReservations.length,
+    totalClients: uniqueClients.size
+  };
+}
+
+function getRequestRangeSummaries(reservations, now = new Date()) {
   const todayStart = startOfDay(now);
   const tomorrowStart = addDays(todayStart, 1);
   const weekStart = addDays(todayStart, -6);
   const monthStart = startOfMonth(now.getFullYear(), now.getMonth());
-
-  const [dayStats, weekStats, monthStats] = await Promise.all([
-    getSiteVisitDashboardStats({ startDate: todayStart, endDate: tomorrowStart }),
-    getSiteVisitDashboardStats({ startDate: weekStart, endDate: tomorrowStart }),
-    getSiteVisitDashboardStats({ startDate: monthStart, endDate: tomorrowStart })
-  ]);
+  const dayStats = getRequestRangeStats(reservations, todayStart, tomorrowStart);
+  const weekStats = getRequestRangeStats(reservations, weekStart, tomorrowStart);
+  const monthStats = getRequestRangeStats(reservations, monthStart, tomorrowStart);
 
   return {
     day: {
-      totalVisits: dayStats.totalVisits,
-      totalVisitors: dayStats.totalVisitors
+      totalRequests: dayStats.totalRequests,
+      totalClients: dayStats.totalClients
     },
     week: {
-      totalVisits: weekStats.totalVisits,
-      totalVisitors: weekStats.totalVisitors
+      totalRequests: weekStats.totalRequests,
+      totalClients: weekStats.totalClients
     },
     month: {
-      totalVisits: monthStats.totalVisits,
-      totalVisitors: monthStats.totalVisitors
+      totalRequests: monthStats.totalRequests,
+      totalClients: monthStats.totalClients
     }
   };
 }
 
-async function getAdminDashboardLiveVisitRanges() {
-  return getVisitRangeSummaries();
+async function getAdminDashboardLiveRequestRanges() {
+  const reservations = await listReservations();
+  return getRequestRangeSummaries(reservations);
 }
 
 function formatDateKey(date) {
@@ -380,7 +428,7 @@ function buildBusiestWeekdayInsight(weekdayChart) {
   };
 }
 
-function buildWeeklySeries({ startDate, endDate, acceptedReservations, visitDailyMap }) {
+function buildWeeklyRequestSeries({ startDate, endDate, reservations }) {
   const periods = [];
   let cursor = new Date(startDate);
   let weekIndex = 0;
@@ -393,161 +441,102 @@ function buildWeeklySeries({ startDate, endDate, acceptedReservations, visitDail
       label: `Sem ${weekIndex + 1}`,
       start: periodStart,
       end: periodEnd > endDate ? new Date(endDate) : periodEnd,
-      reservations: 0,
-      revenue: 0,
-      visits: 0
+      requests: 0
     });
     cursor = periodEnd;
     weekIndex += 1;
   }
 
-  acceptedReservations.forEach((reservation) => {
-    const pickupDate = toDate(reservation.pickupDatetime);
+  reservations.forEach((reservation) => {
+    const createdAt = toDate(reservation.createdAt);
 
-    if (!isDateInRange(pickupDate, startDate, endDate)) {
+    if (!isDateInRange(createdAt, startDate, endDate)) {
       return;
     }
 
     const period = periods.find(
-      (item) => pickupDate >= item.start && pickupDate < item.end
+      (item) => createdAt >= item.start && createdAt < item.end
     );
 
     if (!period) {
       return;
     }
 
-    period.reservations += 1;
-    period.revenue += Number(reservation.totalPrice || 0);
-  });
-
-  visitDailyMap.forEach((row, key) => {
-    const date = toDate(key);
-
-    if (!isDateInRange(date, startDate, endDate)) {
-      return;
-    }
-
-    const period = periods.find((item) => date >= item.start && date < item.end);
-
-    if (period) {
-      period.visits += Number(row.totalVisits || 0);
-    }
+    period.requests += 1;
   });
 
   return {
-    reservationsSeries: periods.map((item) => ({ label: item.label, value: item.reservations })),
-    revenueSeries: periods.map((item) => ({ label: item.label, value: item.revenue })),
-    visitsSeries: periods.map((item) => ({ label: item.label, value: item.visits }))
+    requestSeries: periods.map((item) => ({ label: item.label, value: item.requests }))
   };
 }
 
-function buildMonthlySeries({ startDate, endDate, acceptedReservations, visitDailyMap }) {
-  const reservationsMap = new Map();
-  const revenueMap = new Map();
-  const visitsMap = new Map();
+function buildMonthlyRequestSeries({ startDate, endDate, reservations }) {
+  const requestsMap = new Map();
   let cursor = new Date(startDate);
 
-  acceptedReservations.forEach((reservation) => {
-    const pickupDate = toDate(reservation.pickupDatetime);
+  reservations.forEach((reservation) => {
+    const createdAt = toDate(reservation.createdAt);
 
-    if (!isDateInRange(pickupDate, startDate, endDate)) {
+    if (!isDateInRange(createdAt, startDate, endDate)) {
       return;
     }
 
-    const key = `${pickupDate.getFullYear()}-${pickupDate.getMonth()}`;
-    reservationsMap.set(key, (reservationsMap.get(key) || 0) + 1);
-    revenueMap.set(key, (revenueMap.get(key) || 0) + Number(reservation.totalPrice || 0));
+    const key = `${createdAt.getFullYear()}-${createdAt.getMonth()}`;
+    requestsMap.set(key, (requestsMap.get(key) || 0) + 1);
   });
 
-  visitDailyMap.forEach((row, key) => {
-    const date = toDate(key);
-
-    if (!isDateInRange(date, startDate, endDate)) {
-      return;
-    }
-
-    const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
-    visitsMap.set(monthKey, (visitsMap.get(monthKey) || 0) + Number(row.totalVisits || 0));
-  });
-
-  const reservationItems = [];
-  const revenueItems = [];
-  const visitItems = [];
+  const requestItems = [];
 
   while (cursor < endDate) {
     const key = `${cursor.getFullYear()}-${cursor.getMonth()}`;
     const label = MONTH_LABEL_FORMATTER.format(cursor);
 
-    reservationItems.push({ label, value: reservationsMap.get(key) || 0 });
-    revenueItems.push({ label, value: revenueMap.get(key) || 0 });
-    visitItems.push({ label, value: visitsMap.get(key) || 0 });
+    requestItems.push({ label, value: requestsMap.get(key) || 0 });
 
     cursor.setMonth(cursor.getMonth() + 1);
   }
 
   return {
-    reservationsSeries: reservationItems,
-    revenueSeries: revenueItems,
-    visitsSeries: visitItems
+    requestSeries: requestItems
   };
 }
 
-function buildYearlySeries({ acceptedReservations, visitDailyMap }) {
-  const reservationsMap = new Map();
-  const revenueMap = new Map();
-  const visitsMap = new Map();
+function buildYearlyRequestSeries({ reservations }) {
+  const requestsMap = new Map();
   const years = new Set();
 
-  acceptedReservations.forEach((reservation) => {
-    const pickupDate = toDate(reservation.pickupDatetime);
+  reservations.forEach((reservation) => {
+    const createdAt = toDate(reservation.createdAt);
 
-    if (!isValidDate(pickupDate)) {
+    if (!isValidDate(createdAt)) {
       return;
     }
 
-    const year = pickupDate.getFullYear();
+    const year = createdAt.getFullYear();
     years.add(year);
-    reservationsMap.set(year, (reservationsMap.get(year) || 0) + 1);
-    revenueMap.set(year, (revenueMap.get(year) || 0) + Number(reservation.totalPrice || 0));
-  });
-
-  visitDailyMap.forEach((row, key) => {
-    const date = toDate(key);
-
-    if (!isValidDate(date)) {
-      return;
-    }
-
-    const year = date.getFullYear();
-    years.add(year);
-    visitsMap.set(year, (visitsMap.get(year) || 0) + Number(row.totalVisits || 0));
+    requestsMap.set(year, (requestsMap.get(year) || 0) + 1);
   });
 
   const sortedYears = Array.from(years).sort((left, right) => left - right).slice(-5);
 
   return {
-    reservationsSeries: sortedYears.map((year) => ({ label: String(year), value: reservationsMap.get(year) || 0 })),
-    revenueSeries: sortedYears.map((year) => ({ label: String(year), value: revenueMap.get(year) || 0 })),
-    visitsSeries: sortedYears.map((year) => ({ label: String(year), value: visitsMap.get(year) || 0 }))
+    requestSeries: sortedYears.map((year) => ({ label: String(year), value: requestsMap.get(year) || 0 }))
   };
 }
 
 async function getAdminDashboardStats(filters = {}) {
-  const [pendingReservations, acceptedReservations, vehicles] = await Promise.all([
-    listReservations({ status: "pending" }),
-    listReservations({ status: "accepted" }),
+  const [allReservations, vehicles] = await Promise.all([
+    listReservations(),
     listAdminVehicles()
   ]);
-
-  const allReservations = [...pendingReservations, ...acceptedReservations];
+  const pendingReservations = allReservations.filter(
+    (reservation) => reservation.status === "pending"
+  );
+  const acceptedReservations = allReservations.filter(
+    (reservation) => reservation.status === "accepted"
+  );
   const normalizedFilters = normalizeDashboardFilters(filters, allReservations);
-  const [rawSiteVisits, visitRangeSummaries] = await Promise.all([
-    getSiteVisitDashboardStats({
-      startDate: normalizedFilters.view === "all" ? null : normalizedFilters.startDate,
-      endDate: normalizedFilters.view === "all" ? null : normalizedFilters.endDate
-    }),
-    getVisitRangeSummaries()
-  ]);
+  const requestRangeSummaries = getRequestRangeSummaries(allReservations);
 
   const filteredPendingReservations = pendingReservations.filter((reservation) =>
     normalizedFilters.view === "all"
@@ -578,25 +567,31 @@ async function getAdminDashboardStats(filters = {}) {
   );
 
   let series = null;
+  const filteredRequestReservations = allReservations.filter((reservation) =>
+    normalizedFilters.view === "all"
+      ? true
+      : reservationCreatedInRange(
+          reservation,
+          normalizedFilters.startDate,
+          normalizedFilters.endDate
+        )
+  );
 
   if (normalizedFilters.view === "month") {
-    series = buildWeeklySeries({
+    series = buildWeeklyRequestSeries({
       startDate: normalizedFilters.startDate,
       endDate: normalizedFilters.endDate,
-      acceptedReservations: filteredAcceptedReservations,
-      visitDailyMap: rawSiteVisits.dailyMap
+      reservations: filteredRequestReservations
     });
   } else if (normalizedFilters.view === "year") {
-    series = buildMonthlySeries({
+    series = buildMonthlyRequestSeries({
       startDate: normalizedFilters.startDate,
       endDate: normalizedFilters.endDate,
-      acceptedReservations: filteredAcceptedReservations,
-      visitDailyMap: rawSiteVisits.dailyMap
+      reservations: filteredRequestReservations
     });
   } else {
-    series = buildYearlySeries({
-      acceptedReservations,
-      visitDailyMap: rawSiteVisits.dailyMap
+    series = buildYearlyRequestSeries({
+      reservations: allReservations
     });
   }
 
@@ -604,10 +599,13 @@ async function getAdminDashboardStats(filters = {}) {
     (sum, reservation) => sum + Number(reservation.totalPrice || 0),
     0
   );
-  const filteredVisitTotal = series.visitsSeries.reduce(
+  const filteredRequestTotal = series.requestSeries.reduce(
     (sum, item) => sum + Number(item.value || 0),
     0
   );
+  const filteredUniqueClients = new Set(
+    filteredRequestReservations.map(buildClientIdentityKey).filter(Boolean)
+  ).size;
   const vehiclePhotoMap = buildVehiclePhotoMap(vehicles);
   const topVehicles = buildTopVehiclesChart(
     filteredAcceptedReservations,
@@ -628,10 +626,10 @@ async function getAdminDashboardStats(filters = {}) {
       acceptedCount: filteredAcceptedReservations.length,
       visibleThisMonthCount: visibleRangeReservations.length,
       totalRevenue,
-      totalVisits: filteredVisitTotal,
-      totalVisitors: rawSiteVisits.totalVisitors,
+      totalRequests: filteredRequestTotal,
+      totalClients: filteredUniqueClients,
       vehicleCount: vehicles.length,
-      visitRanges: visitRangeSummaries
+      requestRanges: requestRangeSummaries
     },
     insights: {
       topVehicle: buildTopVehicleInsight(topVehicles),
@@ -639,9 +637,7 @@ async function getAdminDashboardStats(filters = {}) {
       busiestWeekday: buildBusiestWeekdayInsight(weekdayChart)
     },
     charts: {
-      reservationsSeries: series.reservationsSeries,
-      revenueSeries: series.revenueSeries,
-      visitsSeries: series.visitsSeries,
+      requestSeries: series.requestSeries,
       topVehicles,
       reservationsByWeekday: weekdayChart,
       periodDistribution,
@@ -652,5 +648,5 @@ async function getAdminDashboardStats(filters = {}) {
 
 module.exports = {
   getAdminDashboardStats,
-  getAdminDashboardLiveVisitRanges
+  getAdminDashboardLiveRequestRanges
 };

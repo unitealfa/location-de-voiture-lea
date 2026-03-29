@@ -4,7 +4,7 @@ const {
 } = require("../middleware/adminAuthMiddleware");
 const {
   getAdminDashboardStats,
-  getAdminDashboardLiveVisitRanges
+  getAdminDashboardLiveRequestRanges
 } = require("../services/adminDashboardService");
 const {
   getVisualSettings,
@@ -113,23 +113,23 @@ router.get("/dashboard", async (request, response, next) => {
   }
 });
 
-router.get("/dashboard/live-visits", async (request, response, next) => {
+router.get("/dashboard/live-requests", async (request, response, next) => {
   try {
-    const cacheKey = `dashboard-live-visits:${request.admin?.id || "admin"}`;
-    const visitRanges = await getOrSetResponseCache(cacheKey, 1000 * 5, async () =>
-      getAdminDashboardLiveVisitRanges()
+    const cacheKey = `dashboard-live-requests:${request.admin?.id || "admin"}`;
+    const requestRanges = await getOrSetResponseCache(cacheKey, 1000 * 5, async () =>
+      getAdminDashboardLiveRequestRanges()
     );
 
     response.set("Cache-Control", "private, max-age=3, stale-while-revalidate=10");
     response.json({
       admin: request.admin,
-      visitRanges
+      requestRanges
     });
   } catch (error) {
-    console.error("Dashboard live visit error:", error);
+    console.error("Dashboard live request error:", error);
     if (error?.code === "ER_CON_COUNT_ERROR") {
       return response.status(503).json({
-        message: "Les statistiques visiteurs se resynchronisent. Reessayez dans quelques secondes."
+        message: "Les statistiques des demandes se resynchronisent. Reessayez dans quelques secondes."
       });
     }
 

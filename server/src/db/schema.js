@@ -170,19 +170,6 @@ async function ensureSchema() {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
   `);
 
-
-  await pool.execute(`
-    CREATE TABLE IF NOT EXISTS site_visit_events (
-      id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-      visitor_hash CHAR(64) NOT NULL,
-      request_path VARCHAR(255) NOT NULL,
-      visited_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      PRIMARY KEY (id),
-      KEY idx_site_visit_events_visited_at (visited_at),
-      KEY idx_site_visit_events_visitor_hash (visitor_hash)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-  `);
-
   await pool.execute(`
     CREATE TABLE IF NOT EXISTS site_settings (
       setting_key VARCHAR(191) NOT NULL,

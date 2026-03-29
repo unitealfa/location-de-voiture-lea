@@ -12,7 +12,6 @@ const vehicleMediaRoutes = require("./routes/vehicleMediaRoutes");
 const brandingMediaRoutes = require("./routes/brandingMediaRoutes");
 const adminVehicleRoutes = require("./routes/adminVehicleRoutes");
 const adminReservationRoutes = require("./routes/adminReservationRoutes");
-const siteVisitRoutes = require("./routes/siteVisitRoutes");
 const {
   requireDatabaseReady
 } = require("./middleware/databaseReadyMiddleware");
@@ -57,7 +56,6 @@ function createApiApp() {
   });
 
   app.use("/api/content", contentRoutes);
-  app.use("/api/site-visits", siteVisitRoutes);
   app.use("/api/media/branding", requireDatabaseReady, brandingMediaRoutes);
   app.use("/api/media/vehicles", requireDatabaseReady, vehicleMediaRoutes);
   app.use("/api/vehicles", requireDatabaseReady, vehicleRoutes);
