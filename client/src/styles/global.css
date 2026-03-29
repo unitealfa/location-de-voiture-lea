@@ -3434,7 +3434,7 @@ a {
 
 .admin-profile-page__hero h2 {
   margin: 0 0 18px;
-  font-family: "Manrope", serif;
+  font-family: "Muli", Arial, Helvetica, sans-serif;
   font-size: clamp(44px, 6vw, 68px);
   line-height: 0.95;
   letter-spacing: -0.06em;
