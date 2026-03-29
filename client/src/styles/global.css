@@ -14900,6 +14900,11 @@ body.reservation-admin-page-lock {
   margin-top: 20px;
 }
 
+.admin-visual-page__live-preview .rentzo-home__testimonials .vehica-heading__text span {
+  background-color: var(--primary);
+  color: #ffffff;
+}
+
 .admin-visual-preview__header {
   background: #151a22;
   padding: 24px 32px;
