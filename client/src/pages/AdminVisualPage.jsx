@@ -1623,7 +1623,7 @@ function AdminVisualPage({ content, brand, header, footer, onContentSaved }) {
         </VisualEditorSection>
 
         <VisualEditorSection
-          title="Cabriolets1111"
+          title="SECTION LISTE DE VEHICULE"
           preview={
             <VehiclePillPreview
               title={formValues.homeConvertiblesTitle || content.aceulle?.convertiblesTitle}
@@ -1633,7 +1633,7 @@ function AdminVisualPage({ content, brand, header, footer, onContentSaved }) {
           }
         >
           <FieldSection
-            title="Cabriolets2222"
+            title="Liste"
             description="Titre de section et vehicules affiches."
           >
             <label className="login-form__field">
