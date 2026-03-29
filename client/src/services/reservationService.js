@@ -3,6 +3,12 @@ import { readCachedValue, writeCachedValue } from "./cacheService";
 const PUBLIC_AVAILABILITY_CACHE_PREFIX = "reservation-availability:";
 const ADMIN_RESERVATION_LIST_CACHE_PREFIX = "admin-reservations:";
 const ADMIN_RESERVATION_DETAIL_CACHE_PREFIX = "admin-reservation:";
+const ADMIN_RESERVATION_DEDUP_WINDOW_MS = 5000;
+
+const adminReservationListRequests = new Map();
+const adminReservationDetailRequests = new Map();
+const adminReservationListFreshness = new Map();
+const adminReservationDetailFreshness = new Map();
 
 function getAvailabilityCacheKey(vehicleId) {
   return PUBLIC_AVAILABILITY_CACHE_PREFIX + String(vehicleId);
@@ -48,11 +54,23 @@ function writeAdminReservationDetailCache(reservation) {
   }
 
   writeCachedValue(getAdminReservationDetailCacheKey(reservation.id), reservation);
+  adminReservationDetailFreshness.set(String(reservation.id), Date.now());
 }
 
 function writeAdminReservationListCache(scope, reservations) {
   writeCachedValue(getAdminReservationListCacheKey(scope), reservations);
+  adminReservationListFreshness.set(String(scope || "pending"), Date.now());
   (reservations || []).forEach(writeAdminReservationDetailCache);
+}
+
+function hasFreshAdminReservationList(scope) {
+  const lastFetchedAt = adminReservationListFreshness.get(String(scope || "pending")) || 0;
+  return Date.now() - lastFetchedAt < ADMIN_RESERVATION_DEDUP_WINDOW_MS;
+}
+
+function hasFreshAdminReservationDetail(id) {
+  const lastFetchedAt = adminReservationDetailFreshness.get(String(id)) || 0;
+  return Date.now() - lastFetchedAt < ADMIN_RESERVATION_DEDUP_WINDOW_MS;
 }
 
 export async function preloadAdminReservationCaches() {
@@ -185,38 +203,78 @@ export async function getVehicleReservationAvailability(vehicleId) {
 }
 
 export async function listAdminReservations({ scope = "pending" } = {}) {
+  if (hasFreshAdminReservationList(scope)) {
+    return getCachedAdminReservations(scope);
+  }
+
+  const requestKey = String(scope || "pending");
+
+  if (adminReservationListRequests.has(requestKey)) {
+    return adminReservationListRequests.get(requestKey);
+  }
+
   const query = new URLSearchParams();
 
   if (scope) {
     query.set("scope", scope);
   }
 
-  const response = await fetch(`/api/admin/reservations?${query.toString()}`, {
-    credentials: "include"
-  });
+  const requestPromise = (async () => {
+    const response = await fetch(`/api/admin/reservations?${query.toString()}`, {
+      credentials: "include"
+    });
 
-  const payload = await parseJsonResponse(
-    response,
-    "Impossible de charger les reservations."
-  );
+    const payload = await parseJsonResponse(
+      response,
+      "Impossible de charger les reservations."
+    );
 
-  const reservations = payload.reservations || [];
-  writeAdminReservationListCache(scope, reservations);
-  return reservations;
+    const reservations = payload.reservations || [];
+    writeAdminReservationListCache(scope, reservations);
+    return reservations;
+  })();
+
+  adminReservationListRequests.set(requestKey, requestPromise);
+
+  try {
+    return await requestPromise;
+  } finally {
+    adminReservationListRequests.delete(requestKey);
+  }
 }
 
 export async function getAdminReservationById(id) {
-  const response = await fetch(`/api/admin/reservations/${id}`, {
-    credentials: "include"
-  });
+  if (hasFreshAdminReservationDetail(id)) {
+    return getCachedAdminReservationById(id);
+  }
 
-  const payload = await parseJsonResponse(
-    response,
-    "Impossible de charger cette reservation."
-  );
+  const requestKey = String(id);
 
-  writeAdminReservationDetailCache(payload.reservation);
-  return payload.reservation;
+  if (adminReservationDetailRequests.has(requestKey)) {
+    return adminReservationDetailRequests.get(requestKey);
+  }
+
+  const requestPromise = (async () => {
+    const response = await fetch(`/api/admin/reservations/${id}`, {
+      credentials: "include"
+    });
+
+    const payload = await parseJsonResponse(
+      response,
+      "Impossible de charger cette reservation."
+    );
+
+    writeAdminReservationDetailCache(payload.reservation);
+    return payload.reservation;
+  })();
+
+  adminReservationDetailRequests.set(requestKey, requestPromise);
+
+  try {
+    return await requestPromise;
+  } finally {
+    adminReservationDetailRequests.delete(requestKey);
+  }
 }
 
 export async function acceptAdminReservation(id) {

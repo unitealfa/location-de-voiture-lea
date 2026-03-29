@@ -58,14 +58,20 @@ function resolveConnectionSettings() {
     );
   }
 
+  const isVercelRuntime = Boolean(process.env.VERCEL);
+
   return {
     host,
     port,
     user,
     password,
     waitForConnections: true,
-    connectionLimit: 10,
+    connectionLimit: isVercelRuntime ? 2 : 10,
+    maxIdle: isVercelRuntime ? 1 : 10,
+    idleTimeout: isVercelRuntime ? 10000 : 60000,
     queueLimit: 0,
+    enableKeepAlive: true,
+    keepAliveInitialDelay: 0,
     charset: "utf8mb4",
     ssl: ca
       ? {

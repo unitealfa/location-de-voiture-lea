@@ -102,6 +102,12 @@ router.get("/dashboard", async (request, response, next) => {
     });
   } catch (error) {
     console.error("Dashboard error:", error);
+    if (error?.code === "ER_CON_COUNT_ERROR") {
+      return response.status(503).json({
+        message: "Le dashboard se resynchronise. Reessayez dans quelques secondes."
+      });
+    }
+
     next(error);
   }
 });

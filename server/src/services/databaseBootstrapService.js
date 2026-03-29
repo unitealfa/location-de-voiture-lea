@@ -11,8 +11,15 @@ const DATABASE_RETRY_DELAY_MS = 15000;
 
 let bootstrapPromise = null;
 let cleanupSchedulerStarted = false;
+let bootstrapCompleted = false;
 
 async function ensureDatabaseBootstrap() {
+  const runtimeState = getRuntimeState();
+
+  if (bootstrapCompleted && runtimeState.database.ready) {
+    return true;
+  }
+
   if (bootstrapPromise) {
     return bootstrapPromise;
   }
@@ -37,6 +44,7 @@ async function ensureDatabaseBootstrap() {
         lastSuccessAt: new Date().toISOString(),
         retryDelayMs: DATABASE_RETRY_DELAY_MS
       });
+      bootstrapCompleted = true;
 
       if (!cleanupSchedulerStarted && !process.env.VERCEL) {
         startReservationLicenseCleanupScheduler();
@@ -46,6 +54,7 @@ async function ensureDatabaseBootstrap() {
 
       return true;
     } catch (error) {
+      bootstrapCompleted = false;
       setDatabaseState({
         ready: false,
         status: "retrying",

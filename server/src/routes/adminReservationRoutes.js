@@ -18,13 +18,24 @@ const {
   updateAdminReservation,
   rejectAdminReservation
 } = require("../services/reservationService");
-const { clearResponseCacheByPrefixes } = require("../services/responseCacheService");
+const {
+  clearResponseCacheByPrefixes,
+  getOrSetResponseCache
+} = require("../services/responseCacheService");
 
 const router = express.Router();
 
+function getReservationRouteErrorMessage(error, fallbackMessage) {
+  if (error?.code === "ER_CON_COUNT_ERROR") {
+    return "Le service de reservations se resynchronise. Reessayez dans quelques secondes.";
+  }
+
+  return error?.message || fallbackMessage;
+}
+
 
 function invalidateReservationResponseCaches(vehicleId = null) {
-  const prefixes = ["dashboard:"];
+  const prefixes = ["dashboard:", "admin-reservations:", "admin-reservation:"];
 
   if (vehicleId) {
     prefixes.push(`vehicles:public:${vehicleId}:availability`);
@@ -45,12 +56,21 @@ router.use(requireAdminApiAuth);
 
 router.get("/", async (request, response) => {
   try {
-    const reservations = await listAdminReservations(request.query.scope);
+    const scope = String(request.query.scope || "pending");
+    const reservations = await getOrSetResponseCache(
+      `admin-reservations:${scope}`,
+      1000 * 5,
+      async () => listAdminReservations(scope)
+    );
+    response.set("Cache-Control", "private, max-age=3, stale-while-revalidate=15");
     return response.json({ reservations });
   } catch (error) {
     console.error("Admin reservations list failed", error);
     return response.status(400).json({
-      message: error.message || "Impossible de charger les reservations."
+      message: getReservationRouteErrorMessage(
+        error,
+        "Impossible de charger les reservations."
+      )
     });
   }
 });
@@ -77,7 +97,10 @@ router.post("/", handleReservationUpload, async (request, response) => {
     await removeStoredReservationFile(drivingLicensePhotoUrl);
     console.error("Admin reservation create failed", error);
     return response.status(400).json({
-      message: error.message || "Impossible de creer cette reservation."
+      message: getReservationRouteErrorMessage(
+        error,
+        "Impossible de creer cette reservation."
+      )
     });
   }
 });
@@ -92,7 +115,11 @@ router.get("/:id", async (request, response) => {
       });
     }
 
-    const reservation = await getAdminReservationById(reservationId);
+    const reservation = await getOrSetResponseCache(
+      `admin-reservation:${reservationId}`,
+      1000 * 5,
+      async () => getAdminReservationById(reservationId)
+    );
 
     if (!reservation) {
       return response.status(404).json({
@@ -100,11 +127,15 @@ router.get("/:id", async (request, response) => {
       });
     }
 
+    response.set("Cache-Control", "private, max-age=3, stale-while-revalidate=15");
     return response.json({ reservation });
   } catch (error) {
     console.error("Admin reservation detail failed", error);
     return response.status(500).json({
-      message: "Impossible de charger cette reservation."
+      message: getReservationRouteErrorMessage(
+        error,
+        "Impossible de charger cette reservation."
+      )
     });
   }
 });
@@ -213,7 +244,10 @@ router.post("/:id/accept", async (request, response) => {
   } catch (error) {
     console.error("Admin reservation accept failed", error);
     return response.status(400).json({
-      message: error.message || "Impossible d'accepter cette reservation."
+      message: getReservationRouteErrorMessage(
+        error,
+        "Impossible d'accepter cette reservation."
+      )
     });
   }
 });
@@ -244,7 +278,10 @@ router.post("/:id/reject", async (request, response) => {
   } catch (error) {
     console.error("Admin reservation reject failed", error);
     return response.status(500).json({
-      message: error.message || "Impossible de refuser cette reservation."
+      message: getReservationRouteErrorMessage(
+        error,
+        "Impossible de refuser cette reservation."
+      )
     });
   }
 });
@@ -287,7 +324,10 @@ router.put("/:id", handleReservationUpload, async (request, response) => {
     await removeStoredReservationFile(drivingLicensePhotoUrl);
     console.error("Admin reservation update failed", error);
     return response.status(400).json({
-      message: error.message || "Impossible de modifier cette reservation."
+      message: getReservationRouteErrorMessage(
+        error,
+        "Impossible de modifier cette reservation."
+      )
     });
   }
 });
@@ -319,7 +359,10 @@ router.delete("/:id", async (request, response) => {
   } catch (error) {
     console.error("Admin reservation delete failed", error);
     return response.status(500).json({
-      message: error.message || "Impossible de supprimer cette reservation."
+      message: getReservationRouteErrorMessage(
+        error,
+        "Impossible de supprimer cette reservation."
+      )
     });
   }
 });
