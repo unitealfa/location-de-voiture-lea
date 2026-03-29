@@ -14879,6 +14879,27 @@ body.reservation-admin-page-lock {
   pointer-events: none !important;
 }
 
+.admin-visual-page__live-preview .rentzo-home__car-hotel-image {
+  min-height: 520px;
+}
+
+.admin-visual-page__live-preview .rentzo-home__car-hotel-content {
+  padding: 92px 26px 72px 48px;
+}
+
+.admin-visual-page__live-preview .rentzo-home__car-hotel-title {
+  font-size: 40px;
+  line-height: 0.95;
+}
+
+.admin-visual-page__live-preview .rentzo-home__car-hotel-description {
+  margin-top: 24px;
+}
+
+.admin-visual-page__live-preview .rentzo-home__car-hotel-services-title {
+  margin-top: 20px;
+}
+
 .admin-visual-preview__header {
   background: #151a22;
   padding: 24px 32px;
