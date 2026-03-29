@@ -2,12 +2,14 @@ const fs = require("fs");
 const path = require("path");
 const defaultContent = require("../config/defaultContent");
 const {
+  getSiteSetting,
   listSiteSettings,
   upsertSiteSettings
 } = require("../repositories/siteSettingsRepository");
 const { sanitizeBrandingImageUrl } = require("./mediaUrlService");
 
 const LEGACY_CONTENT_STORAGE_PATH = path.resolve(__dirname, "../data/site-content.json");
+const CONTENT_REVISION_SETTING_KEY = "__system.content_revision__";
 
 const VISUAL_DEFAULT_FALLBACKS = {
   brand: {
@@ -146,6 +148,7 @@ const VISUAL_SETTING_KEYS = {
 
 let siteContentCache = null;
 let hasLoadedFromDatabase = false;
+let siteContentRevisionCache = "0";
 
 function cloneValue(value) {
   return JSON.parse(JSON.stringify(value));
@@ -321,18 +324,50 @@ async function upsertVisualSettings(settings) {
   await upsertSiteSettings(entries);
 }
 
+async function readPersistedContentRevision() {
+  try {
+    const revisionSetting = await getSiteSetting(CONTENT_REVISION_SETTING_KEY);
+
+    if (revisionSetting?.value) {
+      return String(revisionSetting.value).trim() || siteContentRevisionCache;
+    }
+  } catch (error) {
+  }
+
+  return siteContentRevisionCache;
+}
+
+async function bumpContentRevision() {
+  const nextRevision = String(Date.now());
+
+  await upsertSiteSettings([
+    {
+      key: CONTENT_REVISION_SETTING_KEY,
+      value: nextRevision
+    }
+  ]);
+
+  siteContentRevisionCache = nextRevision;
+  return nextRevision;
+}
+
 async function hydrateSiteContent(forceRefresh = false) {
-  if (siteContentCache && !forceRefresh) {
+  const persistedRevision = await readPersistedContentRevision();
+  const shouldRefresh =
+    forceRefresh ||
+    !siteContentCache ||
+    !hasLoadedFromDatabase ||
+    persistedRevision !== siteContentRevisionCache;
+
+  if (!shouldRefresh) {
     return cloneValue(siteContentCache);
   }
 
-  const settingsMap = forceRefresh || !hasLoadedFromDatabase
-    ? await readVisualSettingsMapFromDatabase()
-    : {};
-
+  const settingsMap = await readVisualSettingsMapFromDatabase();
   const nextContent = applyVisualSettings(getBaseContent(), settingsMap);
   siteContentCache = nextContent;
   hasLoadedFromDatabase = true;
+  siteContentRevisionCache = persistedRevision;
   return cloneValue(siteContentCache);
 }
 
@@ -344,9 +379,16 @@ async function getCurrentSiteContent() {
   return hydrateSiteContent();
 }
 
+async function getCurrentSiteContentStatus() {
+  return {
+    revision: await readPersistedContentRevision()
+  };
+}
+
 async function replaceHomePageContent(nextContent) {
   siteContentCache = cloneValue(nextContent);
   await upsertVisualSettings(buildVisualSettingsFromContent(siteContentCache));
+  await bumpContentRevision();
   return cloneValue(siteContentCache);
 }
 
@@ -374,9 +416,11 @@ async function updateVisualSettings(payload = {}) {
 
   await upsertVisualSettings(nextVisualSettings);
   siteContentCache = applyVisualSettings(getBaseContent(), nextVisualSettings);
+  const revision = await bumpContentRevision();
 
   return {
     content: cloneValue(siteContentCache),
+    revision,
     visualSettings: nextVisualSettings
   };
 }
@@ -384,6 +428,7 @@ async function updateVisualSettings(payload = {}) {
 module.exports = {
   getHomePageContent,
   getCurrentSiteContent,
+  getCurrentSiteContentStatus,
   replaceHomePageContent,
   getVisualSettings,
   updateVisualSettings

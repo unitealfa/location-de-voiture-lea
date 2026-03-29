@@ -146,6 +146,19 @@ async function ensureSchema() {
   `);
 
   await pool.execute(`
+    CREATE TABLE IF NOT EXISTS branding_media_assets (
+      id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+      content_type VARCHAR(191) NOT NULL,
+      original_file_name VARCHAR(255) NOT NULL,
+      original_extension VARCHAR(20) NOT NULL,
+      binary_data LONGBLOB NOT NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      PRIMARY KEY (id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  `);
+
+  await pool.execute(`
     CREATE TABLE IF NOT EXISTS vehicle_media_cleanup_jobs (
       media_url TEXT NOT NULL,
       media_url_hash CHAR(64) NOT NULL,

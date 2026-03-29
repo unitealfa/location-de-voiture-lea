@@ -2,6 +2,7 @@ import { readCachedValue, writeCachedValue } from "./cacheService";
 
 const HOME_CONTENT_CACHE_KEY = "content:home";
 const VISUAL_SETTINGS_CACHE_KEY = "content:visual-settings";
+const CONTENT_STATUS_CACHE_KEY = "content:status";
 
 export function getCachedHomePageContent() {
   return readCachedValue(HOME_CONTENT_CACHE_KEY);
@@ -11,12 +12,17 @@ export function getCachedVisualSettings() {
   return readCachedValue(VISUAL_SETTINGS_CACHE_KEY);
 }
 
-export async function getHomePageContent() {
+export function getCachedHomePageContentStatus() {
+  return readCachedValue(CONTENT_STATUS_CACHE_KEY);
+}
+
+export async function getHomePageContent({ forceFresh = false } = {}) {
   const cachedContent = getCachedHomePageContent();
 
   try {
     const response = await fetch("/api/content/home", {
-      credentials: "same-origin"
+      credentials: "same-origin",
+      cache: forceFresh ? "no-store" : "default"
     });
 
     if (!response.ok) {
@@ -29,6 +35,31 @@ export async function getHomePageContent() {
   } catch (error) {
     if (cachedContent) {
       return cachedContent;
+    }
+
+    throw error;
+  }
+}
+
+export async function getHomePageContentStatus() {
+  const cachedStatus = getCachedHomePageContentStatus();
+
+  try {
+    const response = await fetch("/api/content/status", {
+      credentials: "same-origin",
+      cache: "no-store"
+    });
+
+    if (!response.ok) {
+      throw new Error("Request failed");
+    }
+
+    const payload = await response.json();
+    writeCachedValue(CONTENT_STATUS_CACHE_KEY, payload);
+    return payload;
+  } catch (error) {
+    if (cachedStatus) {
+      return cachedStatus;
     }
 
     throw error;
@@ -83,6 +114,12 @@ export async function saveAdminVisualSettings(payload) {
 
   if (parsed.settings) {
     writeCachedValue(VISUAL_SETTINGS_CACHE_KEY, parsed.settings);
+  }
+
+  if (parsed.revision) {
+    writeCachedValue(CONTENT_STATUS_CACHE_KEY, {
+      revision: String(parsed.revision)
+    });
   }
 
   return parsed;

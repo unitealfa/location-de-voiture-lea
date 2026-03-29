@@ -11,6 +11,7 @@ const adminProtectedRoutes = require("./routes/adminProtectedRoutes");
 const adminProfileRoutes = require("./routes/adminProfileRoutes");
 const vehicleRoutes = require("./routes/vehicleRoutes");
 const vehicleMediaRoutes = require("./routes/vehicleMediaRoutes");
+const brandingMediaRoutes = require("./routes/brandingMediaRoutes");
 const adminVehicleRoutes = require("./routes/adminVehicleRoutes");
 const adminReservationRoutes = require("./routes/adminReservationRoutes");
 const {
@@ -120,6 +121,7 @@ async function createApp() {
   });
 
   app.use("/api/content", contentRoutes);
+  app.use("/api/media/branding", requireDatabaseReady, brandingMediaRoutes);
   app.use("/api/media/vehicles", requireDatabaseReady, vehicleMediaRoutes);
   app.use("/api/vehicles", requireDatabaseReady, vehicleRoutes);
   app.use("/api/admin", requireDatabaseReady, adminAuthRoutes);

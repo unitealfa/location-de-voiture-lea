@@ -16,6 +16,28 @@ async function listSiteSettings() {
   }));
 }
 
+async function getSiteSetting(key) {
+  const pool = getPool();
+  const [rows] = await pool.execute(
+    `
+      SELECT setting_key, setting_value
+      FROM site_settings
+      WHERE setting_key = ?
+      LIMIT 1
+    `,
+    [String(key || "").trim()]
+  );
+
+  if (!rows.length) {
+    return null;
+  }
+
+  return {
+    key: rows[0].setting_key,
+    value: rows[0].setting_value
+  };
+}
+
 async function upsertSiteSettings(entries) {
   if (!Array.isArray(entries) || entries.length === 0) {
     return;
@@ -38,6 +60,7 @@ async function upsertSiteSettings(entries) {
 }
 
 module.exports = {
+  getSiteSetting,
   listSiteSettings,
   upsertSiteSettings
 };

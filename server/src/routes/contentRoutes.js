@@ -1,13 +1,17 @@
 const express = require("express");
-const { getHomePageContent } = require("../services/contentService");
-const { getOrSetResponseCache } = require("../services/responseCacheService");
+const { getHomePageContent, getCurrentSiteContentStatus } = require("../services/contentService");
 
 const router = express.Router();
 
 router.get("/home", async (request, response) => {
-  const payload = await getOrSetResponseCache("content:home", 1000 * 60 * 10, async () => getHomePageContent());
-  response.set("Cache-Control", "public, max-age=300, stale-while-revalidate=3600");
+  const payload = await getHomePageContent();
+  response.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
   response.json(payload);
+});
+
+router.get("/status", async (request, response) => {
+  response.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  response.json(await getCurrentSiteContentStatus());
 });
 
 module.exports = router;

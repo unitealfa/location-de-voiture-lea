@@ -18,9 +18,11 @@ import ReservationDetailPage from "./pages/ReservationDetailPage";
 import ClientsCalendarPage from "./pages/ClientsCalendarPage";
 import AdminReservationFormPage from "./pages/AdminReservationFormPage";
 import {
+  getCachedHomePageContentStatus,
   getAdminVisualSettings,
   getCachedHomePageContent,
-  getHomePageContent
+  getHomePageContent,
+  getHomePageContentStatus
 } from "./services/contentService";
 import {
   getVehicleById,
@@ -345,6 +347,9 @@ function App() {
   const [isContentLoading, setIsContentLoading] = useState(
     () => !getCachedHomePageContent()
   );
+  const [contentRevision, setContentRevision] = useState(
+    () => String(getCachedHomePageContentStatus()?.revision || "0")
+  );
   const [currentPath, setCurrentPath] = useState(getCurrentPath);
   const [currentAdmin, setCurrentAdmin] = useState(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
@@ -362,13 +367,19 @@ function App() {
       setIsContentLoading((currentValue) => (content ? false : currentValue));
 
       try {
-        const response = await getHomePageContent();
+        const [response, status] = await Promise.all([
+          getHomePageContent(),
+          getHomePageContentStatus().catch(() => null)
+        ]);
 
         if (!isActive) {
           return;
         }
 
         setContent(response);
+        if (status?.revision) {
+          setContentRevision(String(status.revision));
+        }
         setErrorMessage("");
       } catch (error) {
         if (!isActive) {
@@ -391,6 +402,54 @@ function App() {
       isActive = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!content) {
+      return undefined;
+    }
+
+    let isActive = true;
+
+    const refreshContentIfChanged = async () => {
+      if (document.visibilityState === "hidden") {
+        return;
+      }
+
+      try {
+        const status = await getHomePageContentStatus();
+        const nextRevision = String(status?.revision || "0");
+
+        if (!isActive) {
+          return;
+        }
+
+        if (nextRevision === contentRevision) {
+          return;
+        }
+
+        const nextContent = await getHomePageContent({ forceFresh: true });
+
+        if (!isActive) {
+          return;
+        }
+
+        setContent(nextContent);
+        setContentRevision(nextRevision);
+      } catch (error) {
+      }
+    };
+
+    const intervalId = window.setInterval(refreshContentIfChanged, 2500);
+    window.addEventListener("focus", refreshContentIfChanged);
+    document.addEventListener("visibilitychange", refreshContentIfChanged);
+
+    return () => {
+      isActive = false;
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", refreshContentIfChanged);
+      document.removeEventListener("visibilitychange", refreshContentIfChanged);
+    };
+  }, [content, contentRevision]);
 
   useEffect(() => {
     if (!isBootVisible || hasWindowLoaded) {
@@ -636,12 +695,16 @@ function App() {
     setCurrentAdmin(admin);
   };
 
-  const handleContentSaved = (nextContent) => {
+  const handleContentSaved = (nextContent, nextRevision) => {
     if (!nextContent) {
       return;
     }
 
     setContent(JSON.parse(JSON.stringify(nextContent)));
+
+    if (nextRevision) {
+      setContentRevision(String(nextRevision));
+    }
   };
 
   const persistCompareIds = (nextVehicleIds) => {

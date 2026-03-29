@@ -1,18 +1,14 @@
 const fs = require("fs/promises");
 const path = require("path");
-const crypto = require("crypto");
 const multer = require("multer");
 const sharp = require("sharp");
+const {
+  createBrandingMediaAsset,
+  deleteBrandingMediaAsset
+} = require("../repositories/brandingMediaAssetRepository");
 const { resolveUploadsRoot } = require("../services/storagePathService");
 
 const uploadsRoot = resolveUploadsRoot();
-const brandingUploadsRoot = path.resolve(uploadsRoot, "branding");
-
-async function ensureBrandingUploadsRoot() {
-  await fs.mkdir(brandingUploadsRoot, {
-    recursive: true
-  });
-}
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -41,7 +37,22 @@ function handleBrandingImageUpload(request, response, next) {
 }
 
 function buildManagedUrl(filename) {
-  return `/uploads/branding/${filename}`;
+  return `/api/media/branding/${filename}`;
+}
+
+function parseBrandingAssetId(url) {
+  if (typeof url !== "string") {
+    return null;
+  }
+
+  const match = url.match(/^\/api\/media\/branding\/(\d+)$/);
+
+  if (!match) {
+    return null;
+  }
+
+  const assetId = Number(match[1]);
+  return Number.isInteger(assetId) && assetId > 0 ? assetId : null;
 }
 
 function toManagedUploadPath(url) {
@@ -54,28 +65,47 @@ function toManagedUploadPath(url) {
 }
 
 async function saveBrandingImage(file, slot = "branding") {
-  await ensureBrandingUploadsRoot();
+  const normalizedSlot = String(slot || "branding").trim() || "branding";
+  const originalFileName = String(file.originalname || `${normalizedSlot}.bin`);
+  const originalExtension = path.extname(originalFileName || "").toLowerCase() || ".bin";
+  let contentType = String(file.mimetype || "").trim() || "application/octet-stream";
+  let binaryData = file.buffer;
 
-  const filename = `${Date.now()}-${slot}-${crypto.randomUUID()}.webp`;
-  const targetPath = path.resolve(brandingUploadsRoot, filename);
+  try {
+    binaryData = await sharp(file.buffer)
+      .rotate()
+      .resize({
+        width: 1600,
+        height: 1600,
+        fit: "inside",
+        withoutEnlargement: true
+      })
+      .webp({
+        quality: 82
+      })
+      .toBuffer();
+    contentType = "image/webp";
+  } catch (error) {
+  }
 
-  await sharp(file.buffer)
-    .rotate()
-    .resize({
-      width: 1600,
-      height: 1600,
-      fit: "inside",
-      withoutEnlargement: true
-    })
-    .webp({
-      quality: 82
-    })
-    .toFile(targetPath);
+  const asset = await createBrandingMediaAsset({
+    contentType,
+    originalFileName,
+    originalExtension,
+    binaryData
+  });
 
-  return buildManagedUrl(filename);
+  return buildManagedUrl(asset.id);
 }
 
 async function removeStoredBrandingImage(url) {
+  const assetId = parseBrandingAssetId(url);
+
+  if (assetId) {
+    await deleteBrandingMediaAsset(assetId).catch(() => {});
+    return;
+  }
+
   const filePath = toManagedUploadPath(url);
 
   if (!filePath) {

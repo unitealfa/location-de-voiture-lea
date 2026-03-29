@@ -74,14 +74,15 @@ router.put("/visual-settings", async (request, response, next) => {
 
     Promise.all(
       previousBrandingUrls
-        .filter((url) => url.startsWith("/uploads/branding/") && !nextBrandingUrls.has(url))
+        .filter((url) => !nextBrandingUrls.has(url))
         .map((url) => removeStoredBrandingImage(url))
     ).catch(() => {});
 
     response.json({
       admin: request.admin,
       settings: payload.visualSettings,
-      content: payload.content
+      content: payload.content,
+      revision: payload.revision
     });
   } catch (error) {
     next(error);

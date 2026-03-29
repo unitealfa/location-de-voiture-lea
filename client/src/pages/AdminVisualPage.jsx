@@ -1152,7 +1152,7 @@ function AdminVisualPage({ content, brand, header, footer, onContentSaved }) {
     try {
       const response = await saveAdminVisualSettings(formValues);
       setFormValues(normalizeFormValues(response.settings, response.content || content));
-      onContentSaved?.(response.content || buildNextContent(content, formValues));
+      onContentSaved?.(response.content || buildNextContent(content, formValues), response.revision);
       setSuccessMessage("Modifications enregistrees et appliquees directement sur le site.");
     } catch (error) {
       setErrorMessage(error.message || "Impossible d'enregistrer les reglages visuels.");
