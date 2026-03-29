@@ -231,7 +231,11 @@ function AdminProfile({ content, admin, onAdminUpdated, onBackClick }) {
                   className="vehica-button admin-profile-page__submit admin-profile-page__submit--primary"
                   disabled={isProfileSubmitting}
                 >
-                  <span>{content.profileSubmitLabel}</span>
+                  <span>
+                    {isProfileSubmitting
+                      ? content.profileSubmitPendingLabel || "Enregistrement en cours..."
+                      : content.profileSubmitLabel}
+                  </span>
                   <i className="far fa-angle-right" aria-hidden="true"></i>
                 </button>
               </div>
@@ -307,7 +311,9 @@ function AdminProfile({ content, admin, onAdminUpdated, onBackClick }) {
                   className="vehica-button admin-profile-page__submit admin-profile-page__submit--secondary"
                   disabled={isPasswordSubmitting}
                 >
-                  {content.passwordSubmitLabel}
+                  {isPasswordSubmitting
+                    ? content.passwordSubmitPendingLabel || "Modification en cours..."
+                    : content.passwordSubmitLabel}
                 </button>
               </div>
             </form>

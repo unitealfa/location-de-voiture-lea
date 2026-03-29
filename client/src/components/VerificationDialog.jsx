@@ -78,9 +78,17 @@ function VerificationDialog({
   };
 
   const resendDisabled = remainingSeconds > 0 || isResending;
+  const isBusy = isConfirming || isResending;
+  const handleRequestClose = () => {
+    if (isBusy) {
+      return;
+    }
+
+    onClose();
+  };
 
   return (
-    <div className="verification-overlay" onClick={onClose} role="presentation">
+    <div className="verification-overlay" onClick={handleRequestClose} role="presentation">
       <section
         className="verification-dialog"
         onClick={(event) => event.stopPropagation()}
@@ -91,7 +99,8 @@ function VerificationDialog({
         <button
           type="button"
           className="verification-dialog__close"
-          onClick={onClose}
+          onClick={handleRequestClose}
+          disabled={isBusy}
         >
           x
         </button>
@@ -132,26 +141,33 @@ function VerificationDialog({
             <button
               type="submit"
               className="login-form__submit"
-              disabled={isConfirming}
+              disabled={isBusy}
             >
-              {content.verificationConfirmLabel}
+              {isConfirming
+                ? content.verificationConfirmPendingLabel || "Confirmation en cours..."
+                : content.verificationConfirmLabel}
             </button>
 
             <button
               type="button"
               className="verification-dialog__secondary"
               onClick={handleResend}
-              disabled={resendDisabled}
+              disabled={resendDisabled || isConfirming}
             >
-              {content.verificationResendLabel}
+              {isResending
+                ? content.verificationResendPendingLabel || "Renvoi en cours..."
+                : content.verificationResendLabel}
             </button>
 
             <button
               type="button"
               className="login-card__back"
-              onClick={onClose}
+              onClick={handleRequestClose}
+              disabled={isBusy}
             >
-              {content.verificationCancelLabel}
+              {isBusy
+                ? content.verificationCancelPendingLabel || "Operation en cours..."
+                : content.verificationCancelLabel}
             </button>
           </div>
         </form>

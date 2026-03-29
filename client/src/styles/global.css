@@ -3790,6 +3790,11 @@ a {
   cursor: pointer;
 }
 
+.verification-dialog__close:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .verification-dialog__eyebrow {
   margin: 0 0 10px;
   font-size: 10px;
@@ -3906,6 +3911,13 @@ a {
   letter-spacing: 0.2em;
   font-weight: 800;
   cursor: pointer;
+}
+
+.verification-dialog .login-form__submit:disabled,
+.verification-dialog__secondary:disabled,
+.verification-dialog .login-card__back:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .verification-dialog .login-form__submit {
