@@ -142,7 +142,7 @@ const defaultContent = {
     summaryVisitsLabel: "Visites du site",
     summaryVisitsHelper: "entrees detectees sur le site",
     summaryVisitorsLabel: "Visiteurs uniques",
-    summaryVisitorsHelper: "navigateurs differents identifies",
+    summaryVisitorsHelper: "personnes estimees differentes identifiees",
     summaryVisitsFilterLabel: "Synthese",
     summaryVisitsFilterDayLabel: "Jour",
     summaryVisitsFilterWeekLabel: "Semaine",

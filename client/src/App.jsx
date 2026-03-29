@@ -46,6 +46,7 @@ import {
   logoutAdmin
 } from "./services/adminAuthService";
 import { clearLegacyAdminClientState } from "./services/clientSecurityService";
+import { trackSiteVisit } from "./services/siteVisitService";
 import {
   getStoredCompareVehicleIds,
   persistCompareVehicleIds,
@@ -466,6 +467,14 @@ function App() {
       window.removeEventListener("load", handleWindowLoad);
     };
   }, [hasWindowLoaded, isBootVisible]);
+
+  useEffect(() => {
+    if (isBootVisible) {
+      return;
+    }
+
+    void trackSiteVisit(currentPath);
+  }, [currentPath, isBootVisible]);
 
   useEffect(() => {
     if (!isBootVisible || !content || isAuthLoading) {

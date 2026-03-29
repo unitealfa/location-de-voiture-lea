@@ -8,9 +8,6 @@ const {
   listDailySiteVisitTotalsInRange
 } = require("../repositories/siteVisitRepository");
 
-const SITE_VISITOR_COOKIE_NAME = "lea_site_visitor";
-const SITE_VISITOR_COOKIE_MAX_AGE_MS = 1000 * 60 * 60 * 24 * 365 * 2;
-
 function parseCookies(cookieHeader = "") {
   return cookieHeader
     .split(";")
@@ -28,14 +25,6 @@ function parseCookies(cookieHeader = "") {
       cookies[key] = value;
       return cookies;
     }, {});
-}
-
-function createVisitorToken() {
-  return crypto.randomBytes(32).toString("hex");
-}
-
-function hashVisitorToken(token) {
-  return crypto.createHash("sha256").update(token).digest("hex");
 }
 
 function toDate(value) {
@@ -74,43 +63,199 @@ function createUtcDateKey(dateValue) {
   return `${year}-${month}-${day}`;
 }
 
-function setVisitorCookie(response, token) {
-  response.cookie(SITE_VISITOR_COOKIE_NAME, token, {
-    httpOnly: false,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    maxAge: SITE_VISITOR_COOKIE_MAX_AGE_MS,
-    path: "/"
-  });
-}
-
 function shouldSkipTracking(request) {
   const cookies = parseCookies(request.headers.cookie || "");
   return Boolean(cookies[ADMIN_SESSION_COOKIE_NAME]);
 }
 
-function trackPublicSiteVisit(request, response) {
+function getHeaderValue(request, headerName) {
+  const headerValue = request.headers?.[headerName];
+  return Array.isArray(headerValue) ? headerValue[0] || "" : String(headerValue || "");
+}
+
+function getRequestIp(request) {
+  const forwardedFor = getHeaderValue(request, "x-forwarded-for");
+
+  if (forwardedFor) {
+    return forwardedFor.split(",")[0].trim();
+  }
+
+  return (
+    request.ip ||
+    request.socket?.remoteAddress ||
+    getHeaderValue(request, "x-real-ip") ||
+    ""
+  ).trim();
+}
+
+function anonymizeIpAddress(ipAddress) {
+  if (!ipAddress) {
+    return "unknown";
+  }
+
+  if (ipAddress.includes(".")) {
+    const parts = ipAddress.split(".").slice(0, 4);
+
+    if (parts.length === 4) {
+      parts[3] = "0";
+      return parts.join(".");
+    }
+  }
+
+  if (ipAddress.includes(":")) {
+    const parts = ipAddress.split(":").slice(0, 8);
+    return `${parts.slice(0, 4).join(":")}:0000:0000:0000:0000`;
+  }
+
+  return ipAddress;
+}
+
+function normalizeUserAgentProfile(request, clientContext = {}) {
+  const userAgent = getHeaderValue(request, "user-agent").toLowerCase();
+  const platformHint = String(
+    clientContext.platform || getHeaderValue(request, "sec-ch-ua-platform")
+  )
+    .replace(/"/g, "")
+    .toLowerCase();
+  const mobileHint = String(
+    clientContext.deviceClass || getHeaderValue(request, "sec-ch-ua-mobile")
+  ).toLowerCase();
+  const screenBucket = String(clientContext.screenBucket || "").trim().toLowerCase();
+  const touchBucket = String(clientContext.touchBucket || "").trim().toLowerCase();
+  let operatingSystem = "other";
+
+  if (platformHint.includes("ios") || /iphone|ipad|ipod/.test(userAgent)) {
+    operatingSystem = "ios";
+  } else if (platformHint.includes("android") || userAgent.includes("android")) {
+    operatingSystem = "android";
+  } else if (platformHint.includes("windows") || userAgent.includes("windows")) {
+    operatingSystem = "windows";
+  } else if (
+    platformHint.includes("mac") ||
+    userAgent.includes("mac os") ||
+    userAgent.includes("macintosh")
+  ) {
+    operatingSystem = "macos";
+  } else if (platformHint.includes("linux") || userAgent.includes("linux")) {
+    operatingSystem = "linux";
+  }
+
+  let deviceClass = "desktop";
+
+  if (
+    mobileHint === "mobile" ||
+    mobileHint === "?1" ||
+    /iphone|ipod|android.+mobile|windows phone/.test(userAgent)
+  ) {
+    deviceClass = "mobile";
+  } else if (
+    /ipad|tablet|android(?!.*mobile)/.test(userAgent) ||
+    platformHint.includes("ipad")
+  ) {
+    deviceClass = "tablet";
+  }
+
+  return {
+    operatingSystem,
+    deviceClass,
+    screenBucket: screenBucket || "unknown",
+    touchBucket: touchBucket || "unknown"
+  };
+}
+
+function normalizeLocaleProfile(request, clientContext = {}) {
+  const languageHeader = getHeaderValue(request, "accept-language");
+  const locale = String(clientContext.locale || languageHeader.split(",")[0] || "")
+    .trim()
+    .toLowerCase();
+  const timezone = String(clientContext.timezone || "").trim().toLowerCase();
+
+  return {
+    locale: locale || "unknown",
+    timezone: timezone || "unknown"
+  };
+}
+
+function normalizeGeoProfile(request) {
+  const country =
+    getHeaderValue(request, "x-vercel-ip-country") ||
+    getHeaderValue(request, "cf-ipcountry");
+  const region = getHeaderValue(request, "x-vercel-ip-country-region");
+  const city = getHeaderValue(request, "x-vercel-ip-city");
+
+  return {
+    country: String(country || "unknown").trim().toLowerCase(),
+    region: String(region || "unknown").trim().toLowerCase(),
+    city: String(city || "unknown").trim().toLowerCase()
+  };
+}
+
+function createEstimatedVisitorHash(request, clientContext = {}) {
+  const secret =
+    process.env.SESSION_SECRET ||
+    process.env.RESERVATION_FILE_ENCRYPTION_KEY ||
+    "lea-site-visit-fingerprint";
+  const ipBucket = anonymizeIpAddress(getRequestIp(request));
+  const agentProfile = normalizeUserAgentProfile(request, clientContext);
+  const localeProfile = normalizeLocaleProfile(request, clientContext);
+  const geoProfile = normalizeGeoProfile(request);
+  const fingerprintPayload = JSON.stringify({
+    version: 2,
+    ipBucket,
+    ...agentProfile,
+    ...localeProfile,
+    ...geoProfile
+  });
+
+  return crypto
+    .createHmac("sha256", secret)
+    .update(fingerprintPayload)
+    .digest("hex");
+}
+
+function normalizeTrackedPath(requestPath) {
+  const normalizedPath = String(requestPath || "/").trim();
+
+  if (!normalizedPath || !normalizedPath.startsWith("/")) {
+    return "/";
+  }
+
+  if (
+    normalizedPath.startsWith("/api") ||
+    normalizedPath.startsWith("/admin") ||
+    normalizedPath.startsWith("/reservations") ||
+    normalizedPath.startsWith("/clients") ||
+    normalizedPath.startsWith("/commencer")
+  ) {
+    return "";
+  }
+
+  return normalizedPath;
+}
+
+async function trackPublicSiteVisit(request, response, options = {}) {
   if (shouldSkipTracking(request)) {
-    return;
+    return false;
   }
 
-  const cookies = parseCookies(request.headers.cookie || "");
-  let visitorToken = cookies[SITE_VISITOR_COOKIE_NAME] || "";
+  const clientContext =
+    options.clientContext && typeof options.clientContext === "object"
+      ? options.clientContext
+      : {};
+  const requestPath = normalizeTrackedPath(options.requestPath || request.path || "/");
 
-  if (!visitorToken) {
-    visitorToken = createVisitorToken();
-    setVisitorCookie(response, visitorToken);
+  if (!requestPath) {
+    return false;
   }
 
-  const visitorHash = hashVisitorToken(visitorToken);
-  const requestPath = request.path || "/";
+  const visitorHash = createEstimatedVisitorHash(request, clientContext);
 
-  void createSiteVisitEvent({
+  await createSiteVisitEvent({
     visitorHash,
     requestPath
-  }).catch((error) => {
-    console.error("Unable to record site visit.", error);
   });
+
+  return true;
 }
 
 async function getSiteVisitDashboardStats({ startDate = null, endDate = null } = {}) {
@@ -133,7 +278,6 @@ async function getSiteVisitDashboardStats({ startDate = null, endDate = null } =
 }
 
 module.exports = {
-  SITE_VISITOR_COOKIE_NAME,
   trackPublicSiteVisit,
   getSiteVisitDashboardStats,
   formatDateKey,
