@@ -3755,6 +3755,212 @@ a {
   }
 }
 
+.verification-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 18px;
+  background: rgba(17, 17, 17, 0.42);
+  backdrop-filter: blur(16px);
+}
+
+.verification-dialog {
+  position: relative;
+  width: min(100%, 720px);
+  padding: 42px 42px 36px;
+  background: #f9f9f9;
+  color: #1b1b1b;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.16);
+}
+
+.verification-dialog__close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 38px;
+  height: 38px;
+  border: 0;
+  background: transparent;
+  color: #1b1b1b;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.verification-dialog__eyebrow {
+  margin: 0 0 10px;
+  font-size: 10px;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.32em;
+  font-weight: 800;
+  color: #5f5e5e;
+}
+
+.verification-dialog h2 {
+  margin: 0 0 14px;
+  font-family: "Manrope", serif;
+  font-size: clamp(30px, 4vw, 48px);
+  line-height: 0.98;
+  letter-spacing: -0.05em;
+  font-weight: 800;
+  color: #1b1b1b;
+}
+
+.verification-dialog__text {
+  margin: 0 0 34px;
+  font-size: 15px;
+  line-height: 1.7;
+  color: #474747;
+}
+
+.verification-dialog__text strong {
+  color: #000000;
+  font-weight: 700;
+}
+
+.verification-dialog__form {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.verification-dialog .login-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+}
+
+.verification-dialog .login-form__field > span {
+  display: block;
+  font-size: 11px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
+  font-weight: 800;
+  color: #5f5e5e;
+}
+
+.verification-dialog .login-form__field input {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid rgba(198, 198, 198, 0.42);
+  background: transparent;
+  border-radius: 0;
+  padding: 0 0 12px;
+  font-size: 32px;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: #1b1b1b;
+  box-shadow: none;
+}
+
+.verification-dialog .login-form__field input::placeholder {
+  color: #8b8b8b;
+  letter-spacing: 0.16em;
+}
+
+.verification-dialog .login-form__field input:focus {
+  outline: none;
+  border-bottom: 2px solid #000000;
+}
+
+.verification-dialog .login-form__message {
+  margin: 0;
+  padding: 14px 16px;
+  background: #ffdad6;
+  color: #7b1113;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.verification-dialog__timer {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #5f5e5e;
+}
+
+.verification-dialog__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.verification-dialog .login-form__submit,
+.verification-dialog__secondary,
+.verification-dialog .login-card__back {
+  min-height: 54px;
+  padding: 0 26px;
+  border: 0;
+  border-radius: 0;
+  font-size: 12px;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.verification-dialog .login-form__submit {
+  background: #000000;
+  color: #ffffff;
+}
+
+.verification-dialog .login-form__submit:hover {
+  background: #3b3b3b;
+}
+
+.verification-dialog__secondary {
+  background: #e2e2e2;
+  color: #1b1b1b;
+}
+
+.verification-dialog__secondary:hover:not(:disabled) {
+  background: #cfcfcf;
+}
+
+.verification-dialog__secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.verification-dialog .login-card__back {
+  background: transparent;
+  color: #1b1b1b;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.verification-dialog .login-card__back:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+@media (max-width: 899px) {
+  .verification-dialog {
+    padding: 34px 22px 24px;
+  }
+
+  .verification-dialog .login-form__field input {
+    font-size: 24px;
+  }
+
+  .verification-dialog__actions {
+    flex-direction: column;
+  }
+
+  .verification-dialog .login-form__submit,
+  .verification-dialog__secondary,
+  .verification-dialog .login-card__back {
+    width: 100%;
+  }
+}
+
 .vehicle-form__option-group {
   grid-column: 1 / -1;
 }
