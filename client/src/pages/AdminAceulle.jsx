@@ -235,22 +235,6 @@ function FocusCard({ pendingCount, helper, onClick }) {
   );
 }
 
-function VisitorsCard({ label, helper, value, filterValue, onFilterChange, labels }) {
-  return (
-    <section className="admin-dashboard-v2__mini-card">
-      <div className="admin-dashboard-v2__mini-head">
-        <span>{label}</span>
-        <i className="far fa-user" aria-hidden="true"></i>
-      </div>
-      <MiniFilter labels={labels} value={filterValue} onChange={onFilterChange} />
-      <div className="admin-dashboard-v2__mini-metric">
-        <strong>{formatNumber(value)}</strong>
-        <small>{helper}</small>
-      </div>
-    </section>
-  );
-}
-
 function AdminAceulle({ content, admin, onNavigate }) {
   const today = new Date();
   const defaultFilters = {
@@ -264,7 +248,6 @@ function AdminAceulle({ content, admin, onNavigate }) {
   const [isLoading, setIsLoading] = useState(() => !getCachedAdminDashboardStats(defaultFilters));
   const [liveRequestRanges, setLiveRequestRanges] = useState(() => getCachedAdminDashboardLiveRequests());
   const [requestRangeFilter, setRequestRangeFilter] = useState("month");
-  const [clientRangeFilter, setClientRangeFilter] = useState("month");
 
   useEffect(() => {
     let isActive = true;
@@ -361,10 +344,6 @@ function AdminAceulle({ content, admin, onNavigate }) {
   const activeMonth = stats?.filters?.month || filters.month;
   const effectiveRequestRanges = liveRequestRanges || summary?.requestRanges || {};
   const requestRangeSummary = effectiveRequestRanges?.[requestRangeFilter] || {
-    totalRequests: summary?.totalRequests || 0,
-    totalClients: summary?.totalClients || 0
-  };
-  const clientRangeSummary = effectiveRequestRanges?.[clientRangeFilter] || {
     totalRequests: summary?.totalRequests || 0,
     totalClients: summary?.totalClients || 0
   };
@@ -567,14 +546,6 @@ function AdminAceulle({ content, admin, onNavigate }) {
                 pendingCount={summary.pendingCount}
                 helper={content.summaryPendingHelper}
                 onClick={() => onNavigate?.("/reservations")}
-              />
-              <VisitorsCard
-                label={content.summaryVisitorsLabel}
-                helper={content.summaryVisitorsHelper}
-                value={clientRangeSummary.totalClients}
-                filterValue={clientRangeFilter}
-                onFilterChange={setClientRangeFilter}
-                labels={requestFilterItems}
               />
             </aside>
           </section>
