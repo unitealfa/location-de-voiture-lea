@@ -902,6 +902,7 @@ function App() {
       ) : vehicleDetailId ? (
         <VehicleDetailPage
           content={content.vehicles}
+          footerContent={content.footer}
           currentAdmin={currentAdmin}
           vehicleId={vehicleDetailId}
           onBackClick={() => navigateTo("/location-de-voitures")}

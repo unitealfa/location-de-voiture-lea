@@ -7,6 +7,7 @@ import {
 import { hasCachedVehicleReservationAvailability } from "../services/reservationService";
 import { extractAcceptedFilesFromDrop, isAcceptedMediaFile } from "../utils/dropFiles";
 import { handleImageFallback } from "../utils/imageFallback";
+import { openWhatsappOrCall } from "../utils/contactLinks";
 import { calculateReservationPricing, getReservationRateLabel } from "../utils/reservationPricing";
 import { formatVehicleName, formatVehiclePrice } from "../utils/vehicleFormatters";
 import { formatReservationDateTime } from "../utils/reservationFormatters";
@@ -214,7 +215,13 @@ function ReservationCalendar({
   );
 }
 
-function VehicleReservationForm({ content, vehicle, hideActionButtons = false, hideIntro = false }) {
+function VehicleReservationForm({
+  content,
+  footerContent,
+  vehicle,
+  hideActionButtons = false,
+  hideIntro = false
+}) {
   const sectionRef = useRef(null);
   const drivingLicenseInputRef = useRef(null);
   const [formValues, setFormValues] = useState(getInitialFormValues);
@@ -288,13 +295,20 @@ function VehicleReservationForm({ content, vehicle, hideActionButtons = false, h
     };
   }, [vehicle.id]);
 
-  const whatsappUrl = useMemo(() => {
-    const message = encodeURIComponent(
-      `Bonjour, je souhaite reserver ${formatVehicleName(vehicle)}.`
-    );
-
-    return `https://wa.me/${content.whatsappInternationalNumber}?text=${message}`;
-  }, [content.whatsappInternationalNumber, vehicle]);
+  const whatsappNumber = useMemo(
+    () =>
+      footerContent?.whatsappNumber ||
+      content.whatsappInternationalNumber ||
+      content.whatsappNumber ||
+      footerContent?.phoneValue ||
+      "",
+    [
+      content.whatsappInternationalNumber,
+      content.whatsappNumber,
+      footerContent?.phoneValue,
+      footerContent?.whatsappNumber
+    ]
+  );
   const drivingLicenseInputId = useMemo(
     () => `driving-license-photo-${vehicle.id}`,
     [vehicle.id]
@@ -628,9 +642,14 @@ function VehicleReservationForm({ content, vehicle, hideActionButtons = false, h
 
           <a
             className="vehicle-detail__secondary-action vehicle-detail__secondary-action--link"
-            href={whatsappUrl}
-            target="_blank"
-            rel="noreferrer"
+            href="#"
+            onClick={(event) => {
+              event.preventDefault();
+              openWhatsappOrCall({
+                phoneNumber: whatsappNumber,
+                message: `Bonjour, je souhaite reserver ${formatVehicleName(vehicle)}.`
+              });
+            }}
           >
             {content.reserveWhatsappLabel}
           </a>

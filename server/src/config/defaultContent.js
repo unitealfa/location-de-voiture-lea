@@ -678,6 +678,7 @@ const defaultContent = {
     contactTitle: "Contact",
     phoneCtaLabel: "Appelez-nous",
     phoneLabel: "Numero de tel",
+    whatsappNumber: "213779107446",
     locationLabel: "Localisation",
     locationValue: "Alger",
     mapUrl: "https://maps.google.com/?q=Alger%2C+Algerie",

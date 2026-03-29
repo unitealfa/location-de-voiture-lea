@@ -116,6 +116,7 @@ const DEFAULT_FORM = {
   contactHeroSubtitle: "",
   footerShortInfo: "",
   footerPhoneValue: "",
+  footerWhatsappNumber: "",
   footerEmailValue: "",
   footerLocationValue: "",
   footerAddressValue: "",
@@ -231,6 +232,7 @@ function buildInitialForm(settings, content) {
     contactHeroSubtitle: contactPage.heroSubtitle || "",
     footerShortInfo: footer.shortInfo || "",
     footerPhoneValue: footer.phoneValue || "",
+    footerWhatsappNumber: footer.whatsappNumber || "",
     footerEmailValue: footer.emailValue || "",
     footerLocationValue: footer.locationValue || "",
     footerAddressValue: footer.addressValue || "",
@@ -928,6 +930,7 @@ function buildNextContent(currentContent, formValues) {
     logoImagePath: nextFooterLogo,
     shortInfo: formValues.footerShortInfo,
     phoneValue: formValues.footerPhoneValue,
+    whatsappNumber: formValues.footerWhatsappNumber,
     emailValue: formValues.footerEmailValue,
     locationValue: formValues.footerLocationValue,
     addressValue: formValues.footerAddressValue,
@@ -1906,6 +1909,15 @@ function AdminVisualPage({ content, brand, header, footer, onContentSaved }) {
                 type="text"
                 value={formValues.footerPhoneValue}
                 onChange={(event) => handleChange("footerPhoneValue", event.target.value)}
+              />
+            </label>
+
+            <label className="login-form__field">
+              <span>Numero WhatsApp</span>
+              <input
+                type="text"
+                value={formValues.footerWhatsappNumber}
+                onChange={(event) => handleChange("footerWhatsappNumber", event.target.value)}
               />
             </label>
 

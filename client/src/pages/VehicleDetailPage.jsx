@@ -15,6 +15,7 @@ import {
   getVehicleCardImageUrl
 } from "../utils/vehicleFormatters";
 import { handleImageFallback } from "../utils/imageFallback";
+import { openWhatsappOrCall } from "../utils/contactLinks";
 
 function getVehicleTitle(vehicle) {
   return [vehicle.brand, vehicle.model, vehicle.version].filter(Boolean).join(" ");
@@ -288,6 +289,7 @@ function AnimatedReservationHeadline({ accentText, startText }) {
 
 function VehicleDetailPage({
   content,
+  footerContent,
   currentAdmin,
   vehicleId,
   onBackClick,
@@ -610,11 +612,12 @@ function VehicleDetailPage({
       formatVehiclePrice(vehicle.dailyPrice) +
       content.pricePerDaySuffix
     : "";
-  const whatsappUrl =
-    "https://wa.me/" +
-    content.whatsappInternationalNumber +
-    "?text=" +
-    encodeURIComponent("Bonjour, je souhaite reserver " + vehicleTitle + ".");
+  const whatsappNumber =
+    footerContent?.whatsappNumber ||
+    content.whatsappInternationalNumber ||
+    content.whatsappNumber ||
+    footerContent?.phoneValue ||
+    "";
   const securityDepositText = vehicle?.securityDeposit
     ? content.detailSecurityDepositPrefix + " " + formatVehiclePrice(vehicle.securityDeposit)
     : "-";
@@ -1238,7 +1241,16 @@ function VehicleDetailPage({
                   </div>
 
                   <div className="vehica-whats-app-button">
-                    <a href={whatsappUrl} target="_blank" rel="noreferrer">
+                    <a
+                      href="#"
+                      onClick={(event) => {
+                        event.preventDefault();
+                        openWhatsappOrCall({
+                          phoneNumber: whatsappNumber,
+                          message: `Bonjour, je souhaite reserver ${vehicleTitle}.`
+                        });
+                      }}
+                    >
                       <i className="fab fa-whatsapp"></i>
                       {content.reserveWhatsappLabel}
                     </a>
@@ -1297,6 +1309,7 @@ function VehicleDetailPage({
                 </h3>
                 <VehicleReservationForm
                   content={content}
+                  footerContent={footerContent}
                   vehicle={vehicle}
                   hideActionButtons={true}
                   hideIntro={true}
