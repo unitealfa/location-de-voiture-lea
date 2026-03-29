@@ -16077,15 +16077,39 @@ body.reservation-admin-page-lock {
 }
 
 .admin-visual-page__mini-canvas-shell--mobile-preview.admin-visual-page__mini-canvas-shell--home {
-  max-height: none;
+  max-height: 650px;
 }
 
 .admin-visual-page__mini-canvas-shell--mobile-preview.admin-visual-page__mini-canvas-shell--home .admin-visual-page__mini-canvas-scale {
-  margin-bottom: calc((1 - var(--admin-visual-scale)) * -100% + 68px);
+  margin-bottom: calc((1 - var(--admin-visual-scale)) * -100% + 8px);
 }
 
 .admin-visual-page__mini-canvas-shell--mobile-preview.admin-visual-page__mini-canvas-shell--footer .admin-visual-page__mini-canvas-scale {
   margin-bottom: calc((1 - var(--admin-visual-scale)) * -100% + 38px);
+}
+
+.admin-visual-page__mini-canvas-shell--mobile-preview.admin-visual-page__mini-canvas-shell--hotel {
+  max-height: 560px;
+}
+
+.admin-visual-page__mini-canvas-shell--mobile-preview.admin-visual-page__mini-canvas-shell--hotel .admin-visual-page__mini-canvas-scale {
+  margin-bottom: calc((1 - var(--admin-visual-scale)) * -100% - 10px);
+}
+
+.admin-visual-page__mini-canvas-shell--mobile-preview.admin-visual-page__mini-canvas-shell--faq {
+  max-height: 520px;
+}
+
+.admin-visual-page__mini-canvas-shell--mobile-preview.admin-visual-page__mini-canvas-shell--faq .admin-visual-page__mini-canvas-scale {
+  margin-bottom: calc((1 - var(--admin-visual-scale)) * -100% - 24px);
+}
+
+.admin-visual-page__mini-canvas-shell--mobile-preview.admin-visual-page__mini-canvas-shell--contact {
+  max-height: 540px;
+}
+
+.admin-visual-page__mini-canvas-shell--mobile-preview.admin-visual-page__mini-canvas-shell--contact .admin-visual-page__mini-canvas-scale {
+  margin-bottom: calc((1 - var(--admin-visual-scale)) * -100% - 18px);
 }
 
 .admin-visual-page__mini-canvas-shell--mobile-preview.admin-visual-page__mini-canvas-shell--tab .admin-visual-page__mini-canvas-scale {

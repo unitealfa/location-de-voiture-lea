@@ -553,7 +553,10 @@ function CarHotelPreview({
   isMobilePreview
 }) {
   return (
-    <MiniCanvas isMobilePreview={isMobilePreview}>
+    <MiniCanvas
+      className="admin-visual-page__mini-canvas-shell--hotel"
+      isMobilePreview={isMobilePreview}
+    >
       <div
         className={
           "admin-visual-page__live-preview" +
@@ -782,7 +785,10 @@ function VehiclePillPreview({ title, vehicles, isMobilePreview }) {
 
 function FaqPreview({ image, title, subtitle, pageTitle, items, isMobilePreview }) {
   return (
-    <MiniCanvas isMobilePreview={isMobilePreview}>
+    <MiniCanvas
+      className="admin-visual-page__mini-canvas-shell--faq"
+      isMobilePreview={isMobilePreview}
+    >
       <div
         className={
           "admin-visual-page__live-preview" +
@@ -819,7 +825,10 @@ function ContactPreview({
   isMobilePreview
 }) {
   return (
-    <MiniCanvas isMobilePreview={isMobilePreview}>
+    <MiniCanvas
+      className="admin-visual-page__mini-canvas-shell--contact"
+      isMobilePreview={isMobilePreview}
+    >
       <div
         className={
           "admin-visual-page__live-preview" +
@@ -1614,7 +1623,7 @@ function AdminVisualPage({ content, brand, header, footer, onContentSaved }) {
         </VisualEditorSection>
 
         <VisualEditorSection
-          title="Cabriolets"
+          title="Cabriolets1111"
           preview={
             <VehiclePillPreview
               title={formValues.homeConvertiblesTitle || content.aceulle?.convertiblesTitle}
@@ -1624,11 +1633,11 @@ function AdminVisualPage({ content, brand, header, footer, onContentSaved }) {
           }
         >
           <FieldSection
-            title="Cabriolets"
+            title="Cabriolets2222"
             description="Titre de section et vehicules affiches."
           >
             <label className="login-form__field">
-              <span>Titre section cabriolets</span>
+              <span>Titre section </span>
               <input
                 type="text"
                 value={formValues.homeConvertiblesTitle}
@@ -1637,7 +1646,7 @@ function AdminVisualPage({ content, brand, header, footer, onContentSaved }) {
             </label>
 
             <div className="admin-visual-page__subsection">
-              <h3>Vehicules affiches sous les cabriolets</h3>
+              <h3>Vehicules affiches</h3>
               <div className="admin-visual-page__vehicle-selector">
                 {vehicles.map((vehicle) => {
                   const isSelected = formValues.homeConvertibleVehicleIds.includes(Number(vehicle.id));
