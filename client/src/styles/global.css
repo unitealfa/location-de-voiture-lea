@@ -3361,230 +3361,396 @@ a {
 
 /* Admin profile page */
 .admin-profile-page {
-  position: relative;
-  background:
-    radial-gradient(circle at top left, rgba(201, 134, 66, 0.14), transparent 34%),
-    linear-gradient(180deg, #f6efe7 0%, #ffffff 26%, #f7f7f8 100%);
-  padding: 138px 18px 96px;
+  background: #f9f9f9;
+  color: #1b1b1b;
+  padding: 96px 24px 120px;
   min-height: 100vh;
 }
 
 .admin-profile-page__section {
-  max-width: 1320px;
+  max-width: 1180px;
   margin: 0 auto;
 }
 
-.admin-profile-page__container {
-  position: relative;
-}
-
-.admin-profile-page__panel {
-  position: relative;
+.admin-profile-page__topbar {
+  position: sticky;
+  top: 88px;
+  z-index: 5;
+  height: 64px;
+  margin-bottom: 58px;
+  padding: 0 22px;
   display: flex;
-  flex-direction: column;
-  gap: 22px;
+  align-items: center;
+  gap: 16px;
+  background: rgba(249, 249, 249, 0.82);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(20px);
 }
 
-.admin-profile-page .vehica-login,
-.admin-profile-page .vehica-register {
-  width: 100%;
-  display: flex;
-  align-items: stretch;
-  padding: 0;
-  text-align: left;
-  background: #ffffff;
-  border: 1px solid rgba(20, 24, 31, 0.08);
-  border-radius: 30px;
-  box-shadow: 0 24px 70px rgba(17, 20, 28, 0.08);
-  overflow: hidden;
-}
-
-.admin-profile-page .vehica-login__inner,
-.admin-profile-page .vehica-register__inner {
-  width: 100%;
-  max-width: none;
+.admin-profile-page__topbar h1 {
   margin: 0;
-  padding: 34px 30px 30px;
-  position: relative;
-}
-
-.admin-profile-page .vehica-panel-login-register h2 {
-  font-size: 34px;
-  line-height: 1.02;
-  font-weight: 900;
-  margin: 0 0 10px;
-  color: #111827;
+  font-size: 18px;
+  line-height: 1;
+  font-weight: 800;
   letter-spacing: -0.03em;
+  color: #1b1b1b;
 }
 
-.admin-profile-page .vehica-panel-login-register h3 {
-  max-width: 560px;
-  font-size: 15px;
-  line-height: 1.6;
-  font-weight: 400;
-  margin: 0 0 28px;
-  color: #5f6773;
-}
-
-.admin-profile-page .vehica-fields {
-  margin-bottom: 22px;
-}
-
-.admin-profile-page .vehica-field {
-  margin-bottom: 14px;
-}
-
-.admin-profile-page .vehica-field input[type="text"],
-.admin-profile-page .vehica-field input[type="email"],
-.admin-profile-page .vehica-field input[type="password"] {
-  border-radius: 16px;
-  border: 1px solid rgba(17, 24, 39, 0.1);
-  min-height: 58px;
-  line-height: 1.2;
-  padding: 17px 20px;
-  font-size: 15px;
-  font-weight: 500;
-  color: #1f2937;
-  width: 100%;
-  background: #fbfbfc;
+.admin-profile-page__topbar-back {
+  width: 40px;
+  height: 40px;
+  border: 0;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #1b1b1b;
+  background: transparent;
+  cursor: pointer;
   transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
+    transform 0.2s ease,
     background-color 0.2s ease;
 }
 
-.admin-profile-page .vehica-field input[type="text"]::placeholder,
-.admin-profile-page .vehica-field input[type="email"]::placeholder,
-.admin-profile-page .vehica-field input[type="password"]::placeholder {
-  font-size: 15px;
-  color: #7b8491;
+.admin-profile-page__topbar-back:hover {
+  background: rgba(0, 0, 0, 0.05);
+  transform: translateX(-1px);
 }
 
-.admin-profile-page .vehica-field input[type="text"]:focus,
-.admin-profile-page .vehica-field input[type="email"]:focus,
-.admin-profile-page .vehica-field input[type="password"]:focus {
-  outline: none;
-  border-color: var(--primary);
+.admin-profile-page__hero {
+  margin-bottom: 64px;
+}
+
+.admin-profile-page__eyebrow {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 10px;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.32em;
+  font-weight: 800;
+  color: #5f5e5e;
+}
+
+.admin-profile-page__hero h2 {
+  margin: 0 0 18px;
+  font-family: "Manrope", serif;
+  font-size: clamp(44px, 6vw, 68px);
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+  font-weight: 800;
+  color: #1b1b1b;
+}
+
+.admin-profile-page__hero p {
+  max-width: 660px;
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.75;
+  color: #474747;
+}
+
+.admin-profile-page__layout {
+  display: flex;
+  flex-direction: column;
+  gap: 42px;
+}
+
+.admin-profile-page__card,
+.admin-profile-page__aside {
   background: #ffffff;
-  box-shadow: 0 0 0 5px rgba(201, 134, 66, 0.14);
+}
+
+.admin-profile-page__card {
+  padding: 40px 42px;
+}
+
+.admin-profile-page__card--identity {
+  background: #ffffff;
+}
+
+.admin-profile-page__field-row {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 28px 0;
+  border-bottom: 1px solid rgba(198, 198, 198, 0.42);
+}
+
+.admin-profile-page__field-row:first-of-type {
+  padding-top: 0;
+}
+
+.admin-profile-page__field-row label,
+.admin-profile-page__stack-field label {
+  display: block;
+  font-size: 11px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
+  font-weight: 800;
+  color: #5f5e5e;
+}
+
+.admin-profile-page__ghost-input {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid rgba(198, 198, 198, 0.42);
+  background: transparent;
+  border-radius: 0;
+  padding: 0 0 12px;
+  font-size: 22px;
+  line-height: 1.3;
+  font-weight: 500;
+  color: #1b1b1b;
+  box-shadow: none;
+  transition: border-color 0.2s ease;
+}
+
+.admin-profile-page__ghost-input::placeholder {
+  color: #797979;
+}
+
+.admin-profile-page__ghost-input:focus {
+  outline: none;
+  border-bottom: 2px solid #000000;
+}
+
+.admin-profile-page__actions {
+  padding-top: 34px;
 }
 
 .admin-profile-page__submit {
-  width: 100%;
-  min-height: 58px;
-  border-radius: 16px;
-  font-size: 15px;
-  letter-spacing: 0.08em;
-  box-shadow: 0 18px 34px rgba(201, 134, 66, 0.24);
+  min-height: 56px;
+  padding: 0 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border: 0;
+  border-radius: 0;
+  font-size: 12px;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-weight: 800;
 }
 
-.admin-profile-page .vehica-register-login-notice {
-  margin: 0 0 18px;
+.admin-profile-page__submit--primary {
+  background: #000000;
+  color: #ffffff;
+}
+
+.admin-profile-page__submit--primary:hover {
+  background: #3b3b3b;
+}
+
+.admin-profile-page__submit--secondary {
+  background: #e2e2e2;
+  color: #1b1b1b;
+}
+
+.admin-profile-page__submit--secondary:hover {
+  background: #cfcfcf;
+}
+
+.admin-profile-page__notice {
+  margin-bottom: 22px;
   padding: 14px 16px;
-  border-radius: 14px;
-  border: 1px solid rgba(201, 134, 66, 0.18);
-  background: rgba(201, 134, 66, 0.09);
-  color: #674526;
-  text-align: left;
+  background: #eeeeee;
+  color: #1b1b1b;
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.6;
+}
+
+.admin-profile-page__notice--error {
+  background: #ffdad6;
+  color: #7b1113;
+}
+
+.admin-profile-page__aside {
+  display: none;
+}
+
+.admin-profile-page__aside-line {
+  width: 100%;
+  height: 4px;
+  margin-bottom: 34px;
+  background: #000000;
+}
+
+.admin-profile-page__aside-title {
+  margin: 0;
+  font-family: "Manrope", serif;
+  font-size: 34px;
+  line-height: 1.08;
+  letter-spacing: -0.05em;
+  font-weight: 800;
+  color: #1b1b1b;
+}
+
+.admin-profile-page__aside-visual {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 32% 30%, rgba(255, 255, 255, 0.7), transparent 18%),
+    radial-gradient(circle at 68% 62%, rgba(255, 255, 255, 0.32), transparent 24%),
+    linear-gradient(135deg, #111111 0%, #343434 36%, #8b8b8b 100%);
+}
+
+.admin-profile-page__aside-glow {
+  position: absolute;
+  inset: 14% 20%;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transform: rotate(16deg);
+}
+
+.admin-profile-page__aside-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 28px 28px;
+  opacity: 0.28;
+}
+
+.admin-profile-page__password-head {
+  margin-bottom: 34px;
+}
+
+.admin-profile-page__password-head h3 {
+  margin: 0 0 8px;
+  font-family: "Manrope", serif;
+  font-size: 30px;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+  font-weight: 800;
+}
+
+.admin-profile-page__password-head p {
+  max-width: 760px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+  color: #474747;
+}
+
+.admin-profile-page__password-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 30px;
+}
+
+.admin-profile-page__stack-field {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 .admin-profile-page__back-row {
+  margin-top: 70px;
   display: flex;
-  justify-content: flex-start;
-  margin-top: 24px;
+  justify-content: center;
 }
 
 .admin-profile-page__back-button {
-  min-width: 158px;
-  min-height: 52px;
-  border: 1px solid rgba(17, 24, 39, 0.12);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 0 24px;
-  font-size: 13px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #000000;
+  font-size: 12px;
   line-height: 1;
-  letter-spacing: 0.12em;
   text-transform: uppercase;
+  letter-spacing: 0.22em;
   font-weight: 800;
-  color: #1f2937;
   cursor: pointer;
-  transition:
-    background-color 0.2s ease,
-    border-color 0.2s ease,
-    transform 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-profile-page__back-button::before {
+  content: "\f060";
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
 }
 
 .admin-profile-page__back-button:hover {
-  background: #ffffff;
-  border-color: rgba(17, 24, 39, 0.22);
-  transform: translateY(-1px);
+  color: #5f5e5e;
 }
 
 @media (min-width: 1024px) {
   .admin-profile-page {
-    padding: 170px 32px 120px;
+    padding: 108px 32px 120px;
   }
 
-  .admin-profile-page__panel {
-    flex-direction: row;
-    align-items: stretch;
+  .admin-profile-page__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(320px, 1fr);
+    gap: 48px;
+    align-items: start;
   }
 
-  .admin-profile-page .vehica-login {
-    width: 50%;
-    background:
-      linear-gradient(180deg, rgba(249, 242, 233, 0.96) 0%, rgba(255, 255, 255, 0.98) 100%);
+  .admin-profile-page__card--password {
+    grid-column: 1 / -1;
   }
 
-  .admin-profile-page .vehica-login__inner {
-    padding: 42px 38px 36px;
+  .admin-profile-page__aside {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 34px;
+    min-height: 100%;
+    background: #f3f3f3;
   }
 
-  .admin-profile-page .vehica-register {
-    width: 50%;
-    background: #ffffff;
-  }
-
-  .admin-profile-page .vehica-register__inner {
-    padding: 42px 38px 36px;
+  .admin-profile-page__password-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 42px;
   }
 }
 
-@media (min-width: 1200px) {
-  .admin-profile-page .vehica-login__inner,
-  .admin-profile-page .vehica-register__inner {
-    padding: 46px 46px 40px;
+@media (max-width: 1023px) {
+  .admin-profile-page__topbar {
+    top: 74px;
   }
 
-  .admin-profile-page .vehica-login,
-  .admin-profile-page .vehica-register {
-    min-height: 560px;
+  .admin-profile-page__card {
+    padding: 30px 24px;
   }
 }
 
 @media (max-width: 899px) {
   .admin-profile-page {
-    padding: 118px 14px 84px;
+    padding: 88px 16px 88px;
   }
 
-  .admin-profile-page .vehica-login__inner,
-  .admin-profile-page .vehica-register__inner {
-    padding: 28px 22px 24px;
+  .admin-profile-page__topbar {
+    position: static;
+    margin-bottom: 36px;
   }
 
-  .admin-profile-page .vehica-panel-login-register h2 {
-    font-size: 28px;
+  .admin-profile-page__hero {
+    margin-bottom: 42px;
   }
 
-  .admin-profile-page .vehica-panel-login-register h3 {
-    font-size: 14px;
-    margin-bottom: 22px;
+  .admin-profile-page__hero p {
+    font-size: 15px;
   }
 
-  .admin-profile-page__submit,
-  .admin-profile-page__back-button {
+  .admin-profile-page__field-row {
+    gap: 10px;
+    padding: 22px 0;
+  }
+
+  .admin-profile-page__ghost-input {
+    font-size: 18px;
+  }
+
+  .admin-profile-page__submit {
     width: 100%;
   }
 }
