@@ -7,7 +7,6 @@ import {
 } from "../services/contentService";
 import { listVehicles, readCachedVehicleList } from "../services/vehicleService";
 import { useRef } from "react";
-import Footer from "../components/Footer";
 import FaqPage from "./FaqPage";
 import ContactPage from "./ContactPage";
 import {
@@ -868,20 +867,63 @@ function ContactPreview({
 }
 
 function FooterPreview({ brand, content, header, isMobilePreview }) {
+  const locationValue = content.locationValue || "Alger";
+  const shortInfo =
+    content.shortInfo ||
+    "✔︎ " + brand.name + ". Location de voitures de luxe à " + locationValue + ".";
+  const addressValue =
+    content.addressValue || [locationValue, content.brandValue || brand.name].filter(Boolean).join("\n");
+  const navigationItems = (header?.navigationItems || []).slice(0, 4);
+  const footerLogoPath = content.logoImagePath || brand.logoImagePath || IMAGE_FALLBACK_SRC;
+
   return (
-    <MiniCanvas
-      className="admin-visual-page__mini-canvas-shell--footer"
-      isMobilePreview={isMobilePreview}
+    <div
+      className={
+        "admin-visual-page__flat-preview-shell admin-visual-page__flat-preview-shell--footer" +
+        (isMobilePreview ? " admin-visual-page__flat-preview-shell--mobile-preview" : "")
+      }
     >
-      <div
-        className={
-          "admin-visual-page__live-preview" +
-          (isMobilePreview ? " admin-visual-page__live-preview--mobile-preview" : "")
-        }
-      >
-        <Footer brand={brand} content={content} header={header} onNavigate={() => {}} />
+      <div className="admin-visual-preview__footer-frame">
+        <div className="admin-visual-preview__footer">
+          <div className="admin-visual-preview__footer-top">
+            <div className="admin-visual-preview__footer-brand">
+              <img
+                src={footerLogoPath}
+                alt={brand.name}
+                onError={handleImageFallback}
+              />
+
+              <p>{shortInfo}</p>
+            </div>
+
+            <div className="admin-visual-preview__footer-nav">
+              {navigationItems.map((item) => (
+                <span key={item.path} className="admin-visual-preview__footer-link">
+                  {item.label}
+                </span>
+              ))}
+            </div>
+
+            <div className="admin-visual-preview__footer-meta">
+              {content.phoneValue ? <span>{content.phoneValue}</span> : null}
+              {content.emailValue ? <span>{content.emailValue}</span> : null}
+              {addressValue ? <span>{addressValue}</span> : null}
+            </div>
+          </div>
+
+          <div className="admin-visual-preview__footer-divider"></div>
+
+          <div className="admin-visual-preview__footer-bottom">
+            <span>{content.copyrightText || content.legalText || brand.name}</span>
+
+            <div className="admin-visual-preview__footer-social">
+              <span>Facebook</span>
+              <span>Instagram</span>
+            </div>
+          </div>
+        </div>
       </div>
-    </MiniCanvas>
+    </div>
   );
 }
 

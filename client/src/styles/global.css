@@ -15284,6 +15284,10 @@ body.reservation-admin-page-lock {
   min-height: 132px;
 }
 
+.admin-visual-page__flat-preview-shell--footer {
+  min-height: 236px;
+}
+
 .admin-visual-page__mini-canvas-scale {
   width: 1408px;
   transform: scale(var(--admin-visual-scale));
@@ -15803,8 +15807,60 @@ body.reservation-admin-page-lock {
 .admin-visual-preview__footer {
   display: grid;
   gap: 18px;
-  padding: 34px 40px;
+  padding: 0;
+  background: transparent;
+}
+
+.admin-visual-preview__footer-frame {
+  min-height: 236px;
+  padding: 30px 34px 24px;
   background: #14181f;
+}
+
+.admin-visual-preview__footer-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.8fr) minmax(0, 0.95fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.admin-visual-preview__footer-brand,
+.admin-visual-preview__footer-nav {
+  display: grid;
+  gap: 12px;
+}
+
+.admin-visual-preview__footer-link {
+  color: #ece6de;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.admin-visual-preview__footer-divider {
+  height: 1px;
+  background: rgba(236, 230, 222, 0.12);
+}
+
+.admin-visual-preview__footer-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.admin-visual-preview__footer-bottom > span,
+.admin-visual-preview__footer-social span {
+  color: #ece6de;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.admin-visual-preview__footer-social {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
 }
 
 .admin-visual-preview__footer img {
@@ -16065,6 +16121,48 @@ body.reservation-admin-page-lock {
 
 .admin-visual-page__flat-preview-shell--mobile-preview .admin-visual-preview__header-link {
   font-size: 10px;
+}
+
+.admin-visual-page__flat-preview-shell--mobile-preview.admin-visual-page__flat-preview-shell--footer {
+  min-height: 268px;
+}
+
+.admin-visual-page__flat-preview-shell--mobile-preview .admin-visual-preview__footer-frame {
+  min-height: 268px;
+  padding: 20px 16px 16px;
+}
+
+.admin-visual-page__flat-preview-shell--mobile-preview .admin-visual-preview__footer-top {
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+.admin-visual-page__flat-preview-shell--mobile-preview .admin-visual-preview__footer-brand,
+.admin-visual-page__flat-preview-shell--mobile-preview .admin-visual-preview__footer-nav,
+.admin-visual-page__flat-preview-shell--mobile-preview .admin-visual-preview__footer-meta {
+  gap: 8px;
+}
+
+.admin-visual-page__flat-preview-shell--mobile-preview .admin-visual-preview__footer img {
+  width: 156px;
+}
+
+.admin-visual-page__flat-preview-shell--mobile-preview .admin-visual-preview__footer p,
+.admin-visual-page__flat-preview-shell--mobile-preview .admin-visual-preview__footer-meta span,
+.admin-visual-page__flat-preview-shell--mobile-preview .admin-visual-preview__footer-bottom > span,
+.admin-visual-page__flat-preview-shell--mobile-preview .admin-visual-preview__footer-social span {
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.admin-visual-page__flat-preview-shell--mobile-preview .admin-visual-preview__footer-link {
+  font-size: 11px;
+}
+
+.admin-visual-page__flat-preview-shell--mobile-preview .admin-visual-preview__footer-bottom {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .admin-visual-page__mini-canvas-shell--mobile-preview {
