@@ -1099,6 +1099,18 @@ function AdminVisualPage({ content, brand, header, footer, onContentSaved }) {
   const [successMessage, setSuccessMessage] = useState("");
   const [vehicles, setVehicles] = useState(() => readCachedVehicleList({ adminView: true }));
   const [isMobilePreview, setIsMobilePreview] = useState(() => isMobileVisualViewport());
+  const latestContentRef = useRef(content);
+  const latestContentSnapshotRef = useRef(
+    JSON.parse(JSON.stringify(content || {}))
+  );
+
+  useEffect(() => {
+    latestContentRef.current = content;
+  }, [content]);
+
+  useEffect(() => {
+    latestContentSnapshotRef.current = contentSnapshot;
+  }, [contentSnapshot]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -1131,7 +1143,7 @@ function AdminVisualPage({ content, brand, header, footer, onContentSaved }) {
           return;
         }
 
-        setFormValues(normalizeFormValues(settings, content));
+        setFormValues(normalizeFormValues(settings, latestContentRef.current));
       } catch (error) {
         if (!isActive) {
           return;
@@ -1150,7 +1162,7 @@ function AdminVisualPage({ content, brand, header, footer, onContentSaved }) {
     return () => {
       isActive = false;
     };
-  }, [content]);
+  }, []);
 
   useEffect(() => {
     let isActive = true;
@@ -1181,7 +1193,10 @@ function AdminVisualPage({ content, brand, header, footer, onContentSaved }) {
   }, []);
 
   const syncRealtimeContent = (nextFormValues) => {
-    const nextContent = buildNextContent(contentSnapshot || content, nextFormValues);
+    const nextContent = buildNextContent(
+      latestContentSnapshotRef.current || latestContentRef.current,
+      nextFormValues
+    );
     setContentSnapshot(JSON.parse(JSON.stringify(nextContent)));
     onContentSaved?.(nextContent);
   };
