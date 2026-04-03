@@ -9,6 +9,28 @@ const {
 const { resolveUploadsRoot } = require("../services/storagePathService");
 
 const uploadsRoot = resolveUploadsRoot();
+const BRANDING_IMAGE_EXTENSION_MIME_MAP = {
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".png": "image/png",
+  ".webp": "image/webp",
+  ".gif": "image/gif",
+  ".bmp": "image/bmp",
+  ".svg": "image/svg+xml",
+  ".avif": "image/avif",
+  ".heic": "image/heic",
+  ".heif": "image/heif",
+  ".jfif": "image/jpeg",
+  ".tif": "image/tiff",
+  ".tiff": "image/tiff",
+  ".ico": "image/x-icon",
+  ".cur": "image/x-icon",
+  ".apng": "image/apng",
+  ".pjpeg": "image/jpeg",
+  ".pjp": "image/jpeg",
+  ".dib": "image/bmp",
+  ".jxl": "image/jxl"
+};
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -34,6 +56,21 @@ function handleBrandingImageUpload(request, response, next) {
 
     return next();
   });
+}
+
+function inferImageContentTypeFromFile(file, fallbackName = "") {
+  const mimeType = String(file?.mimetype || "").trim().toLowerCase();
+
+  if (mimeType.startsWith("image/")) {
+    return mimeType;
+  }
+
+  const extension = path.extname(String(file?.originalname || fallbackName || "")).toLowerCase();
+  return BRANDING_IMAGE_EXTENSION_MIME_MAP[extension] || "";
+}
+
+function isLikelyImageFile(file, fallbackName = "") {
+  return Boolean(inferImageContentTypeFromFile(file, fallbackName));
 }
 
 function buildManagedUrl(filename) {
@@ -68,8 +105,26 @@ async function saveBrandingImage(file, slot = "branding") {
   const normalizedSlot = String(slot || "branding").trim() || "branding";
   const originalFileName = String(file.originalname || `${normalizedSlot}.bin`);
   const originalExtension = path.extname(originalFileName || "").toLowerCase() || ".bin";
-  let contentType = String(file.mimetype || "").trim() || "application/octet-stream";
+  let contentType =
+    inferImageContentTypeFromFile(file, originalFileName) || "application/octet-stream";
   let binaryData = file.buffer;
+  let isConfirmedImage = isLikelyImageFile(file, originalFileName);
+
+  try {
+    const metadata = await sharp(file.buffer, {
+      failOn: "none",
+      animated: true
+    }).metadata();
+
+    if (metadata && (metadata.width || metadata.height || metadata.format)) {
+      isConfirmedImage = true;
+    }
+  } catch (error) {
+  }
+
+  if (!isConfirmedImage) {
+    throw new Error("Le fichier selectionne n'est pas une image prise en charge.");
+  }
 
   try {
     binaryData = await sharp(file.buffer)
@@ -86,6 +141,10 @@ async function saveBrandingImage(file, slot = "branding") {
       .toBuffer();
     contentType = "image/webp";
   } catch (error) {
+    if (!contentType.startsWith("image/")) {
+      contentType =
+        BRANDING_IMAGE_EXTENSION_MIME_MAP[originalExtension] || "application/octet-stream";
+    }
   }
 
   const asset = await createBrandingMediaAsset({

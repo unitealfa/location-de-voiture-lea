@@ -154,7 +154,16 @@ const IMAGE_EXTENSIONS = [
   ".avif",
   ".heic",
   ".heif",
-  ".jfif"
+  ".jfif",
+  ".tif",
+  ".tiff",
+  ".ico",
+  ".cur",
+  ".apng",
+  ".pjpeg",
+  ".pjp",
+  ".dib",
+  ".jxl"
 ];
 
 const VIDEO_EXTENSIONS = [

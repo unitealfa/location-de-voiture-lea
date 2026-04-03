@@ -18,6 +18,9 @@ import {
 import { extractAcceptedFilesFromDrop } from "../utils/dropFiles";
 import { handleImageFallback, IMAGE_FALLBACK_SRC } from "../utils/imageFallback";
 
+const ADMIN_VISUAL_IMAGE_ACCEPT =
+  "image/*,.jpg,.jpeg,.png,.webp,.gif,.bmp,.svg,.avif,.heic,.heif,.jfif,.tif,.tiff,.ico,.cur,.apng,.pjpeg,.pjp,.dib,.jxl";
+
 const DEFAULT_FORM = {
   browserTitle: "",
   faviconImagePath: "",
@@ -929,13 +932,13 @@ function ImageDropField({
 
         <div className="admin-visual-page__upload-content">
           <strong>{isUploading ? "Envoi en cours..." : "Selectionner ou glisser une image"}</strong>
-          <span>PNG, JPG, WEBP ou autre image compatible.</span>
+          <span>JPG, PNG, WEBP, GIF, SVG, HEIC, AVIF, TIFF, ICO et autres formats image.</span>
         </div>
 
         <input
           ref={inputRef}
           type="file"
-          accept="image/*"
+          accept={ADMIN_VISUAL_IMAGE_ACCEPT}
           className="admin-visual-page__upload-input"
           onChange={(event) => handleFiles(event.target.files)}
         />
